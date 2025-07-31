@@ -1,0 +1,28 @@
+import React from "react";
+
+function ActionSection() {
+  return (
+    <section className="w-full px-4 sm:px-6 lg:px-20 py-16 text-center bg-white">
+      <h2 className="text-2xl sm:text-4xl font-bold text-[#2C3E50] mb-2">
+         Where Zephyra Comes Alive
+      </h2>
+      <p className="text-[#4A90E2] max-w-2xl mx-auto text-sm sm:text-lg mb-10">
+        Watch how easy it is to start your next adventure. This quick demo shows you how to find quests, track your progress, and connect with the community.
+      </p>
+
+      <div className="w-full max-w-4xl mx-auto aspect-video bg-gray-300 rounded-xl shadow-md flex items-center justify-center">
+        <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg cursor-pointer">
+          <svg
+            className="w-6 h-6 text-gray-700"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M6 4l10 6-10 6V4z" />
+          </svg>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default ActionSection;

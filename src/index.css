@@ -1,0 +1,42 @@
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.perspective {
+  perspective: 1000px;
+}
+
+.card-container {
+  transform-style: preserve-3d;
+  transition: transform 0.7s ease;
+}
+
+.card-inner:hover {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  backface-visibility: hidden;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+}
+
+/* Hide scrollbar across all modern browsers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE + Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-function HeroSection() {
+function HomeHeroSection() {
   useEffect(() => {
     AOS.init({ duration: 1000 });
   }, []);
@@ -39,4 +39,4 @@ function HeroSection() {
   );
 }
 
-export default HeroSection;
+export default HomeHeroSection;

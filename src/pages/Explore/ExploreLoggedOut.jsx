@@ -1,18 +1,17 @@
 import React from "react";
-import ExploreHero from "../../components/Explore/ExploreLoggedOut/ExploreHero";
-import ExploreAction from "../../components/Explore/ExploreLoggedOut/ExploreAction";
-import CommunityHighlights from "../../components/Explore/ExploreLoggedOut/CommunityHighlights";
-import JoinCommunity from "../../components/Explore/ExploreLoggedOut/JoinCommunity";
-
-
-
+import {
+  CommunityHighlights,
+  ExploreAction,
+  ExploreHero,
+  JoinCommunity,
+} from "../../components/index.js";
 
 function ExploreLoggedOut() {
   return (
     <main>
       <ExploreHero />
       <ExploreAction />
-      <CommunityHighlights /> 
+      <CommunityHighlights />
       <JoinCommunity />
     </main>
   );

@@ -1,6 +1,5 @@
 import React from "react";
-import OngoingQuestCard from "../../components/Cards/OngoingQuestCard";
-import EmptyOngoingQuests from "../../components/Cards/EmptyOngoingQuests";
+import { OngoingQuestCard, EmptyOngoingQuests} from "../../components/index.js";
 
 export default function OngoingQuestsSection({ ongoingQuests = [] }) {
   console.log('OngoingQuestsSection received:', ongoingQuests);

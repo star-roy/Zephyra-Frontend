@@ -1,55 +1,70 @@
 import React, { useState } from "react";
-import { FaPen } from "react-icons/fa";
-import { FaTimes } from "react-icons/fa";
-
-// Simulated taken usernames for demo purposes
-const takenUsernames = ["LocalExplorer123", "ExplorerUser", "DemoUser"];
+import { FaPen, FaTimes } from "react-icons/fa";
 
 export default function AccountSection() {
-  const [username, setUsername] = useState("LocalExplorer123");
+  const [username] = useState("LocalExplorer123");
   const [fullname, setFullname] = useState("Jane Explorer");
-  const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [isEditingFullname, setIsEditingFullname] = useState(false);
-  const [profilePic, setProfilePic] = useState("/profile-default.png");
-  const [coverImage, setCoverImage] = useState("/cover-default.jpg");
-  const [usernameError, setUsernameError] = useState("");
 
+  // Avatar (profile pic) states
+  const [profilePic, setProfilePic] = useState("/profile-default.png");
+  const [tempProfilePic, setTempProfilePic] = useState(profilePic);
+  const [isEditingProfilePic, setIsEditingProfilePic] = useState(false);
+
+  // Cover image states
+  const [coverImage, setCoverImage] = useState("/cover-default.jpg");
+  const [tempCoverImage, setTempCoverImage] = useState(coverImage);
+  const [isEditingCoverImage, setIsEditingCoverImage] = useState(false);
+
+  // Bio (max 200 characters)
+  const [bio, setBio] = useState("Explorer, traveler, and demo user.");
+  const [isEditingBio, setIsEditingBio] = useState(false);
+
+  // Avatar handlers
   const handleProfilePicChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => setProfilePic(ev.target.result);
+    reader.onload = (ev) => setTempProfilePic(ev.target.result);
     reader.readAsDataURL(file);
   };
+  const handleDeleteProfilePic = () => setTempProfilePic("/profile-default.png");
+  const handleSaveProfilePic = () => {
+    setProfilePic(tempProfilePic);
+    setIsEditingProfilePic(false);
+  };
+  const handleCancelProfilePic = () => {
+    setTempProfilePic(profilePic);
+    setIsEditingProfilePic(false);
+  };
 
+  // Cover image handlers
   const handleCoverImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => setCoverImage(ev.target.result);
+    reader.onload = (ev) => setTempCoverImage(ev.target.result);
     reader.readAsDataURL(file);
   };
-
-  const handleDeleteProfilePic = () => setProfilePic("/profile-default.png");
-  const handleDeleteCoverImage = () => setCoverImage("/cover-default.jpg");
-
-  const handleUsernameChange = (e) => {
-    const value = e.target.value;
-    setUsername(value);
-    if (takenUsernames.includes(value) && value !== "LocalExplorer123") {
-      setUsernameError("This username already exists. Please choose another.");
-    } else {
-      setUsernameError("");
-    }
+  const handleDeleteCoverImage = () => setTempCoverImage("/cover-default.jpg");
+  const handleSaveCoverImage = () => {
+    setCoverImage(tempCoverImage);
+    setIsEditingCoverImage(false);
+  };
+  const handleCancelCoverImage = () => {
+    setTempCoverImage(coverImage);
+    setIsEditingCoverImage(false);
   };
 
-  const handleUsernameSave = () => {
-    if (usernameError || !username.trim()) return;
-    setIsEditingUsername(false);
-  };
-
+  // Full name handlers
   const handleFullnameChange = (e) => setFullname(e.target.value);
   const handleFullnameSave = () => setIsEditingFullname(false);
+
+  // Bio handlers (max 200 characters)
+  const handleBioChange = (e) => {
+    if (e.target.value.length <= 200) setBio(e.target.value);
+  };
+  const handleBioSave = () => setIsEditingBio(false);
 
   return (
     <section className="bg-white rounded-xl border border-gray-200 mb-8 p-6">
@@ -57,77 +72,133 @@ export default function AccountSection() {
       <p className="text-sm text-zephyraBlue mb-5">Manage your account and profile information.</p>
 
       {/* Cover Image */}
-      <div className="relative mb-7">
+      <div className="mb-2">
         <img
-          src={coverImage}
+          src={isEditingCoverImage ? tempCoverImage : coverImage}
           alt="Cover"
           className="w-full h-32 object-cover rounded-xl border border-gray-300"
         />
-        <div className="absolute top-4 right-4 flex gap-2">
-          <label
-            className="bg-teal-400 hover:bg-teal-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg cursor-pointer"
-            title="Change Cover Image"
-            htmlFor="cover-image-upload"
-            style={{ fontSize: "1.3rem" }}
-          >
-            <FaPen />
-            <input
-              id="cover-image-upload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleCoverImageChange}
-            />
-          </label>
-          <button
-            type="button"
-            className="bg-red-400 hover:bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition"
-            title="Remove Cover Image"
-            onClick={handleDeleteCoverImage}
-            style={{ fontSize: "1.3rem" }}
-          >
-            <FaTimes />
-          </button>
+        <div className="flex gap-2 mt-3">
+          {!isEditingCoverImage ? (
+            <button
+              type="button"
+              className="bg-teal-400 hover:bg-teal-500 text-white rounded-full px-4 py-2 flex items-center gap-2 shadow-lg cursor-pointer"
+              title="Edit Cover Image"
+              onClick={() => setIsEditingCoverImage(true)}
+            >
+              <FaPen /> Edit
+            </button>
+          ) : (
+            <>
+              <label
+                className="bg-teal-400 hover:bg-teal-500 text-white rounded-full px-4 py-2 flex items-center gap-2 shadow-lg cursor-pointer"
+                title="Change Cover Image"
+                htmlFor="cover-image-upload"
+              >
+                <FaPen /> Change
+                <input
+                  id="cover-image-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleCoverImageChange}
+                />
+              </label>
+              <button
+                type="button"
+                className="bg-red-400 hover:bg-red-500 text-white rounded-full px-4 py-2 flex items-center gap-2 shadow-lg transition"
+                title="Remove Cover Image"
+                onClick={handleDeleteCoverImage}
+              >
+                <FaTimes /> Remove
+              </button>
+              <button
+                type="button"
+                className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-4 py-2 flex items-center gap-2 shadow-lg transition font-semibold"
+                title="Save Cover Image"
+                onClick={handleSaveCoverImage}
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                className="bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-full px-4 py-2 flex items-center gap-2 shadow-lg transition font-semibold"
+                title="Cancel"
+                onClick={handleCancelCoverImage}
+              >
+                Cancel
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Profile Picture Update */}
-      <div className="flex items-center gap-6 mb-7">
+      <div className="flex items-center gap-6 mb-2">
         <div className="relative w-16 h-16">
           <img
-            src={profilePic}
+            src={isEditingProfilePic ? tempProfilePic : profilePic}
             alt="Profile"
             className="w-16 h-16 rounded-full object-cover border border-gray-300"
           />
-          <label
-            className="absolute bottom-0 right-0 bg-teal-400 hover:bg-teal-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg cursor-pointer"
-            title="Change Profile Picture"
-            htmlFor="profile-pic-upload"
-            style={{ fontSize: "1rem" }}
-          >
-            <FaPen />
-            <input
-              id="profile-pic-upload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleProfilePicChange}
-            />
-          </label>
-          <button
-            type="button"
-            className="absolute -top-2 -right-2 bg-red-400 hover:bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition"
-            title="Remove Profile Picture"
-            onClick={handleDeleteProfilePic}
-            style={{ fontSize: "1rem" }}
-          >
-            <FaTimes />
-          </button>
         </div>
         <div>
           <div className="text-base font-semibold text-midnightIndigo">{username}</div>
           <div className="text-xs text-gray-400">Profile Picture</div>
         </div>
+      </div>
+      <div className="flex gap-2 mb-7 ml-1">
+        {!isEditingProfilePic ? (
+          <button
+            type="button"
+            className="bg-teal-400 hover:bg-teal-500 text-white rounded-full px-4 py-2 flex items-center gap-2 shadow-lg cursor-pointer"
+            title="Edit Profile Picture"
+            onClick={() => setIsEditingProfilePic(true)}
+          >
+            <FaPen /> Edit
+          </button>
+        ) : (
+          <>
+            <label
+              className="bg-teal-400 hover:bg-teal-500 text-white rounded-full px-4 py-2 flex items-center gap-2 shadow-lg cursor-pointer"
+              title="Change Profile Picture"
+              htmlFor="profile-pic-upload"
+            >
+              <FaPen /> Change
+              <input
+                id="profile-pic-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleProfilePicChange}
+              />
+            </label>
+            <button
+              type="button"
+              className="bg-red-400 hover:bg-red-500 text-white rounded-full px-4 py-2 flex items-center gap-2 shadow-lg transition"
+              title="Remove Profile Picture"
+              onClick={handleDeleteProfilePic}
+            >
+              <FaTimes /> Remove
+            </button>
+            <button
+              type="button"
+              className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-4 py-2 flex items-center gap-2 shadow-lg transition font-semibold"
+              title="Save Profile Picture"
+              onClick={handleSaveProfilePic}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-full px-4 py-2 flex items-center gap-2 shadow-lg transition font-semibold"
+              title="Cancel"
+              onClick={handleCancelProfilePic}
+            >
+              Cancel
+            </button>
+          </>
+        )}
       </div>
 
       {/* Email */}
@@ -178,43 +249,65 @@ export default function AccountSection() {
         </div>
       </div>
 
-      {/* Username */}
+      {/* Username (read-only, no edit) */}
       <div className="mb-6">
         <label className="block text-sm text-gray-700 mb-2">Username</label>
+        <input
+          type="text"
+          value={username}
+          readOnly
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-50 text-gray-800"
+        />
+        <p className="text-xs text-gray-400 mt-2">Username cannot be changed.</p>
+      </div>
+
+      {/* Bio Section - max 200 characters */}
+      <div className="mb-6">
+        <label className="block text-sm text-gray-700 mb-2">
+          Bio <span className="text-xs text-gray-400">(max 200 characters)</span>
+        </label>
         <div className="relative">
-          <input
-            type="text"
-            value={username}
-            readOnly={!isEditingUsername}
-            onChange={handleUsernameChange}
-            className={`w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-50 text-gray-800 pr-10 ${
-              isEditingUsername ? "focus:outline-teal-400 bg-white" : ""
-            }`}
-          />
-          {!isEditingUsername ? (
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-teal-400"
-              onClick={() => setIsEditingUsername(true)}
-              title="Edit Username"
-            >
-              <FaPen />
-            </button>
+          {isEditingBio ? (
+            <>
+              <textarea
+                value={bio}
+                onChange={handleBioChange}
+                rows={4}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white text-gray-800 pr-10 focus:outline-teal-400 resize-none"
+                maxLength={200}
+              />
+              <div className="absolute right-3 bottom-3 text-xs text-gray-400">
+                {bio.length}/200 characters
+              </div>
+              <button
+                type="button"
+                className="absolute right-3 top-3 text-teal-400 hover:text-teal-600 font-semibold"
+                onClick={handleBioSave}
+                disabled={bio.length === 0 || bio.length > 200}
+                title="Save Bio"
+              >
+                Save
+              </button>
+            </>
           ) : (
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-400 hover:text-teal-600 font-semibold"
-              onClick={handleUsernameSave}
-              disabled={!!usernameError || !username.trim()}
-              title="Save Username"
-            >
-              Save
-            </button>
+            <>
+              <div className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-50 text-gray-800 min-h-[64px]">
+                {bio || <span className="text-gray-400">No bio added.</span>}
+              </div>
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-teal-400"
+                onClick={() => setIsEditingBio(true)}
+                title="Edit Bio"
+              >
+                <FaPen />
+              </button>
+              <div className="absolute right-3 bottom-3 text-xs text-gray-400">
+                {bio.length}/200 characters
+              </div>
+            </>
           )}
         </div>
-        {usernameError && (
-          <p className="text-xs text-red-500 mt-2">{usernameError}</p>
-        )}
       </div>
 
       <hr className="my-6" />

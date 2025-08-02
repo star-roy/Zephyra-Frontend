@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ForYouCard({ id, image, title, description, difficulty = "Medium", xp = 150 }) {
+export default function QuestCard({ id, image, title, description, difficulty = "Medium", xp = 150 }) {
   const navigate = useNavigate();
 
   const handleViewQuest = () => {

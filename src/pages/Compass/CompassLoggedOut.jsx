@@ -1,11 +1,11 @@
 import React from "react";
-import HeroSection from "../../components/Compass/CompassLoggedOut/HeroSection";
-import PopularTopics from "../../components/Compass/CompassLoggedOut/PopularTopics";
-import AccordionHelp from "../../components/Compass/CompassLoggedOut/AccordionHelp";
-import CTASection from "../../components/Compass/CompassLoggedOut/CTASection";
-import ContactSupportBox from "../../components/Compass/CompassLoggedOut/ContactSupportBox";
-
-
+import {
+  HeroSection,
+  PopularTopics,
+  AccordionHelp,
+  CTASection,
+  ContactSupportBox,
+} from "../../components/index.js";
 
 function CompassLoggedOut() {
   return (
@@ -20,4 +20,3 @@ function CompassLoggedOut() {
 }
 
 export default CompassLoggedOut;
-

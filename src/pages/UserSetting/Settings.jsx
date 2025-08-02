@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import SettingsSidebar from "../../components/SettingsPage/SettingsSideBar";
-import AccountSection from "../../components/SettingsPage/AccountSection";
-import PrivacySection from "../../components/SettingsPage/PrivacySection";
-import AppPreferencesSection from "../../components/SettingsPage/AppPreferencesSection";
-import SecuritySection from "../../components/SettingsPage/SecuritySection";
+import {
+  AccountSection,
+  AppPreferencesSection,
+  PrivacySection,
+  SecuritySection,
+  SettingsSidebar,
+} from "../../components/index.js";
 
 const sectionComponents = {
   Account: AccountSection,

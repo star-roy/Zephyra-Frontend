@@ -1,20 +1,20 @@
 import React from "react";
-import HeroSection from "../../components/Home/HomeLoggedout/HeroSection";
-import ActionSection from "../../components/Home/HomeLoggedout/ActionSection";
-import FeatureSection from "../../components/Home/HomeLoggedout/FeatureSection";
-import TestimonialSection from "../../components/Home/HomeLoggedout/TestimonialSection";
-import JoinCTA from "../../components/Home/HomeLoggedout/JoinCTA";
-
+import {
+  ActionSection,
+  FeatureSection,
+  HomeHeroSection,
+  JoinCTA,
+  TestimonialSection,
+} from "../../components/index.js";
 
 function HomeLoggedOut() {
   return (
     <main>
-      <HeroSection />
+      <HomeHeroSection />
       <ActionSection />
       <FeatureSection />
       <TestimonialSection />
       <JoinCTA />
-
     </main>
   );
 }

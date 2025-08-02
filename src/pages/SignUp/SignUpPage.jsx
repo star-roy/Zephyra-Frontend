@@ -50,9 +50,6 @@ function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [coverImageFile, setCoverImageFile] = useState(null);
-
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
   const [email, setEmail] = useState("");
 
   const avatarInputRef = useRef(null);
@@ -74,11 +71,6 @@ function SignUpPage() {
   const handleDeleteCoverImage = () => {
     setCoverImageFile(null);
     if (coverImageInputRef.current) coverImageInputRef.current.value = "";
-  };
-
-  const handleSendOtp = () => {
-    // Replace this with actual OTP sending logic (API call)
-    setOtpSent(true);
   };
 
   return (
@@ -138,32 +130,7 @@ function SignUpPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A90E2]/50 focus:border-[#4A90E2] transition"
               />
-              <button
-                type="button"
-                onClick={handleSendOtp}
-                className="mt-2 text-xs px-3 py-1 bg-[#4A90E2] text-white rounded hover:bg-[#2C3E50] transition"
-                disabled={otpSent || !email}
-              >
-                {otpSent ? "OTP Sent" : "Send OTP"}
-              </button>
             </div>
-
-            {/* OTP Field for Email */}
-            {otpSent && (
-              <div>
-                <label htmlFor="email-otp" className="block text-sm font-medium text-[#2C3E50] mb-1.5">
-                  Enter OTP
-                </label>
-                <input
-                  type="text"
-                  id="email-otp"
-                  placeholder="Enter the OTP sent to your email"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A90E2]/50 focus:border-[#4A90E2] transition"
-                />
-              </div>
-            )}
 
             {/* Password */}
             <div>

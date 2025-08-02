@@ -1,7 +1,9 @@
 import React from "react";
-import CompassHero from "../../components/Compass/CompassLoggedIn/CompassHero.jsx";
-import PersonalizedGuidance from "../../components/Compass/CompassLoggedIn/PersonalizedGuidance.jsx";
-import KnowledgeSupportSection from "../../components/Compass/CompassLoggedIn/KnowledgeSupportSection.jsx";
+import {
+  CompassHero,
+  KnowledgeSupportSection,
+  PersonalizedGuidance,
+} from "../../components/index.js";
 
 function CompassLoggedIn() {
   return (

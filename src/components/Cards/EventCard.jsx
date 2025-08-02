@@ -1,6 +1,6 @@
 import React from "react";
 
-function UpcomingEventCard({ event }) {
+function EventCard({ event }) {
   return (
     <div className="flex w-full h-[150px] bg-white border border-gray-100 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.01] overflow-hidden group">
       {/* Left Date Box */}
@@ -71,4 +71,4 @@ function UpcomingEventCard({ event }) {
   );
 }
 
-export default UpcomingEventCard;
+export default EventCard;

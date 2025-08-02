@@ -1,10 +1,11 @@
 import React from "react";
-import HeroLoggedIn from "../../components/Home/HomeLoggedIn/HeroLoggedIn";
-import OngoingQuestsSection from "../../components/Home/HomeLoggedIn/OngoingQuestsSection";
-import YourNextAdventureSection from "../../components/Home/HomeLoggedIn/YourNextAdventureSection";
-import UpcomingEventsSection from "../../components/Home/HomeLoggedIn/UpcomingEventsSection";
-import ExplorerHubSection from "../../components/Home/HomeLoggedIn/ExplorerHubSection";
-
+import {
+  ExplorerHubSection,
+  HeroLoggedIn,
+  OngoingQuestsSection,
+  UpcomingEventsSection,
+  YourNextAdventureSection,
+} from "../../components/index.js";
 
 function HomeLoggedIn() {
   // Replace with real user data
@@ -90,25 +91,26 @@ function HomeLoggedIn() {
     },
   ];
 
-const events = [
-  {
-    id: 1,
-    day: "28",
-    month: "JUL",
-    tag: "Community Challenge",
-    title: "Capture the Local Flavor",
-    description: "Submit a photo of your favorite local food or drink to win XP and get featured.",
-  },
-  {
-    id: 2,
-    day: "30",
-    month: "JUL",
-    tag: "Join Now",
-    title: "Community Clean-Up Drive",
-    description: "Join your local explorers in a community clean-up quest and earn bonus rewards.",
-  },
-];
-
+  const events = [
+    {
+      id: 1,
+      day: "28",
+      month: "JUL",
+      tag: "Community Challenge",
+      title: "Capture the Local Flavor",
+      description:
+        "Submit a photo of your favorite local food or drink to win XP and get featured.",
+    },
+    {
+      id: 2,
+      day: "30",
+      month: "JUL",
+      tag: "Join Now",
+      title: "Community Clean-Up Drive",
+      description:
+        "Join your local explorers in a community clean-up quest and earn bonus rewards.",
+    },
+  ];
 
   return (
     <>

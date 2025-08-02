@@ -13,38 +13,38 @@ import {
 import Layout from "./Layout.jsx";
 
 // Route components
-import About from "./pages/About/About.jsx";
-import Home from "./pages/Home/Home.jsx";
-import Explore from "./pages/Explore/Explore.jsx";
-import Compass from "./pages/Compass/Compass.jsx";
-import MyQuest from "./pages/MyQuest/MyQuest.jsx";
-import Login from "./pages/Login.jsx";
-import Signup from "./pages/SignUp/SignUp.jsx";
-import ContactUs from "./pages/ContactUs.jsx";
-import AccessDenied from "./pages/AccessDenied.jsx";
-import Help from "./pages/Help.jsx";
-import Privacy from "./pages/Privacy.jsx";
-import Terms from "./pages/Terms.jsx";
-import Settings from "./pages/UserSetting/Settings.jsx";
+import { AboutPage as About } from "./pages/index.js";
+import { Home } from "./pages/index.js";
+import { Explore } from "./pages/index.js";
+import { Compass } from "./pages/index.js";
+import { MyQuestsPage as MyQuest } from "./pages/index.js";
+import { LoginPage as Login } from "./pages/index.js";
+import { SignUp } from "./pages/index.js";
+import { Contact } from "./pages/index.js";
+import { AccessDenied } from "./pages/index.js"; 
+import { Help } from "./pages/index.js";
+import { Privacy } from "./pages/index.js";
+import { Terms } from "./pages/index.js";
+import { Settings } from "./pages/index.js";
 
-import QuestInProgressPage from "./pages/Quest/QuestInProgressPage.jsx";
-import MyQuestsPage from "./pages/MyQuest/MyQuest.jsx";
-import CreateQuestPage from "./pages/MyQuest/CreateQuestPage.jsx";
-import QuestOverviewPage from "./pages/Quest/QuestOverviewPage.jsx";
-import QuestProofUpload from "./pages/Quest/QuestProofUpload.jsx";
+import { QuestInProgressPage } from "./pages/index.js";
+import { MyQuestsPage } from "./pages/index.js";
+import { CreateQuestPage } from "./pages/index.js";
+import { QuestOverviewPage } from "./pages/index.js";
+import { QuestProofUpload } from "./pages/index.js";
 
-import ChatSupportBox from "./components/Cards/ChatSupportBox.jsx";
-import ReportBug from "./pages/ReportBug.jsx";
-import ProvideFeedback from "./pages/ProvideFeedback.jsx";
+import { ChatSupportBox } from "./components/index.js";
+import { ReportBug } from "./pages/index.js";
+import { ProvideFeedback } from "./pages/index.js";
 
-import BadgeCollectionPage from "./pages/Badge/BadgeCollectionPage.jsx";
+import { BadgeCollectionPage } from "./pages/index.js";
 
-import UserProfilePage from "./pages/Profile/UserProfilePage.jsx";
+import { UserProfilePage } from "./pages/index.js";
 
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import PrivateRoute from "./auth/PrivateRoute.jsx";
 
-import FeatureUnderDevelopment from "./pages/FeatureUnderDevelopment.jsx";
+import { FeatureUnderDevelopment } from "./pages/index.js";
 // 🔐 Dummy auth logic (replace with real one)
 // const PrivateRoute = ({ children }) => {
 //   const isLoggedIn = true; // Or get from localStorage/context
@@ -64,7 +64,7 @@ const router = createBrowserRouter(
       <Route path="" element={<Home />} />
       <Route path="about-us" element={<About />} />
       <Route path="login" element={<Login />} />
-      <Route path="signup" element={<Signup />} />
+      <Route path="signup" element={<SignUp />} />
       <Route path="access-denied" element={<AccessDenied />} />
 
       {/* Semi-Protected Pages (example logic, change as needed) */}
@@ -72,9 +72,7 @@ const router = createBrowserRouter(
       <Route
         path="compass"
         element={
-          <PrivateRoute>
             <Compass />
-          </PrivateRoute>
         }
       />
 
@@ -83,7 +81,7 @@ const router = createBrowserRouter(
         path="contact-us"
         element={
           <PrivateRoute>
-            <ContactUs />
+            <Contact />
           </PrivateRoute>
         }
       />

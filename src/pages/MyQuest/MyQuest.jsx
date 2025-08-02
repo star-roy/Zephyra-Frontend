@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import ForYouCard from "../../components/Cards/QuestCard.jsx";
-import CompletedQuestRow from "../../components/Cards/CompletedQuestRow.jsx";
+import { QuestCard, CompletedQuestRow } from "../../components/index.js";
 import OngoingQuestsSection from "./OngoingQuestsSection.jsx";
 import useGridColumnCount from "../../Hook/useGridColumnCount.js"; // Add the path as needed
 
@@ -185,7 +184,7 @@ function MyQuestsPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {forYouCards.slice(0, recommendedColumns).map((card) => (
-              <ForYouCard key={card.id} {...card} />
+              <QuestCard key={card.id} {...card} />
             ))}
           </div>
         </div>

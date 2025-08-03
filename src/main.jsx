@@ -41,8 +41,13 @@ import { BadgeCollectionPage } from "./pages/index.js";
 
 import { UserProfilePage } from "./pages/index.js";
 
+// Admin Dashboard Components
+import { AdminDashboard, SuperAdminDashboard, UserManagement, QuestModeration } from "./pages/index.js";
+import { AdminLayout } from "./components/index.js";
+
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import PrivateRoute from "./auth/PrivateRoute.jsx";
+import AdminRoute from "./auth/AdminRoute.jsx";
 
 import { FeatureUnderDevelopment } from "./pages/index.js";
 // 🔐 Dummy auth logic (replace with real one)
@@ -197,6 +202,50 @@ const router = createBrowserRouter(
         path="provide-feedback"
         element={
             <ProvideFeedback />
+        }
+      />
+
+      {/* Admin Routes */}
+      <Route
+        path="admin/dashboard"
+        element={
+          <AdminRoute>
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="admin/users"
+        element={
+          <AdminRoute>
+            <AdminLayout>
+              <UserManagement />
+            </AdminLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="admin/quests"
+        element={
+          <AdminRoute>
+            <AdminLayout>
+              <QuestModeration />
+            </AdminLayout>
+          </AdminRoute>
+        }
+      />
+
+      {/* Super Admin Routes */}
+      <Route
+        path="admin/super-dashboard"
+        element={
+          <AdminRoute requireSuperAdmin={true}>
+            <AdminLayout>
+              <SuperAdminDashboard />
+            </AdminLayout>
+          </AdminRoute>
         }
       />
     </Route>

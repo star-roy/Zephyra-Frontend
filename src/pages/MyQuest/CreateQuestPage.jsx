@@ -17,6 +17,7 @@ const DIFFICULTY_LEVELS = [
 
 function CreateQuestPage() {
   const [tasks, setTasks] = useState(["Describe the first task", "Describe the second task"]);
+  const [tips, setTips] = useState([""]); // Tips state
   const [form, setForm] = useState({
     title: "",
     subtitle: "",
@@ -30,6 +31,7 @@ function CreateQuestPage() {
     tags: "",
     proof: "",
     tasks: ["", ""],
+    tips: [""], // Add tips to form state
     photos: [],
   });
   const [photoPreviews, setPhotoPreviews] = useState([]);
@@ -79,6 +81,19 @@ function CreateQuestPage() {
   const handleAddTask = () => {
     setTasks([...tasks, ""]);
     setForm({ ...form, tasks: [...tasks, ""] });
+  };
+
+  // Quest Tips handlers
+  const handleTipChange = (idx, value) => {
+    const newTips = [...tips];
+    newTips[idx] = value;
+    setTips(newTips);
+    setForm({ ...form, tips: newTips });
+  };
+
+  const handleAddTip = () => {
+    setTips([...tips, ""]);
+    setForm({ ...form, tips: [...tips, ""] });
   };
 
   const handlePhotoChange = (e) => {
@@ -429,6 +444,36 @@ function CreateQuestPage() {
               <span className="text-xl font-bold leading-[0]">+</span>
               Add Another Task
             </button>
+          </section>
+
+          {/* Quest Tips Section */}
+          <section className="mb-8">
+            <h2 className="font-semibold text-lg text-slate-800 mb-3">Quest Tips</h2>
+            <div className="space-y-4">
+              {tips.map((tip, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <span className="text-teal-400 font-bold">{idx + 1}.</span>
+                  <textarea
+                    value={tip}
+                    onChange={(e) => handleTipChange(idx, e.target.value)}
+                    className="w-full border border-slate-200 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
+                    placeholder={`Add a tip for this quest (e.g. best time to visit, nearby amenities)`}
+                    rows={1}
+                  />
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={handleAddTip}
+              className="mt-4 flex items-center gap-2 text-teal-600 hover:text-teal-800 text-base font-medium px-2 py-1 rounded transition"
+            >
+              <span className="text-xl font-bold leading-[0]">+</span>
+              Add Another Tip
+            </button>
+            <div className="text-slate-400 text-xs mt-1">
+              Share helpful advice or insider tips to help questers succeed!
+            </div>
           </section>
 
           {/* Reward & Verification */}

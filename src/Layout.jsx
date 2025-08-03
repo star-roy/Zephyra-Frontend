@@ -1,6 +1,6 @@
 // src/Layout.jsx
 import React, { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import Navbar from "./components/Navbar/Navbar.jsx";
 import Footer from "./components/Footer/Footer.jsx";
@@ -9,21 +9,23 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 
 function Layout() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   useEffect(() => {
     AOS.init({ duration: 1000 });
   }, []);
 
   return (
     <>
-      
-        <ScrollToTop />
-        <Navbar />
-        <div className="scroll-smooth overflow-x-hidden">
+      <ScrollToTop />
+      {!isAdminRoute && <Navbar />}
+      <div className="scroll-smooth overflow-x-hidden">
         <main>
           <Outlet />
         </main>
-        </div>
-        <Footer />
+      </div>
+      {!isAdminRoute && <Footer />}
     </>
   );
 }

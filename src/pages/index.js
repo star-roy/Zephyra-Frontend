@@ -16,6 +16,9 @@ import QuestProofUpload from "./Quest/QuestProofUpload.jsx";
 import SignUp from "./SignUp/SignUp.jsx";
 import Settings from "./UserSetting/Settings.jsx";
 
+// Admin Dashboard imports
+import { AdminDashboard, SuperAdminDashboard, UserManagement, QuestModeration } from "./AdminDashboard";
+
 import AccessDenied from "./AccessDenied.jsx";
 import Contact from "./ContactUs.jsx";
 import FeatureUnderDevelopment from "./FeatureUnderDevelopment.jsx";
@@ -43,6 +46,10 @@ export {
     QuestProofUpload,
     SignUp,
     Settings,
+    AdminDashboard,
+    SuperAdminDashboard,
+    UserManagement,
+    QuestModeration,
     AccessDenied,
     Contact,
     FeatureUnderDevelopment,

@@ -14,6 +14,10 @@ import NavbarLoggedIn from "./Navbar/NavbarLoggedIn.jsx";
 import NavbarLoggedOut from "./Navbar/NavbarLoggedOut.jsx";
 import XPProgressBar from "./Navbar/XPProgressBar.jsx";
 
+// Admin Components
+import AdminNavbar from "./AdminNavbar/AdminNavbar.jsx";
+import AdminLayout from "./AdminLayout/AdminLayout.jsx";
+
 // Home - logged in users
 import ExplorerHubSection from "./Home/HomeLoggedIn/ExplorerHubSection.jsx";
 import HeroLoggedIn from "./Home/HomeLoggedIn/HeroLoggedIn.jsx";
@@ -129,6 +133,10 @@ export {
     PrivacySection,
     SecuritySection,
     SettingsSidebar,
+
+    // Admin Components
+    AdminNavbar,
+    AdminLayout,
 
     // Footer
     Footer,

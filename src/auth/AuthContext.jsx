@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState } from "react";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const isLoggedIn = true; // or localStorage.getItem('auth')
+  const isLoggedIn = false; // or localStorage.getItem('auth')
   
   // Demo user data - you can switch between different roles for testing
   const [currentUser] = useState({

@@ -3,6 +3,7 @@ import AboutPage from "./About/About.jsx";
 
 //import Badge
 import BadgeCollectionPage from "./Badge/BadgeCollectionPage.jsx";
+import BadgesGallery from "./Badge/BadgesGallery.jsx";
 import Compass from "./Compass/Compass.jsx"
 import Explore from "./Explore/Explore.jsx";
 import Home from "./Home/Home.jsx";
@@ -34,6 +35,7 @@ import Terms from "./Terms.jsx";
 export {
     AboutPage,
     BadgeCollectionPage,
+    BadgesGallery,
     Compass,
     Explore,
     Home,

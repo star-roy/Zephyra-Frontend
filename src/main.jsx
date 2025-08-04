@@ -38,6 +38,7 @@ import { ReportBug } from "./pages/index.js";
 import { ProvideFeedback } from "./pages/index.js";
 
 import { BadgeCollectionPage } from "./pages/index.js";
+import { BadgesGallery } from "./pages/index.js";
 
 import { UserProfilePage } from "./pages/index.js";
 
@@ -170,6 +171,12 @@ const router = createBrowserRouter(
         path="badge-collection"
         element={
             <BadgeCollectionPage />
+        }
+      />
+      <Route
+        path="badges-gallery"
+        element={
+            <BadgesGallery />
         }
       />
       <Route

@@ -1,12 +1,12 @@
 import React, { useState, useRef } from "react";
 
 const QUEST_CATEGORIES = [
-  "Nature",
+  "Art",
+  "Food", 
   "History",
   "Culture",
   "Adventure",
-  "Food & Drink",
-  "Art",
+  "HiddenGems",
 ];
 
 const DIFFICULTY_LEVELS = [

@@ -170,38 +170,40 @@ function Card({ item }) {
 // --- Main Component ---
 function CommunityHighlights() {
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#ffffff] pt-5 mt-10">
+    <section className="py-20 px-2 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-blue-50 to-white pt-5 mt-10">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="text-4xl md:text-5xl font-bold text-[#2C3E50]">
             From the Community
           </h2>
-          <p className="mt-4 text-lg text-[#869AB8] max-w-3xl mx-auto font-semibold">
+          <p className="mt-4 text-lg text-blue-500 max-w-3xl mx-auto font-semibold">
             Journeys, discoveries, and moments captured by Zephyra explorers
             across the city.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="flex flex-col gap-5">
-            {column1Items.map((item, idx) => (
-              <Card key={idx} item={item} />
-            ))}
-          </div>
-          <div className="flex flex-col gap-5">
-            {column2Items.map((item, idx) => (
-              <Card key={idx} item={item} />
-            ))}
-          </div>
-          <div className="flex flex-col gap-5">
-            {column3Items.map((item, idx) => (
-              <Card key={idx} item={item} />
-            ))}
-          </div>
-          <div className="flex flex-col gap-5">
-            {column4Items.map((item, idx) => (
-              <Card key={idx} item={item} />
-            ))}
+        <div className="rounded-2xl bg-white/80 shadow-sm p-4 sm:p-6 lg:p-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-8 lg:divide-x divide-blue-100">
+            <div className="flex flex-col gap-8 px-0 lg:px-6">
+              {column1Items.map((item, idx) => (
+                <Card key={idx} item={item} />
+              ))}
+            </div>
+            <div className="flex flex-col gap-8 px-0 lg:px-6">
+              {column2Items.map((item, idx) => (
+                <Card key={idx} item={item} />
+              ))}
+            </div>
+            <div className="flex flex-col gap-8 px-0 lg:px-6">
+              {column3Items.map((item, idx) => (
+                <Card key={idx} item={item} />
+              ))}
+            </div>
+            <div className="flex flex-col gap-8 px-0 lg:px-6">
+              {column4Items.map((item, idx) => (
+                <Card key={idx} item={item} />
+              ))}
+            </div>
           </div>
         </div>
       </div>

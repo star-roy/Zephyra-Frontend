@@ -1,7 +1,7 @@
 import React from "react";
 import { FaStar, FaCompass } from "react-icons/fa";
 import { HiMiniFire } from "react-icons/hi2";
-import heroImage from "/assets/historical-quest.jpeg"; // ✅ Update if needed
+import heroImage from "/assets/bg.jpeg"; // ✅ Update if needed
 
 function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
   return (
@@ -15,13 +15,13 @@ function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
         }}
       >
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-[#1D3557]/60 z-0" />
+        <div className="absolute inset-0 bg-black/65 z-0" />
 
         {/* Content Wrapper */}
         <div className="relative z-10 h-full flex flex-col justify-between px-6 sm:px-10 py-6 text-white">
           {/* 🔝 Top Content */}
           <div className="pt-5">
-            <h1 className="md:text-5xl text-4xl sm:text-3xl lg:text-6xl font-bold truncate max-w-full">
+          <h1 className="md:text-5xl text-4xl sm:text-3xl lg:text-6xl font-bold truncate max-w-full bg-gradient-to-r from-blue-300 via-blue-500 to-blue-700 bg-clip-text text-transparent">
               Welcome back, {name}!
             </h1>
             <p className="text-sm sm:text-base text-[#e5edf5] lg:text-2xl mt-1">
@@ -38,7 +38,7 @@ function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
                   <HiMiniFire className="text-white text-2xl" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold lg:text-lg text-white">
+                  <p className="text-sm font-semibold lg:text-lg text-blue-300">
                     Level {level}
                   </p>
                   <p className="text-xs lg:text-sm text-[#e5edf5]">{currentTitle}</p>
@@ -51,7 +51,7 @@ function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
                   <FaStar className="text-white text-xl" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold lg:text-lg text-white">{xp} XP</p>
+                  <p className="text-sm font-semibold lg:text-lg text-blue-300">{xp} XP</p>
                   <p className="text-xs lg:text-sm text-[#e5edf5]">Current Progress</p>
                 </div>
               </div>
@@ -62,7 +62,7 @@ function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
                   <FaCompass className="text-white text-xl" />
                 </div>
                 <div>
-                  <p className="text-sm lg:text-lg font-semibold text-white">
+                  <p className="text-sm lg:text-lg font-semibold text-blue-300">
                     {questCount} Quests
                   </p>
                   <p className="text-xs lg:text-sm text-[#e5edf5]">In Progress</p>
@@ -73,10 +73,11 @@ function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
             {/* CTA Button */}
             <button
               aria-label="Start new adventure"
-              className="bg-[#4A90E2] hover:bg-[#2C3E50] text-white font-semibold text-sm px-6 py-2 rounded-full transition"
+              className="shine-sweep bg-gradient-to-r from-blue-400 via-blue-500 to-blue-700 hover:scale-105 text-white font-semibold text-sm px-6 py-3 rounded-full transition"
             >
               Start New Adventure
             </button>
+
           </div>
         </div>
       </div>

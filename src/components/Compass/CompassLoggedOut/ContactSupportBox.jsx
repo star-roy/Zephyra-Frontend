@@ -31,7 +31,7 @@ function ContactSupportBox() {
             {/* Normal Button */}
             <a
               href="/report-bug"
-              className="inline-flex items-center justify-center gap-2 bg-[#EBF2FF] border border-[#4A90E2]/50 text-[#4A90E2] hover:bg-[#4A90E2] hover:text-white font-semibold px-5 py-3 rounded-lg transition-all shadow"
+              className="shine-sweep inline-flex items-center justify-center gap-2 bg-[#EBF2FF] border border-[#4A90E2]/50 text-[#4A90E2] hover:bg-[#4A90E2] hover:text-white font-semibold px-5 py-3 rounded-lg transition-all shadow"
             >
               <Bug className="w-4 h-4" />
               Report a Public Bug

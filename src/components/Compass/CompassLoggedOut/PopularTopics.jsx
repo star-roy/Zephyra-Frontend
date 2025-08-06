@@ -40,7 +40,7 @@ function PopularTopics() {
     <section className="w-full px-4 py-12 bg-[#EBF2FF]">
       <div className="max-w-6xl mx-auto">
         {/* Title aligned left */}
-        <h2 className="text-xl sm:text-2xl font-bold text-[#0D1B2A] mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#0D1B2A] mb-8">
           Getting Started & Popular Topics
         </h2>
 
@@ -52,9 +52,11 @@ function PopularTopics() {
               className="relative group bg-white/80 backdrop-blur-lg border border-white/30 rounded-xl p-6 sm:p-6 shadow-md transition-all duration-300 hover:shadow-xl hover:scale-[1.02] min-h-[140px] overflow-hidden"
             >
               {/* Default view (icon + title) */}
-              <div className="absolute inset-0 flex flex-col pl-6 pb-8 items-start justify-center text-center transition-all duration-300 group-hover:opacity-0 group-hover:translate-y-[-12px]">
-                {topic.icon}
-                <h3 className="mt-3 text-[#2C3E50] font-semibold text-sm sm:text-base">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center transition-all duration-300 group-hover:opacity-0 group-hover:translate-y-[-12px]">
+                <span className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 shadow text-2xl mb-2">
+                  {topic.icon}
+                </span>
+                <h3 className="mt-2 text-[#2C3E50] font-semibold text-base sm:text-base text-center">
                   {topic.title}
                 </h3>
               </div>

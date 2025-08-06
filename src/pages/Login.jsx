@@ -60,7 +60,7 @@ function LoginPage() {
       <div className="w-full max-w-sm sm:max-w-md md:max-w-lg -mt-8">
         {/* Header */}
         <section className="text-center mb-8 px-2">
-          <h1 className="text-4xl sm:text-5xl font-bold text-[#0D1B2A] mb-2">
+          <h1 className="text-4xl sm:text-5xl font-bold text-[#0D1B2A] mb-2 drop-shadow-sm">
             Welcome Back!
           </h1>
           <p className="text-lg text-[#2C3E50] font-medium">
@@ -69,7 +69,7 @@ function LoginPage() {
         </section>
 
         {/* Login Card */}
-        <div className="bg-white/5 backdrop-blur-lg border border-white/20 ring-1 ring-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.25)] p-6 sm:p-8 rounded-2xl w-full">
+        <div className="bg-white/70 backdrop-blur-lg border border-white/30 ring-1 ring-white/10 shadow-2xl p-6 sm:p-8 rounded-2xl w-full animate-fadeIn">
           <form className="space-y-6">
             {/* Email */}
             <div>
@@ -79,7 +79,8 @@ function LoginPage() {
               <input
                 type="email"
                 id="email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/80 focus:ring-2 focus:ring-[#4A90E2]/50 focus:border-[#4A90E2] transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/90 focus:ring-2 focus:ring-[#4A90E2]/60 focus:border-[#4A90E2] transition-all duration-200 placeholder-gray-400"
+                placeholder="Enter your email or username"
               />
             </div>
 
@@ -92,17 +93,19 @@ function LoginPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg bg-white/80 focus:ring-2 focus:ring-[#4A90E2]/50 focus:border-[#4A90E2] transition"
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg bg-white/90 focus:ring-2 focus:ring-[#4A90E2]/60 focus:border-[#4A90E2] transition-all duration-200 placeholder-gray-400"
+                  placeholder="Enter your password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-3 flex items-center"
+                  tabIndex={-1}
                 >
                   {showPassword ? (
-                    <EyeOffIcon className="w-5 h-5 text-gray-400 hover:text-[#2C3E50]" />
+                    <EyeOffIcon className="w-5 h-5 text-gray-400 hover:text-[#2C3E50] transition-colors duration-150" />
                   ) : (
-                    <EyeIcon className="w-5 h-5 text-gray-400 hover:text-[#2C3E50]" />
+                    <EyeIcon className="w-5 h-5 text-gray-400 hover:text-[#2C3E50] transition-colors duration-150" />
                   )}
                 </button>
               </div>
@@ -113,7 +116,7 @@ function LoginPage() {
               <label className="flex items-center text-[#2C3E50]">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 mr-2 text-[#4A90E2] border-gray-300 rounded"
+                  className="h-4 w-4 mr-2 text-[#4A90E2] border-gray-300 rounded focus:ring-[#4A90E2]"
                 />
                 Remember me
               </label>
@@ -125,7 +128,7 @@ function LoginPage() {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full bg-[#4A90E2] hover:bg-[#2C3E50] text-white font-semibold py-3 rounded-lg transition shadow-md"
+              className="shine-sweep w-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300 animate-bounce-once"
             >
               Login
             </button>
@@ -133,18 +136,18 @@ function LoginPage() {
 
           {/* Divider */}
           <div className="flex items-center my-6">
-            <div className="flex-grow border-t border-gray-400" />
-            <span className="mx-4 text-sm text-gray-600">Or continue with</span>
-            <div className="flex-grow border-t border-gray-400" />
+            <div className="flex-grow border-t border-gray-300" />
+            <span className="mx-4 text-sm text-gray-500 bg-white/80 px-2 rounded-full">Or continue with</span>
+            <div className="flex-grow border-t border-gray-300" />
           </div>
 
           {/* Social Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition">
+            <button className="w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition-all duration-150 shadow-sm">
               <GoogleIcon />
               Google
             </button>
-            <button className="w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition">
+            <button className="w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition-all duration-150 shadow-sm">
               <FacebookIcon />
               Facebook
             </button>
@@ -159,6 +162,22 @@ function LoginPage() {
           </p>
         </div>
       </div>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(24px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.7s cubic-bezier(.4,0,.2,1) both; }
+        @keyframes bounceOnce {
+          0% { transform: scale(1); }
+          20% { transform: scale(1.08); }
+          40% { transform: scale(0.97); }
+          60% { transform: scale(1.03); }
+          80% { transform: scale(0.99); }
+          100% { transform: scale(1); }
+        }
+        .animate-bounce-once { animation: bounceOnce 0.7s 1; }
+      `}</style>
     </div>
   );
 }

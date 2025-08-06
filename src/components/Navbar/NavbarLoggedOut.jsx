@@ -36,8 +36,8 @@ function NavbarLoggedOut() {
                 className={({ isActive }) =>
                   `text-md font-medium transition duration-200 ${
                     isActive
-                      ? "text-[#4A90E2]"
-                      : "text-[#2C3E50] hover:text-[#4A90E2]"
+                      ? "text-blue-500 scale-110"
+                      : "text-[#2C3E50] hover:text-blue-500"
                   }`
                 }
               >
@@ -48,15 +48,21 @@ function NavbarLoggedOut() {
 
           {/* Right Buttons (Desktop only) */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link
+            <NavLink
               to="/login"
-              className="text-[#2C3E50] hover:text-[#4A90E2] font-semibold text-md px-4 py-2 transition"
+              className={({ isActive }) =>
+                `font-semibold text-md px-4 py-2 transition ${
+                  isActive
+                    ? "text-blue-500 font-bold scale-110"
+                    : "text-[#2C3E50] hover:text-[#4A90E2]"
+                }`
+              }
             >
               Login
-            </Link>
+            </NavLink>
             <Link
               to="/signup"
-              className="bg-[#4A90E2] hover:bg-[#2C3E50] text-white font-medium text-sm px-4 py-2 rounded transition"
+              className="shine-sweep bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-md px-5 py-2 rounded-full shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
             >
               Sign Up
             </Link>
@@ -91,17 +97,23 @@ function NavbarLoggedOut() {
               </NavLink>
             ))}
             <hr className="border-t border-[#CADCFC]" />
-            <Link
+            <NavLink
               to="/login"
               onClick={() => setIsOpen(false)}
-              className="text-sm text-[#2C3E50] hover:text-[#4A90E2] font-medium"
+              className={({ isActive }) =>
+                `font-semibold text-md px-4 py-2 transition ${
+                  isActive
+                    ? "text-blue-500 font-bold underline underline-offset-4"
+                    : "text-[#2C3E50] hover:text-[#4A90E2]"
+                }`
+              }
             >
               Login
-            </Link>
+            </NavLink>
             <Link
               to="/signup"
               onClick={() => setIsOpen(false)}
-              className="bg-[#4A90E2] hover:bg-[#2C3E50] text-white text-center font-medium text-sm px-4 py-2 rounded transition"
+              className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-md px-5 py-2 rounded-full shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
             >
               Sign Up
             </Link>

@@ -35,8 +35,8 @@ function NavbarLoggedIn() {
                 className={({ isActive }) =>
                   `text-md font-medium transition duration-200 ${
                     isActive
-                      ? "text-[#4A90E2]"
-                      : "text-[#2C3E50] hover:text-[#4A90E2]"
+                      ? "text-blue-500 scale-110"
+                      : "text-[#2C3E50] hover:text-blue-500"
                   }`
                 }
               >

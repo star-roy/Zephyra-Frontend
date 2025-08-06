@@ -12,7 +12,7 @@ function AboutPage() {
             Unlock the magic of your City – Adventures begin just outside your
             door
           </h1>
-          <p className="text-[#4A90E2] text-base sm:text-lg max-w-2xl mx-auto">
+          <p className="text-blue-500 text-base sm:text-lg max-w-2xl mx-auto">
             Zephyra isn’t just an app - it’s your local adventure buddy. From
             hidden hangouts to cultural gems, we help you explore your city like
             never before. Because the best stories start right where you are.
@@ -122,16 +122,17 @@ function AboutPage() {
           <h2 className="text-xl sm:text-2xl font-bold text-[#0D1B2A] mb-2">
             We'd love to hear from you!
           </h2>
-          <p className="text-[#2C3E50] text-sm sm:text-base mb-4">
+          <p className="text-blue-500 font-medium text-sm sm:text-base mb-4">
             Have questions, suggestions, or feedback? Get in touch.
           </p>
           <Link
             to="/contact-us"
-            className="inline-block bg-[#4A90E2] hover:bg-[#2C3E50] text-white px-6 py-3 rounded-lg font-medium transition-all"
+            className="shine-sweep inline-block bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-3 rounded-full font-semibold text-lg shadow-md ring-1 ring-blue-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
           >
             Contact Us
           </Link>
         </div>
+
       </div>
     </section>
   );

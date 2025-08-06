@@ -6,14 +6,14 @@ function ActionSection() {
       <h2 className="text-2xl sm:text-4xl font-bold text-[#2C3E50] mb-2">
          Where Zephyra Comes Alive
       </h2>
-      <p className="text-[#4A90E2] max-w-2xl mx-auto text-sm sm:text-lg mb-10">
+      <p className="text-blue-600 max-w-2xl mx-auto mb-14 text-base sm:text-lg md:text-xl font-medium tracking-wide">
         Watch how easy it is to start your next adventure. This quick demo shows you how to find quests, track your progress, and connect with the community.
       </p>
 
-      <div className="w-full max-w-4xl mx-auto aspect-video bg-gray-300 rounded-xl shadow-md flex items-center justify-center">
-        <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg cursor-pointer">
+      <div className="w-full max-w-4xl mx-auto aspect-video bg-white rounded-3xl border-2 border-blue-100 shadow-lg flex items-center justify-center">
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center shadow hover:bg-blue-200 transition cursor-pointer border-2 border-blue-200">
           <svg
-            className="w-6 h-6 text-gray-700"
+            className="w-7 h-7 text-blue-500"
             fill="currentColor"
             viewBox="0 0 20 20"
           >

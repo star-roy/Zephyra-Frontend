@@ -16,13 +16,13 @@ function CTASection() {
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
               to="/signup"
-              className="bg-white text-[#4A90E2] hover:bg-gradient-to-l from-[#CADCFC] to-[#4A90E2] hover:text-[#0D1B2A] font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-100 transition-all duration-300"
+              className="shine-sweep bg-white text-[#4A90E2] hover:bg-gradient-to-l from-[#CADCFC] to-[#4A90E2] hover:text-[#0D1B2A] font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-100 transition-all duration-300"
             >
               Create Free Account
             </Link>
             <Link
               to="/login"
-              className="bg-white/10 border border-white/30 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-white/20 transition-all duration-300"
+              className="shine-sweep bg-white/10 border border-white/30 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-white/20 transition-all duration-300"
             >
               Log In
             </Link>

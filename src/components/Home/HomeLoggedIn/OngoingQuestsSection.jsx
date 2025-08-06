@@ -46,7 +46,7 @@ function OngoingQuestsSection({ quests }) {
               </div>
               <Link
                 to="/explore"
-                className="inline-flex items-center bg-gradient-to-r from-purple-600 to-indigo-300 text-white font-bold text-base px-6 py-3 rounded-full shadow-xl hover:scale-105 hover:shadow-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
+                className="shine-sweep inline-flex items-center bg-gradient-to-r from-purple-600 to-indigo-300 text-white font-bold text-base px-6 py-3 rounded-full shadow-xl hover:scale-105 hover:shadow-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
               >
                 <span className="mr-2 text-xl">✨</span>
                 Explore Now

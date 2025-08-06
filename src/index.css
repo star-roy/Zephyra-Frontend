@@ -1,4 +1,22 @@
 
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fadein { animation: fadein 1.2s ease 0.1s both; }
+
+@keyframes slideupfadein {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slideupfadein { animation: slideupfadein 1.2s cubic-bezier(0.4,0,0.2,1) 0.1s both; }
+
+@keyframes staggerfadein {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-staggerfadein { animation: staggerfadein 1s cubic-bezier(0.4,0,0.2,1) both; }
+
 html {
   scroll-behavior: smooth;
 }
@@ -39,4 +57,52 @@ html {
   scrollbar-width: none; /* Firefox */
 }
 
+/* Shine Sweep Effect */
+.shine-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-sweep::before {
+  content: "";
+  position: absolute;
+  top: 0; 
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 9999px;
+  transition: opacity 0.2s;
+  animation: none;
+}
+
+.shine-sweep:hover::before {
+  opacity: 1;
+  left: -100%;
+  animation: shineSweep 1.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+.shine-sweep:active::before,
+.shine-sweep:focus:not(:hover)::before {
+  animation: none;
+  opacity: 0;
+  left: -100%;
+}
+
+@keyframes shineSweep {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
 

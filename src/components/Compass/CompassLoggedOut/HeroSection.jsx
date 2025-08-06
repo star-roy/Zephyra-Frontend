@@ -8,7 +8,7 @@ function HeroSection() {
       <h1 className="text-4xl sm:text-5xl font-bold text-[#0D1B2A] mb-4">
         Find Answers. Unlock Adventures.
       </h1>
-      <p className="text-lg sm:text-xl text-[#4A90E2] font-medium max-w-2xl mx-auto">
+      <p className="text-lg sm:text-xl text-blue-500 font-medium max-w-2xl mx-auto">
         Find answers, learn about quests, and discover new features.
       </p>
     </section>

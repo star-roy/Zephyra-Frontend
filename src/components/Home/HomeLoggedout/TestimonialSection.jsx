@@ -35,7 +35,7 @@ function TestimonialSection() {
           Real stories from explorers who’ve transformed their relationship with their city.
         </p>
 
-        <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
@@ -43,11 +43,11 @@ function TestimonialSection() {
             >
               <div className="mb-4 text-5xl text-[#4A90E2] leading-tight">“</div>
               <p className="text-base mb-6">{testimonial.quote}</p>
-              <div className="flex items-center">
+              <div className="flex items-center gap-3">
                 <img
                   src={testimonial.avatar}
                   alt={testimonial.name}
-                  className="w-10 h-10 rounded-full mr-3 object-cover"
+                  className="w-12 h-12 rounded-full ring-2 ring-[#4A90E2] object-cover bg-white p-1"
                 />
                 <div>
                   <p className="font-medium text-lg">{testimonial.name}</p>

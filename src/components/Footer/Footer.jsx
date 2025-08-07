@@ -20,7 +20,7 @@ function Footer() {
               alt="Zephyra Logo"
               className="h-11 w-auto object-contain drop-shadow"
             />
-            <span className="text-white text-2xl font-bold ml-2 tracking-tight">Zephyra</span>
+            <span className="text-white text-2xl font-semibold ml-2 tracking-tight" style={{ letterSpacing: '0.10em' }}>Zephyra</span>
           </Link>
           <p className="text-blue-200 mt-2">© 2025 Zephyra. All rights reserved.</p>
         </div>

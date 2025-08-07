@@ -28,6 +28,6 @@ function Layout() {
       {!isAdminRoute && <Footer />}
     </>
   );
-}
 
+}
 export default Layout;

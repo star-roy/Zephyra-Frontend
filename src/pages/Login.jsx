@@ -55,7 +55,10 @@ function LoginPage() {
   return (
     <div
       className="min-h-screen bg-cover bg-center flex items-center justify-center px-4"
-      style={{ backgroundImage: "url('/hero1.png')" }}
+      style={
+        { backgroundImage: "url('/hero5.jpeg')",
+        }
+      }
     >
       <div className="w-full max-w-sm sm:max-w-md md:max-w-lg -mt-8">
         {/* Header */}
@@ -143,11 +146,11 @@ function LoginPage() {
 
           {/* Social Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition-all duration-150 shadow-sm">
+            <button className="shine-sweep w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition-all duration-150 shadow-sm">
               <GoogleIcon />
               Google
             </button>
-            <button className="w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition-all duration-150 shadow-sm">
+            <button className="shine-sweep w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition-all duration-150 shadow-sm">
               <FacebookIcon />
               Facebook
             </button>

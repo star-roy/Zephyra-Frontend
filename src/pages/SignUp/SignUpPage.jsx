@@ -76,7 +76,7 @@ function SignUpPage() {
   return (
     <div
       className="min-h-screen bg-cover bg-center flex items-center justify-center px-4"
-      style={{ backgroundImage: "url('/hero1.png')" }}
+      style={{ backgroundImage: "url('/hero5.jpeg')" }}
     >
       <main className="min-h-screen flex flex-col items-center justify-center py-12 w-full">
         {/* Header */}
@@ -89,7 +89,7 @@ function SignUpPage() {
           </p>
         </section>
 
-        <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg mx-auto bg-white/5 backdrop-blur-lg ring-1 ring-white/10 border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.25)] p-6 sm:p-8 rounded-2xl">
+        <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg mx-auto bg-white/60 backdrop-blur-lg ring-1 ring-white/10 border border-white/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.25)] p-6 sm:p-8 rounded-2xl">
           <form className="space-y-5">
             {/* Username */}
             <div>
@@ -257,7 +257,7 @@ function SignUpPage() {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full bg-[#4A90E2] hover:bg-[#2C3E50] text-white font-medium py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02] shadow-md"
+              className="shine-sweep w-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02] shadow-md"
             >
               Create Account
             </button>
@@ -270,11 +270,11 @@ function SignUpPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
-            <button className="w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition">
+            <button className="shine-sweep w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition">
               <GoogleIcon />
               <span className="text-sm">Signup with Google</span>
             </button>
-            <button className="w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition">
+            <button className="shine-sweep w-full flex items-center justify-center bg-white border border-gray-300 text-[#2C3E50] font-semibold py-3 rounded-lg hover:bg-gray-50 transition">
               <FacebookIcon />
               <span className="text-sm">Signup with Facebook</span>
             </button>

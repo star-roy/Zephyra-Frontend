@@ -14,7 +14,7 @@ import UserProfilePage from "./Profile/UserProfilePage.jsx";
 import QuestInProgressPage from "./Quest/QuestInProgressPage.jsx";
 import QuestOverviewPage from "./Quest/QuestOverviewPage.jsx";
 import QuestProofUpload from "./Quest/QuestProofUpload.jsx";
-import SignUp from "./SignUp/SignUp.jsx";
+import SignUp from "./SignUp/SignUpPage.jsx";
 import Settings from "./UserSetting/Settings.jsx";
 
 // Admin Dashboard imports

@@ -1,12 +1,18 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Shield, Crown, Users, CheckCircle, BarChart3, Menu, X, Home, LogOut, Bell, User } from 'lucide-react';
-import { AuthContext } from '../../auth/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { logoutUser } from '../../features/authSlice';
 
 const AdminNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
-  const { user, logout } = useContext(AuthContext);
+  const { userData } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  const logout = () => {
+    dispatch(logoutUser());
+  };
 
   const isActive = (path) => location.pathname === path;
 
@@ -20,11 +26,11 @@ const AdminNavbar = () => {
     { path: '/admin/super-dashboard', label: 'Super Admin Dashboard', icon: Crown },
   ];
 
-  const navItems = user?.role === 'super_admin' 
+  const navItems = userData?.role === 'super_admin' 
     ? [...adminNavItems, ...superAdminNavItems]
     : adminNavItems;
 
-  const isSuperAdmin = user?.role === 'super_admin';
+  const isSuperAdmin = userData?.role === 'super_admin';
 
   return (
     <nav className={`shadow-xl border-b-2 ${
@@ -95,15 +101,15 @@ const AdminNavbar = () => {
                 )}
                 <div className="hidden sm:flex flex-col min-w-0">
                   <span className="text-xs text-white/60 uppercase tracking-wide truncate">
-                    {user?.role?.replace('_', ' ')}
+                    {userData?.role?.replace('_', ' ')}
                   </span>
                   <span className="text-xs lg:text-sm font-medium text-white truncate">
-                    {user?.fullName || 'Admin User'}
+                    {userData?.fullName || 'Admin User'}
                   </span>
                 </div>
                 {/* Mobile: Show only icon and role */}
                 <span className="sm:hidden text-xs font-medium text-white/90 capitalize">
-                  {user?.role === 'super_admin' ? 'Super' : 'Admin'}
+                  {userData?.role === 'super_admin' ? 'Super' : 'Admin'}
                 </span>
               </div>
             </div>
@@ -176,10 +182,10 @@ const AdminNavbar = () => {
                   )}
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm font-medium text-white truncate">
-                      {user?.fullName || 'Admin User'}
+                      {userData?.fullName || 'Admin User'}
                     </span>
                     <span className="text-xs text-white/60 capitalize truncate">
-                      {user?.role?.replace('_', ' ')}
+                      {userData?.role?.replace('_', ' ')}
                     </span>
                   </div>
                 </div>

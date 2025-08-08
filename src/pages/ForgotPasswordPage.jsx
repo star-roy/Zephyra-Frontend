@@ -1,27 +1,29 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { forgotPassword, clearError } from "../features/authSlice";
 
 function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setMessage("");
-    setLoading(true);
+    dispatch(clearError());
+    
     try {
-      await axios.post("/api/v1/users/request-password-reset", { email });
-      setMessage("Reset code sent to your email.");
-      setTimeout(() => navigate("/reset-password?email=" + encodeURIComponent(email)), 2000);
+      const result = await dispatch(forgotPassword(email));
+      
+      if (forgotPassword.fulfilled.match(result)) {
+        setMessage("Reset code sent to your email.");
+        setTimeout(() => navigate("/reset-password?email=" + encodeURIComponent(email)), 2000);
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Error sending reset code.");
-    } finally {
-      setLoading(false);
+      console.error("Forgot password error:", err);
     }
   };
 

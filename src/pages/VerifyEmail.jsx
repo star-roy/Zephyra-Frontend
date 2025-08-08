@@ -1,16 +1,18 @@
 import React, { useRef, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { verifyEmail, resendVerificationCode, clearError } from "../features/authSlice";
 
 export default function VerifyEmail({ onVerify }) {
   const [otp, setOtp] = useState(["", "", "", ""]);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isResending, setIsResending] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [resendSuccess, setResendSuccess] = useState("");
   const inputsRef = useRef([]);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  const { loading, error, registrationEmail } = useSelector((state) => state.auth);
+  const [isResending, setIsResending] = useState(false);
 
   // Handle input change
   const handleChange = (value, idx) => {
@@ -55,29 +57,25 @@ export default function VerifyEmail({ onVerify }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (otp.join("").length !== 4) {
-      setError("Please enter all 4 digits.");
       return;
     }
     
-    setError("");
-    setIsLoading(true);
+    dispatch(clearError());
     
     try {
       // Get email from localStorage or URL params (stored during registration)
-      const email = localStorage.getItem('verificationEmail') || new URLSearchParams(window.location.search).get('email');
+      const email = registrationEmail || localStorage.getItem('verificationEmail') || new URLSearchParams(window.location.search).get('email');
       
       if (!email) {
-        setError("Email not found. Please restart the registration process.");
-        setIsLoading(false);
         return;
       }
 
-      const response = await axios.post('/api/v1/users/verify-email', {
-        email: email,
-        verificationCode: otp.join("")
-      });
+      const result = await dispatch(verifyEmail({ 
+        email: email, 
+        verificationCode: otp.join("") 
+      }));
 
-      if (response.data.success) {
+      if (verifyEmail.fulfilled.match(result)) {
         // Clear stored email
         localStorage.removeItem('verificationEmail');
         
@@ -88,18 +86,9 @@ export default function VerifyEmail({ onVerify }) {
         setTimeout(() => {
           navigate('/');
         }, 2000);
-      } else {
-        setError(response.data.message || "Verification failed. Please try again.");
       }
     } catch (error) {
       console.error("Verification error:", error);
-      if (error.response && error.response.data) {
-        setError(error.response.data.message || "Verification failed. Please try again.");
-      } else {
-        setError("Network error. Please try again.");
-      }
-    } finally {
-      setIsLoading(false);
     }
 
     // Fallback: call onVerify prop if provided
@@ -109,40 +98,28 @@ export default function VerifyEmail({ onVerify }) {
   // Handle resend OTP
   const handleResend = async () => {
     setIsResending(true);
-    setError("");
     setResendSuccess("");
     
     try {
-      const email = localStorage.getItem('verificationEmail') || new URLSearchParams(window.location.search).get('email');
+      const email = registrationEmail || localStorage.getItem('verificationEmail') || new URLSearchParams(window.location.search).get('email');
       
       if (!email) {
-        setError("Email not found. Please restart the registration process.");
         setIsResending(false);
         return;
       }
 
-      const response = await axios.post('/api/v1/users/resend-verification-code', {
-        email: email
-      });
+      const result = await dispatch(resendVerificationCode(email));
 
-      if (response.data.success) {
-        setError(""); // Clear any existing errors
+      if (resendVerificationCode.fulfilled.match(result)) {
         setResendSuccess("Verification code sent successfully to your email!");
         
         // Clear success message after 3 seconds
         setTimeout(() => {
           setResendSuccess("");
         }, 3000);
-      } else {
-        setError(response.data.message || "Failed to resend OTP. Please try again.");
       }
     } catch (error) {
       console.error("Resend error:", error);
-      if (error.response && error.response.data) {
-        setError(error.response.data.message || "Failed to resend OTP. Please try again.");
-      } else {
-        setError("Network error. Please try again.");
-      }
     } finally {
       setIsResending(false);
     }
@@ -215,10 +192,10 @@ export default function VerifyEmail({ onVerify }) {
           
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={loading}
             className="shine-sweep w-full py-2.5 sm:py-3 rounded-lg font-semibold bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-600 text-white text-base sm:text-lg transition hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Verifying..." : "Verify"}
+            {loading ? "Verifying..." : "Verify"}
           </button>
         </form>
         

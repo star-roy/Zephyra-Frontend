@@ -1,11 +1,11 @@
 import ExploreLoggedOut from "./ExploreLoggedOut";
 import ExploreLoggedIn from "./ExploreLoggedIn";
-import { useAuth } from "../../auth/AuthContext";
+import { useSelector } from "react-redux";
 
 const Explore = () => {
-  const { isLoggedIn } = useAuth();
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
-  return isLoggedIn ? (
+  return isAuthenticated ? (
     <ExploreLoggedIn />
   ) : (
     <ExploreLoggedOut />

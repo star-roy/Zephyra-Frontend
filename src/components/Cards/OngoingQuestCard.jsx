@@ -123,7 +123,7 @@ export default function OngoingQuestCard({
               </div>
               <button
                 onClick={handleContinueQuest}
-                className="bg-white text-[#4A90e2] font-bold text-md px-4 py-2.5 rounded-lg hover:bg-[#EBF2FF] transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl flex items-center gap-1.5"
+                className="shine-sweep bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 text-white font-bold text-md px-5 py-2.5 rounded-xl shadow-lg hover:from-blue-500 hover:to-indigo-600 transition-all duration-300 flex items-center gap-2 border border-blue-100"
               >
                 Continue Quest
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,11 +1,11 @@
 import HomeLoggedIn from "./HomeLoggedIn";
 import HomeLoggedOut from "./HomeLoggedOut";
-import { useAuth } from "../../auth/AuthContext";
+import { useSelector } from "react-redux";
 
 const Home = () => {
-  const { isLoggedIn } = useAuth();
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
-  return isLoggedIn ? (
+  return isAuthenticated ? (
     <HomeLoggedIn />
   ) : (
     <HomeLoggedOut />

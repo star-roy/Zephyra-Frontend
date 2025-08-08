@@ -1,11 +1,11 @@
 import CompassLoggedOut from "./CompassLoggedOut";
 import CompassLoggedIn from "./CompassLoggedIn";
-import { useAuth } from "../../auth/AuthContext";
+import { useSelector } from "react-redux";
 
 const Compass = () => {
-  const { isLoggedIn } = useAuth();
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
-  return isLoggedIn ? (
+  return isAuthenticated ? (
     <CompassLoggedIn />
   ) : (
     <CompassLoggedOut />

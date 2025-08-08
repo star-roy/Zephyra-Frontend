@@ -1,11 +1,11 @@
 import NavbarLoggedIn from "./NavbarLoggedIn";
 import NavbarLoggedOut from "./NavbarLoggedOut";
-import { useAuth } from "../../auth/AuthContext";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
-  const { isLoggedIn } = useAuth();
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
-  return isLoggedIn ? (
+  return isAuthenticated ? (
     <NavbarLoggedIn />
   ) : (
     <NavbarLoggedOut />

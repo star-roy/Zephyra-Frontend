@@ -1,21 +1,21 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { AuthContext } from './AuthContext';
+import { useSelector } from 'react-redux';
 
 const AdminRoute = ({ children, requireSuperAdmin = false }) => {
-  const { user, isAuthenticated } = useContext(AuthContext);
+  const { userData, isAuthenticated } = useSelector((state) => state.auth);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!user) {
+  if (!userData) {
     return <div>Loading...</div>;
   }
 
   // Check if user has admin privileges
-  const isAdmin = user.role === 'admin' || user.role === 'super_admin';
-  const isSuperAdmin = user.role === 'super_admin';
+  const isAdmin = userData.role === 'admin' || userData.role === 'super_admin';
+  const isSuperAdmin = userData.role === 'super_admin';
 
   if (requireSuperAdmin && !isSuperAdmin) {
     return <Navigate to="/access-denied" replace />;

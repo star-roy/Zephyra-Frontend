@@ -12,10 +12,11 @@ import {
 
 import Layout from "./Layout.jsx";
 
-
-import { AuthProvider } from "./auth/AuthContext.jsx";
 import PrivateRoute from "./auth/PrivateRoute.jsx";
 import AdminRoute from "./auth/AdminRoute.jsx";
+
+import { Provider } from "react-redux";
+import { store } from "./store/store.js";
 
 // Route components
 import { VerifyEmail } from "./pages/index.js";
@@ -278,9 +279,9 @@ const router = createBrowserRouter(
 // 🧷 Mount App
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <Provider store={store}>
+        <RouterProvider router={router} />
+    </Provider>
   </React.StrictMode>
 );
 

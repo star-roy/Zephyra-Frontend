@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { resetPassword, clearError } from "../features/authSlice";
 
 const EyeIcon = ({ className }) => (
   <svg className={className} xmlns="http://www.w3.org/2000/svg" width="20" height="20"
@@ -24,6 +25,7 @@ const EyeOffIcon = ({ className }) => (
 
 function ResetPasswordPage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const query = new URLSearchParams(useLocation().search);
   const initialEmail = query.get("email") || "";
   const [email, setEmail] = useState(initialEmail);
@@ -31,8 +33,7 @@ function ResetPasswordPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { loading, error } = useSelector((state) => state.auth);
 
   // Eye icon states
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -40,22 +41,23 @@ function ResetPasswordPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setMessage("");
-    setLoading(true);
+    dispatch(clearError());
+    
     try {
-      await axios.post("/api/v1/users/reset-password-with-code", {
+      const result = await dispatch(resetPassword({
         email,
         resetCode,
         newPassword,
         confirmPassword,
-      });
-      setMessage("Password reset successful! Redirecting to login...");
-      setTimeout(() => navigate("/login"), 2000);
+      }));
+      
+      if (resetPassword.fulfilled.match(result)) {
+        setMessage("Password reset successful! Redirecting to login...");
+        setTimeout(() => navigate("/login"), 2000);
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Error resetting password.");
-    } finally {
-      setLoading(false);
+      console.error("Reset password error:", err);
     }
   };
 
@@ -87,27 +89,29 @@ function ResetPasswordPage() {
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition bg-gray-50 text-base"
           />
           <div className="relative flex flex-col">
-            <input
-              type={showNewPassword ? "text" : "password"}
-              placeholder="New password"
-              value={newPassword}
-              onChange={e => setNewPassword(e.target.value)}
-              required
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition bg-gray-50 text-base pr-12"
-            />
-            <button
-              type="button"
-              tabIndex={-1}
-              className="absolute top-1/2 right-4 -translate-y-1/2"
-              onClick={() => setShowNewPassword((show) => !show)}
-              aria-label={showNewPassword ? "Hide password" : "Show password"}
-            >
-              {showNewPassword ? (
-                <EyeOffIcon className="w-5 h-5 text-gray-400" />
-              ) : (
-                <EyeIcon className="w-5 h-5 text-gray-400" />
-              )}
-            </button>
+            <div className="relative">
+              <input
+                type={showNewPassword ? "text" : "password"}
+                placeholder="New password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition bg-gray-50 text-base pr-12"
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                className="absolute top-1/2 right-3 -translate-y-1/2 p-1 rounded-md hover:bg-blue-50 focus:bg-blue-100 focus:outline-none transition-colors"
+                onClick={() => setShowNewPassword((show) => !show)}
+                aria-label={showNewPassword ? "Hide password" : "Show password"}
+              >
+                {showNewPassword ? (
+                  <EyeOffIcon className="w-5 h-5 text-blue-500 hover:text-blue-600" />
+                ) : (
+                  <EyeIcon className="w-5 h-5 text-blue-500 hover:text-blue-600" />
+                )}
+              </button>
+            </div>
             {/* Fix: Move the helper text below the input, not absolute */}
             <div className="mt-1 text-xs text-gray-400 px-1">
               Must be at least 8 characters long.
@@ -125,14 +129,14 @@ function ResetPasswordPage() {
             <button
               type="button"
               tabIndex={-1}
-              className="absolute top-1/2 right-4 -translate-y-1/2"
+              className="absolute top-1/2 right-3 -translate-y-1/2 p-1 rounded-md hover:bg-blue-50 focus:bg-blue-100 focus:outline-none transition-colors"
               onClick={() => setShowConfirmPassword((show) => !show)}
               aria-label={showConfirmPassword ? "Hide password" : "Show password"}
             >
               {showConfirmPassword ? (
-                <EyeOffIcon className="w-5 h-5 text-gray-400" />
+                <EyeOffIcon className="w-5 h-5 text-blue-500 hover:text-blue-600" />
               ) : (
-                <EyeIcon className="w-5 h-5 text-gray-400" />
+                <EyeIcon className="w-5 h-5 text-blue-500 hover:text-blue-600" />
               )}
             </button>
           </div>

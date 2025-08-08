@@ -7,9 +7,9 @@ function ExploreHero() {
       <div className="relative w-full h-[320px] md:h-[420px] lg:h-[480px]">
         {/* Background Image */}
         <img
-          src="/assets/hero.png"
+          src="/hero.jpg"
           alt="Explore Hero"
-          className="w-full h-full object-cover scale-105 blur-[1px] brightness-90"
+          className="w-full h-full object-cover scale-105 brightness-75"
         />
 
         {/* Single overlay and content for clarity */}

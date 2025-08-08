@@ -34,9 +34,7 @@ export const AuthProvider = ({ children }) => {
 };
 
 // ✅ Only export this custom hook (okay for Fast Refresh)
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () =>   useContext(AuthContext);
 
 // Export AuthContext for AdminRoute to use
 export { AuthContext };

@@ -1,7 +1,5 @@
-// src/Layout.jsx
 import React, { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { AuthProvider } from "./auth/AuthContext.jsx";
 import Navbar from "./components/Navbar/Navbar.jsx";
 import Footer from "./components/Footer/Footer.jsx";
 import ScrollToTop from "./components/ScrollToTop";

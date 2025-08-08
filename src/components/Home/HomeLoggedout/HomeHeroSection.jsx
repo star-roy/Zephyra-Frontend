@@ -12,10 +12,10 @@ function HomeHeroSection() {
   return (
     <section
       className="relative w-full h-[80vh] sm:h-[75vh] md:h-[70vh] lg:h-[90vh] flex items-center justify-center bg-center bg-cover overflow-hidden"
-      style={{ backgroundImage: "url('/hero-image.jpeg')" }}
+      style={{ backgroundImage: "url('/hero-image1.jpg')" }}
     >
       {/* Dark overlay with fade-in */}
-      <div className="absolute inset-0 bg-black/70 z-0 animate-fadein" />
+      <div className="absolute inset-0 bg-black/65 z-0 animate-fadein" />
 
       {/* Hero Content with enhanced animation */}
       <div

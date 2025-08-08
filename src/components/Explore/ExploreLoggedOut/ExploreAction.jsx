@@ -6,19 +6,19 @@ const features = [
     title: "Historical Quests",
     description:
       "Uncover the rich history of your city through guided tours and local challenges.",
-    image: "/assets/historical-quest1.jpeg",
+    image: "/assets/historical-quest2.jpg",
   },
   {
     title: "Food Trails",
     description:
       "Taste the authentic flavors of your city through curated culinary adventures.",
-    image: "/assets/food-trail1.jpeg",
+    image: "/assets/food-trail2.jpg",
   },
   {
     title: "Nature Escapes",
     description:
       "Discover scenic trails and outdoor activities to reconnect with nature.",
-    image: "/assets/nature-escape.jpeg",
+    image: "/assets/nature-escape.jpg",
   },
   {
     title: "Arts & Culture",
@@ -48,7 +48,7 @@ function ExploreAction() {
                 alt={feature.title}
                 className="w-full h-full object-cover transform group-hover:scale-110 transition duration-500 ease-in-out"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#2C3E50]/70 to-transparent group-hover:from-blue-400/60 transition duration-300 ease-in-out"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#2C3E50]/70 to-transparent group-hover:from-blue-500/40 transition duration-300 ease-in-out"></div>
             </div>
             <div className="p-5">
               <h3 className="text-lg font-bold text-[#0D1B2A] mb-2 group-hover:text-blue-600 transition">

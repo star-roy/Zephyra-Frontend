@@ -1,7 +1,7 @@
 import React from "react";
 import { FaStar, FaCompass } from "react-icons/fa";
 import { HiMiniFire } from "react-icons/hi2";
-import heroImage from "/assets/bg.jpeg"; // ✅ Update if needed
+import heroImage from "/assets/bg.jpg"; // ✅ Update if needed
 
 function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
   return (

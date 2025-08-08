@@ -12,7 +12,16 @@ import {
 
 import Layout from "./Layout.jsx";
 
+
+import { AuthProvider } from "./auth/AuthContext.jsx";
+import PrivateRoute from "./auth/PrivateRoute.jsx";
+import AdminRoute from "./auth/AdminRoute.jsx";
+
 // Route components
+import { VerifyEmail } from "./pages/index.js";
+import { ForgotPasswordPage } from "./pages/index.js";
+import { ResetPasswordPage } from "./pages/index.js";
+
 import { AboutPage as About } from "./pages/index.js";
 import { Home } from "./pages/index.js";
 import { Explore } from "./pages/index.js";
@@ -46,10 +55,6 @@ import { UserProfilePage } from "./pages/index.js";
 import { AdminDashboard, SuperAdminDashboard, UserManagement, QuestModeration } from "./pages/index.js";
 import { AdminLayout } from "./components/index.js";
 
-import { AuthProvider } from "./auth/AuthContext.jsx";
-import PrivateRoute from "./auth/PrivateRoute.jsx";
-import AdminRoute from "./auth/AdminRoute.jsx";
-
 import { FeatureUnderDevelopment } from "./pages/index.js";
 // 🔐 Dummy auth logic (replace with real one)
 // const PrivateRoute = ({ children }) => {
@@ -72,6 +77,16 @@ const router = createBrowserRouter(
       <Route path="login" element={<Login />} />
       <Route path="signup" element={<SignUp />} />
       <Route path="access-denied" element={<AccessDenied />} />
+
+      <Route
+        path="verify-email"
+        element={
+            <VerifyEmail />
+        }
+      />
+
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Semi-Protected Pages (example logic, change as needed) */}
       <Route path="explore" element={<Explore />} />

@@ -6,13 +6,7 @@ function AccessDenied() {
   return (
     <section className="relative w-full min-h-screen bg-gradient-to-br from-[#e0e7ff] via-[#f8f9fa] to-[#cadcfc] flex items-center justify-center px-4 overflow-hidden">
       {/* Animated Background Illustration */}
-      <div
-        className="absolute inset-0 opacity-10 bg-center bg-no-repeat bg-cover animate-fadeIn"
-        style={{
-          backgroundImage: "url('/connect-bg.png')",
-          filter: "blur(6px)",
-        }}
-      />
+      
 
       {/* Glow Bubbles */}
       <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-72 h-72 bg-[#4A90E2]/20 rounded-full blur-3xl animate-bounce-slow" />
@@ -27,7 +21,7 @@ function AccessDenied() {
         </div>
 
         {/* Heading */}
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0D1B2A] mb-4 tracking-tight drop-shadow">
+        <h1 className="text-3xl sm:text-4xl font-bold text-[#0D1B2A] mb-4 tracking-tight drop-shadow">
           Unlock Your Explorer Journey
         </h1>
 
@@ -41,7 +35,7 @@ function AccessDenied() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
           <Link
             to="/signup"
-            className="shine-sweep px-6 py-2 bg-gradient-to-r from-[#4A90E2] to-[#2C3E50] text-white font-bold rounded-full shadow-xl border-2 border-transparent hover:border-[#4A90E2] hover:from-[#2C3E50] hover:to-[#4A90E2] hover:scale-105 transition-all duration-200 flex items-center group"
+            className="shine-sweep px-6 py-2 bg-gradient-to-r from-[#4A90E2] to-indigo-400 text-white font-bold rounded-full shadow-xl border-2 border-transparent hover:border-[#4A90E2] hover:from-[#2C3E50] hover:to-[#4A90E2] hover:scale-105 transition-all duration-200 flex items-center group"
           >
             <svg className="w-4 h-4 mr-2 text-white transition" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20v-1a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v1"/></svg>
             <span>Sign Up Now</span>

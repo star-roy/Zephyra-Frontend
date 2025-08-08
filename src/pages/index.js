@@ -30,6 +30,9 @@ import ProvideFeedback from "./ProvideFeedback.jsx";
 import ReportBug from "./ReportBug.jsx";
 import Terms from "./Terms.jsx";
 
+import VerifyEmail from "./VerifyEmail.jsx";
+import ForgotPasswordPage from "./ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./ResetPasswordPage.jsx";
 
 //export all pages
 export {
@@ -60,5 +63,8 @@ export {
     Privacy,
     ProvideFeedback,
     ReportBug,
-    Terms
-}
+    Terms,
+    VerifyEmail,
+    ForgotPasswordPage,
+    ResetPasswordPage
+};

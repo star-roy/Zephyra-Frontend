@@ -2,19 +2,19 @@
 // Current User's Login: star-roy
 
 export const ongoingQuests = [
-  // {
-  //   id: "ongoing-001",
-  //   image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
-  //   title: "Explore the Hidden Gems of Downtown",
-  //   description: "Discover the secret spots and local favorites in the heart of the city. Visit historic landmarks, hidden cafes, and underground passages that only locals know about.",
-  //   progress: 75,
-  //   currentStep: 4,
-  //   totalSteps: 5,
-  //   xpReward: 300,
-  //   timeRemaining: "2 days left",
-  //   startedAt: "2025-07-27T08:30:00Z",
-  //   lastActivity: "2025-07-29T08:50:00Z"
-  // },
+  {
+    id: "ongoing-001",
+    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+    title: "Explore the Hidden Gems of Downtown",
+    description: "Discover the secret spots and local favorites in the heart of the city. Visit historic landmarks, hidden cafes, and underground passages that only locals know about.",
+    progress: 75,
+    currentStep: 4,
+    totalSteps: 5,
+    xpReward: 300,
+    timeRemaining: "2 days left",
+    startedAt: "2025-07-27T08:30:00Z",
+    lastActivity: "2025-07-29T08:50:00Z"
+  },
   // {
   //   id: "ongoing-002",
   //   image: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=600&q=80",

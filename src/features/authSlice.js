@@ -1,25 +1,33 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api from "../utils/axiosConfig";
 
 // Initial state
-const initialState = {
-    isAuthenticated: false,
-    userData: null,
-    loading: false,
-    error: null,
-    accessToken: localStorage.getItem('accessToken'),
-    refreshToken: localStorage.getItem('refreshToken'),
-    role: null,
-    isEmailVerified: false,
-    registrationEmail: null,
+const getInitialAuthState = () => {
+    const accessToken = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+    const isAuthenticated = !!(accessToken && refreshToken);
+    
+    return {
+        isAuthenticated,
+        userData: null,
+        loading: false,
+        error: null,
+        accessToken,
+        refreshToken,
+        role: null,
+        isEmailVerified: false,
+        registrationEmail: null,
+    };
 };
+
+const initialState = getInitialAuthState();
 
 // Async thunks
 export const loginUser = createAsyncThunk(
     'auth/loginUser',
-    async ({ email, password }, { rejectWithValue }) => {
+    async (loginData, { rejectWithValue }) => {
         try {
-            const response = await axios.post('/api/v1/users/login', { email, password });
+            const response = await api.post('/users/login', loginData);
             const { user, accessToken, refreshToken } = response.data.data;
             
             localStorage.setItem('accessToken', accessToken);
@@ -36,7 +44,7 @@ export const registerUser = createAsyncThunk(
     'auth/registerUser',
     async (formData, { rejectWithValue }) => {
         try {
-            const response = await axios.post('/api/v1/users/register', formData, {
+            const response = await api.post('/users/register', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             return response.data.data;
@@ -50,7 +58,7 @@ export const verifyEmail = createAsyncThunk(
     'auth/verifyEmail',
     async ({ email, verificationCode }, { rejectWithValue }) => {
         try {
-            const response = await axios.post('/api/v1/users/verify-email', { email, verificationCode });
+            const response = await api.post('/users/verify-email', { email, verificationCode });
             const { user, accessToken, refreshToken } = response.data.data;
             
             localStorage.setItem('accessToken', accessToken);
@@ -67,7 +75,7 @@ export const resendVerificationCode = createAsyncThunk(
     'auth/resendVerificationCode',
     async (email, { rejectWithValue }) => {
         try {
-            await axios.post('/api/v1/users/resend-verification-code', { email });
+            await api.post('/users/resend-verification-code', { email });
             return { message: 'Verification code sent successfully' };
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to resend verification code');
@@ -79,7 +87,7 @@ export const forgotPassword = createAsyncThunk(
     'auth/forgotPassword',
     async (email, { rejectWithValue }) => {
         try {
-            await axios.post('/api/v1/users/request-password-reset', { email });
+            await api.post('/users/request-password-reset', { email });
             return { message: 'Password reset code sent to your email' };
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to send password reset code');
@@ -91,7 +99,7 @@ export const resetPassword = createAsyncThunk(
     'auth/resetPassword',
     async ({ email, resetCode, newPassword, confirmPassword }, { rejectWithValue }) => {
         try {
-            await axios.post('/api/v1/users/reset-password', { email, resetCode, newPassword, confirmPassword });
+            await api.post('/users/reset-password', { email, resetCode, newPassword, confirmPassword });
             return { message: 'Password reset successful' };
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Password reset failed');
@@ -104,7 +112,7 @@ export const refreshAccessToken = createAsyncThunk(
     async (_, { getState, rejectWithValue }) => {
         try {
             const { refreshToken } = getState().auth;
-            const response = await axios.post('/api/v1/users/refresh-token', { refreshToken });
+            const response = await api.post('/users/refresh-token', { refreshToken });
             const { accessToken } = response.data.data;
             
             localStorage.setItem('accessToken', accessToken);
@@ -119,7 +127,7 @@ export const logoutUser = createAsyncThunk(
     'auth/logoutUser',
     async () => {
         try {
-            await axios.post('/api/v1/users/logout');
+            await api.post('/users/logout');
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             return {};
@@ -128,6 +136,18 @@ export const logoutUser = createAsyncThunk(
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             return {};
+        }
+    }
+);
+
+export const getCurrentUser = createAsyncThunk(
+    'auth/getCurrentUser',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get('/users/current-user');
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to get current user');
         }
     }
 );
@@ -153,6 +173,15 @@ const authSlice = createSlice({
         updateUserProfile: (state, action) => {
             if (state.userData) {
                 state.userData = { ...state.userData, ...action.payload };
+            }
+        },
+        initializeAuth: (state) => {
+            const accessToken = localStorage.getItem('accessToken');
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (accessToken && refreshToken) {
+                state.accessToken = accessToken;
+                state.refreshToken = refreshToken;
+                state.isAuthenticated = true;
             }
         },
     },
@@ -280,6 +309,23 @@ const authSlice = createSlice({
                 state.isEmailVerified = false;
                 state.registrationEmail = null;
                 state.error = null;
+            })
+            
+            // Get current user
+            .addCase(getCurrentUser.fulfilled, (state, action) => {
+                state.userData = action.payload;
+                state.role = action.payload.role;
+                state.isEmailVerified = action.payload.accountVerified;
+            })
+            .addCase(getCurrentUser.rejected, (state) => {
+                // If getting current user fails, logout
+                state.isAuthenticated = false;
+                state.userData = null;
+                state.accessToken = null;
+                state.refreshToken = null;
+                state.role = null;
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
             });
     },
 });
@@ -289,7 +335,8 @@ export const {
     setRegistrationEmail, 
     clearRegistrationEmail, 
     setTokens, 
-    updateUserProfile 
+    updateUserProfile,
+    initializeAuth
 } = authSlice.actions;
 
 export default authSlice.reducer;

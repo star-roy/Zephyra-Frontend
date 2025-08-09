@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser, clearError, setRegistrationEmail } from "../../features/authSlice";
 
@@ -131,11 +131,27 @@ function SignUpPage() {
           navigate("/verify-email");
         }, 2000);
       } else if (registerUser.rejected.match(result)) {
-        if (result.payload && result.payload.includes("already registered")) {
+        // Get error message from the result
+        const errorMsg = result.payload || result.error?.message || "";
+        
+        // Check if it's a duplicate user error (409 Conflict)
+        if (
+          errorMsg.toLowerCase().includes("already exists") ||
+          errorMsg.toLowerCase().includes("already registered") ||
+          errorMsg.toLowerCase().includes("user already exists") ||
+          errorMsg.toLowerCase().includes("email already exists") ||
+          errorMsg.toLowerCase().includes("username already exists") ||
+          errorMsg.toLowerCase().includes("username or email already exists") ||
+          errorMsg.toLowerCase().includes("duplicate") ||
+          errorMsg.toLowerCase().includes("conflict")
+        ) {
+          // Clear Redux error since we're showing the modal instead
+          dispatch(clearError());
           setShowAlreadyRegistered(true);
-          setTimeout(() => {
-            navigate("/login");
-          }, 3000);
+          // Remove auto-redirect - let user choose
+        } else {
+          // Handle other registration errors
+          setErrors({ general: errorMsg || "Registration failed. Please try again." });
         }
       }
     } catch (err) {
@@ -156,9 +172,9 @@ function SignUpPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Account Already Exists!</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Username or Email Already Exists!</h3>
               <p className="text-gray-600">
-                It looks like you already have an account with us. You'll be redirected to the login page.
+                The username or email you entered is already registered. Would you like to login with this account or try different details?
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
@@ -167,6 +183,12 @@ function SignUpPage() {
                 className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition"
               >
                 Go to Login
+              </button>
+              <button
+                onClick={() => setShowAlreadyRegistered(false)}
+                className="flex-1 bg-white border-2 border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 hover:border-gray-400 transition"
+              >
+                Try Different Details
               </button>
             </div>
           </div>
@@ -339,9 +361,9 @@ function SignUpPage() {
             <input type="checkbox" id="terms" className="h-4 w-4 mt-0.5 text-blue-500 border-gray-300 rounded flex-shrink-0" />
             <label htmlFor="terms" className="ml-2 text-xs text-gray-600">
               I agree to the{" "}
-              <a href="#" className="font-medium text-blue-500 hover:underline">Terms of Service</a>{" "}
+              <Link to="/terms" className="font-medium text-blue-500 hover:underline">Terms of Service</Link>{" "}
               and{" "}
-              <a href="#" className="font-medium text-blue-500 hover:underline">Privacy Policy</a>.
+              <Link to="/privacy" className="font-medium text-blue-500 hover:underline">Privacy Policy</Link>.
             </label>
           </div>
           {errors.terms && <p className="text-red-500 text-xs mt-1 pl-6">{errors.terms}</p>}

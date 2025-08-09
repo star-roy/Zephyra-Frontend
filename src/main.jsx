@@ -17,6 +17,10 @@ import AdminRoute from "./auth/AdminRoute.jsx";
 
 import { Provider } from "react-redux";
 import { store } from "./store/store.js";
+import { setStore } from "./utils/axiosConfig.js";
+
+// Initialize axios interceptors with store
+setStore(store);
 
 // Route components
 import { VerifyEmail } from "./pages/index.js";
@@ -118,17 +122,13 @@ const router = createBrowserRouter(
       <Route
         path="privacy"
         element={
-          <PrivateRoute>
             <Privacy />
-          </PrivateRoute>
         }
       />
       <Route
         path="terms"
         element={
-          <PrivateRoute>
             <Terms />
-          </PrivateRoute>
         }
       />
       <Route

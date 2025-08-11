@@ -1,114 +1,122 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchUsersForManagement,
+  promoteUserToAdmin,
+  demoteAdminToUser,
+  suspendUser,
+  reactivateUser,
+  clearError
+} from '../../features/adminSlice';
 import { Search, Filter, MoreVertical, Shield, ShieldCheck, User, Mail, Calendar, MapPin, Eye, Ban, UserMinus } from 'lucide-react';
 
 const UserManagement = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { 
+    userManagement: { users = [] }, 
+    loading, 
+    actionLoading, 
+    error,
+    pagination 
+  } = useSelector(state => state.admin);
+  
+  // Get current user's role from auth state
+  const currentUserRole = useSelector(state => state.auth.role);
+  const isSuperAdmin = currentUserRole === 'super_admin';
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
 
+  // Fetch users when component mounts or filters change
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setUsers([
-        {
-          id: '1',
-          username: 'john_explorer',
-          email: 'john@example.com',
-          fullName: 'John Smith',
-          role: 'user',
-          status: 'active',
-          joinDate: '2024-03-15T10:30:00Z',
-          lastActive: '2025-08-02T14:30:00Z',
-          questsCompleted: 23,
-          questsCreated: 5,
-          location: 'San Francisco, CA',
-          avatar: '/assets/user-avatar.jpeg'
-        },
-        {
-          id: '2',
-          username: 'admin_sarah',
-          email: 'sarah@example.com',
-          fullName: 'Sarah Johnson',
-          role: 'admin',
-          status: 'active',
-          joinDate: '2024-01-10T09:15:00Z',
-          lastActive: '2025-08-02T16:45:00Z',
-          questsCompleted: 45,
-          questsCreated: 12,
-          location: 'New York, NY',
-          avatar: '/assets/user-avatar2.jpeg'
-        },
-        {
-          id: '3',
-          username: 'explorer_mike',
-          email: 'mike@example.com',
-          fullName: 'Mike Chen',
-          role: 'user',
-          status: 'suspended',
-          joinDate: '2024-05-20T14:20:00Z',
-          lastActive: '2025-07-28T10:15:00Z',
-          questsCompleted: 8,
-          questsCreated: 2,
-          location: 'Los Angeles, CA',
-          avatar: '/assets/user-avatar3.jpeg'
-        },
-        {
-          id: '4',
-          username: 'super_admin',
-          email: 'admin@zephyra.com',
-          fullName: 'Super Admin',
-          role: 'super_admin',
-          status: 'active',
-          joinDate: '2024-01-01T00:00:00Z',
-          lastActive: '2025-08-02T17:00:00Z',
-          questsCompleted: 0,
-          questsCreated: 0,
-          location: 'System',
-          avatar: '/assets/user-avatar.jpeg'
-        }
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const timeoutId = setTimeout(() => {
+      dispatch(fetchUsersForManagement({
+        page: 1,
+        limit: 20,
+        search: searchTerm,
+        role: filterRole,
+        status: filterStatus
+      }));
+    }, 300); // Debounce search
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.fullName.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesRole = filterRole === 'all' || user.role === filterRole;
-    const matchesStatus = filterStatus === 'all' || user.status === filterStatus;
-    
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+    return () => clearTimeout(timeoutId);
+  }, [dispatch, searchTerm, filterRole, filterStatus]);
 
+  // Clear error when component unmounts
+  useEffect(() => {
+    return () => {
+      if (error) {
+        dispatch(clearError());
+      }
+    };
+  }, [dispatch, error]);
+
+  // Helper function to check if current user can perform actions on target user
+  const canDemoteUser = (targetUser) => {
+    // Only super admins can demote other admins
+    return isSuperAdmin && targetUser.role === 'admin';
+  };
+
+  const canSuspendUser = (targetUser) => {
+    // Regular admins can suspend regular users, super admins can suspend anyone
+    if (targetUser.role === 'user') return true;
+    return isSuperAdmin; // Only super admins can suspend admins/super admins
+  };
+
+  const canPromoteUser = (targetUser) => {
+    // Only promote regular users to admin (super admin promotion is separate)
+    return targetUser.role === 'user';
+  };
+
+  // Helper function to get user status based on accountVerified field
+  const getUserStatus = (user) => {
+    return user.accountVerified ? 'active' : 'suspended';
+  };
+
+  // Helper function to format quest stats (mock data for now)
+  const getQuestStats = (user) => {
+    return {
+      questsCompleted: user.questsCompleted || 0,
+      questsCreated: user.questsCreated || 0
+    };
+  };
   const handleUserAction = async (userId, action) => {
     try {
-      console.log(`${action} user ${userId}`);
-      
-      if (action === 'promote') {
-        setUsers(prev => prev.map(user => 
-          user.id === userId ? { ...user, role: 'admin' } : user
-        ));
-      } else if (action === 'demote') {
-        setUsers(prev => prev.map(user => 
-          user.id === userId ? { ...user, role: 'user' } : user
-        ));
-      } else if (action === 'suspend') {
-        setUsers(prev => prev.map(user => 
-          user.id === userId ? { ...user, status: 'suspended' } : user
-        ));
-      } else if (action === 'activate') {
-        setUsers(prev => prev.map(user => 
-          user.id === userId ? { ...user, status: 'active' } : user
-        ));
+      switch (action) {
+        case 'promote':
+          await dispatch(promoteUserToAdmin(userId)).unwrap();
+          break;
+        case 'demote':
+          await dispatch(demoteAdminToUser(userId)).unwrap();
+          break;
+        case 'suspend':
+          await dispatch(suspendUser({ 
+            userId, 
+            reason: 'Account suspended by administrator' 
+          })).unwrap();
+          break;
+        case 'activate':
+          await dispatch(reactivateUser(userId)).unwrap();
+          break;
+        default:
+          console.warn(`Unknown action: ${action}`);
       }
+      
+      // Refresh user list after action
+      dispatch(fetchUsersForManagement({
+        page: 1,
+        limit: 20,
+        search: searchTerm,
+        role: filterRole,
+        status: filterStatus
+      }));
+      
     } catch (error) {
       console.error(`Error ${action}ing user:`, error);
+      // Error is handled by Redux slice
     }
   };
 
@@ -150,7 +158,7 @@ const UserManagement = () => {
           <div className="p-6">
             <div className="flex items-start gap-4 mb-6">
               <img
-                src={user.avatar}
+                src={user.avatar || '/assets/user-avatar.jpeg'}
                 alt={user.fullName}
                 className="w-16 h-16 rounded-full object-cover"
               />
@@ -161,8 +169,8 @@ const UserManagement = () => {
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
                     {user.role.replace('_', ' ').toUpperCase()}
                   </span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                    {user.status.toUpperCase()}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(getUserStatus(user))}`}>
+                    {getUserStatus(user).toUpperCase()}
                   </span>
                 </div>
               </div>
@@ -179,10 +187,10 @@ const UserManagement = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
                   <div className="flex items-center gap-2 text-gray-900">
-                    <MapPin className="w-4 h-4 text-gray-400" />
-                    {user.location}
+                    <User className="w-4 h-4 text-gray-400" />
+                    {user.bio || 'No bio available'}
                   </div>
                 </div>
                 
@@ -190,7 +198,7 @@ const UserManagement = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Join Date</label>
                   <div className="flex items-center gap-2 text-gray-900">
                     <Calendar className="w-4 h-4 text-gray-400" />
-                    {new Date(user.joinDate).toLocaleDateString()}
+                    {new Date(user.createdAt).toLocaleDateString()}
                   </div>
                 </div>
               </div>
@@ -198,26 +206,31 @@ const UserManagement = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Quests Completed</label>
-                  <p className="text-2xl font-bold text-green-600">{user.questsCompleted}</p>
+                  <p className="text-2xl font-bold text-green-600">{getQuestStats(user).questsCompleted}</p>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Quests Created</label>
-                  <p className="text-2xl font-bold text-blue-600">{user.questsCreated}</p>
+                  <p className="text-2xl font-bold text-blue-600">{getQuestStats(user).questsCreated}</p>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Last Active</label>
-                  <p className="text-sm text-gray-600">{new Date(user.lastActive).toLocaleString()}</p>
+                  <p className="text-sm text-gray-600">{user.lastActive ? new Date(user.lastActive).toLocaleString() : 'Never'}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">XP Points</label>
+                  <p className="text-2xl font-bold text-purple-600">{user.xp || 0}</p>
                 </div>
               </div>
             </div>
 
             <div className="flex gap-3 mt-6 pt-6 border-t border-gray-200">
-              {user.role === 'user' && (
+              {canPromoteUser(user) && (
                 <button
                   onClick={() => {
-                    handleUserAction(user.id, 'promote');
+                    handleUserAction(user._id, 'promote');
                     onClose();
                   }}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
@@ -226,10 +239,10 @@ const UserManagement = () => {
                 </button>
               )}
               
-              {user.role === 'admin' && (
+              {canDemoteUser(user) && (
                 <button
                   onClick={() => {
-                    handleUserAction(user.id, 'demote');
+                    handleUserAction(user._id, 'demote');
                     onClose();
                   }}
                   className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
@@ -238,26 +251,39 @@ const UserManagement = () => {
                 </button>
               )}
               
-              {user.status === 'active' ? (
-                <button
-                  onClick={() => {
-                    handleUserAction(user.id, 'suspend');
-                    onClose();
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-                >
-                  Suspend User
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    handleUserAction(user.id, 'activate');
-                    onClose();
-                  }}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                >
-                  Activate User
-                </button>
+              {canSuspendUser(user) && (
+                <>
+                  {getUserStatus(user) === 'active' ? (
+                    <button
+                      onClick={() => {
+                        handleUserAction(user._id, 'suspend');
+                        onClose();
+                      }}
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                    >
+                      Suspend User
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        handleUserAction(user._id, 'activate');
+                        onClose();
+                      }}
+                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      Activate User
+                    </button>
+                  )}
+                </>
+              )}
+              
+              {!canPromoteUser(user) && !canDemoteUser(user) && !canSuspendUser(user) && (
+                <div className="px-4 py-2 text-gray-500 text-sm">
+                  {!isSuperAdmin ? 
+                    "Only super admins can manage other admins" : 
+                    "No actions available for this user"
+                  }
+                </div>
               )}
             </div>
           </div>
@@ -272,6 +298,28 @@ const UserManagement = () => {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">User Management</h1>
           <p className="text-gray-600">Manage users, roles, and permissions</p>
+          
+          {error && (
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">Error</h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <p>{error}</p>
+                  </div>
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      className="bg-red-50 text-red-800 text-sm font-medium px-3 py-2 rounded-md hover:bg-red-100"
+                      onClick={() => dispatch(clearError())}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Filters */}
@@ -337,12 +385,12 @@ const UserManagement = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
+                  {users.map((user) => (
+                    <tr key={user._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <img
-                            src={user.avatar}
+                            src={user.avatar || '/assets/user-avatar.jpeg'}
                             alt={user.fullName}
                             className="w-10 h-10 rounded-full object-cover"
                           />
@@ -358,20 +406,20 @@ const UserManagement = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                          {user.status.toUpperCase()}
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(getUserStatus(user))}`}>
+                          {getUserStatus(user).toUpperCase()}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div>
-                          <span className="text-green-600 font-medium">{user.questsCompleted}</span> completed
+                          <span className="text-green-600 font-medium">{getQuestStats(user).questsCompleted}</span> completed
                         </div>
                         <div className="text-gray-500">
-                          <span className="text-blue-600 font-medium">{user.questsCreated}</span> created
+                          <span className="text-blue-600 font-medium">{getQuestStats(user).questsCreated}</span> created
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(user.joinDate).toLocaleDateString()}
+                        {new Date(user.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
@@ -394,7 +442,7 @@ const UserManagement = () => {
                 </tbody>
               </table>
               
-              {filteredUsers.length === 0 && (
+              {users.length === 0 && !loading && (
                 <div className="text-center py-8 text-gray-500">
                   <User className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                   <p>No users found matching your criteria</p>

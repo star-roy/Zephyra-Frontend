@@ -1,77 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Users, MapPin, BarChart3, Settings, Shield, AlertTriangle, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { fetchAdminDashboard, fetchPendingQuests, approveQuest, rejectQuest } from '../../features/adminSlice';
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState({
-    pendingQuests: 12,
-    approvedQuests: 156,
-    rejectedQuests: 8,
-    totalUsers: 1247,
-    activeUsers: 89,
-    monthlyGrowth: 15.2
-  });
-
-  const [pendingQuests, setPendingQuests] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { 
+    userManagement, 
+    questManagement, 
+    analytics, 
+    pendingQuests, 
+    loading 
+  } = useSelector(state => state.admin);
 
   useEffect(() => {
-    // Simulate API calls
-    setTimeout(() => {
-      setPendingQuests([
-        {
-          id: '1',
-          title: 'Historic Downtown Walking Tour',
-          category: 'History',
-          difficulty: 'Easy',
-          submittedBy: 'john_doe',
-          submittedAt: '2025-08-02T10:30:00Z',
-          city: 'San Francisco'
-        },
-        {
-          id: '2',
-          title: 'Mountain Trail Adventure',
-          category: 'Nature',
-          difficulty: 'Hard',
-          submittedBy: 'adventure_seeker',
-          submittedAt: '2025-08-01T15:45:00Z',
-          city: 'Denver'
-        },
-        {
-          id: '3',
-          title: 'Local Food Discovery',
-          category: 'Food & Drink',
-          difficulty: 'Medium',
-          submittedBy: 'foodie_explorer',
-          submittedAt: '2025-08-01T09:20:00Z',
-          city: 'New York'
-        }
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    dispatch(fetchAdminDashboard());
+    dispatch(fetchPendingQuests({}));
+  }, [dispatch]);
+
+  // Map the backend data correctly
+  const stats = {
+    pendingQuests: questManagement.pendingQuests || 0,
+    approvedQuests: questManagement.approvedQuests || 0,
+    rejectedQuests: questManagement.rejectedQuests || 0,
+    totalUsers: userManagement.totalUsers || 0,
+    activeUsers: userManagement.onlineUsers || userManagement.activeUsers || 0,
+    monthlyGrowth: analytics.monthlyGrowth || 15.2
+  };
 
   const handleQuestAction = async (questId, action) => {
     try {
-      // API call would go here
-      console.log(`${action} quest ${questId}`);
-      
-      // Remove from pending list
-      setPendingQuests(prev => prev.filter(quest => quest.id !== questId));
-      
-      // Update stats
       if (action === 'approve') {
-        setStats(prev => ({
-          ...prev,
-          pendingQuests: prev.pendingQuests - 1,
-          approvedQuests: prev.approvedQuests + 1
-        }));
+        await dispatch(approveQuest({ questId, feedback: 'Quest approved by admin' }));
       } else if (action === 'reject') {
-        setStats(prev => ({
-          ...prev,
-          pendingQuests: prev.pendingQuests - 1,
-          rejectedQuests: prev.rejectedQuests + 1
-        }));
+        await dispatch(rejectQuest({ questId, reason: 'Does not meet guidelines' }));
       }
+      
+      // Refresh data
+      dispatch(fetchPendingQuests({}));
+      dispatch(fetchAdminDashboard());
     } catch (error) {
       console.error(`Error ${action}ing quest:`, error);
     }
@@ -159,14 +126,14 @@ const AdminDashboard = () => {
               ) : (
                 <div className="space-y-4">
                   {pendingQuests.map((quest) => (
-                    <div key={quest.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div key={quest._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900">{quest.title}</h3>
                           <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
                             <span className="flex items-center gap-1">
                               <MapPin className="w-4 h-4" />
-                              {quest.city}
+                              {quest.city || 'Not specified'}
                             </span>
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               quest.difficulty === 'Easy' ? 'bg-green-100 text-green-800' :
@@ -180,19 +147,19 @@ const AdminDashboard = () => {
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 mt-1">
-                            Submitted by @{quest.submittedBy} • {new Date(quest.submittedAt).toLocaleDateString()}
+                            Submitted by @{quest.submittedBy?.username || 'Unknown'} • {new Date(quest.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                         
                         <div className="flex gap-2 ml-4">
                           <button
-                            onClick={() => handleQuestAction(quest.id, 'approve')}
+                            onClick={() => handleQuestAction(quest._id, 'approve')}
                             className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
                           >
                             Approve
                           </button>
                           <button
-                            onClick={() => handleQuestAction(quest.id, 'reject')}
+                            onClick={() => handleQuestAction(quest._id, 'reject')}
                             className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
                           >
                             Reject

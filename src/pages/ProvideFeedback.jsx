@@ -9,6 +9,7 @@ const FEEDBACK_CATEGORIES = [
 ];
 
 export default function ProvideFeedback() {
+  
   const [category, setCategory] = useState("General Feedback");
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);

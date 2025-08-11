@@ -1,24 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { QuestsTab, BadgesTab, FriendsTab } from "./UserProfileTabs";
-
-// You can adjust the paths to your images as needed
-const activities = [
-  {
-    image: "/assets/hero.png",
-    title: "Completed Quest: City Landmark Tour",
-    xp: 50,
-  },
-  {
-    image: "/images/activity-park.jpg",
-    title: "Completed Quest: Park Exploration",
-    xp: 30,
-  },
-  {
-    image: "/images/activity-cafe.jpg",
-    title: "Completed Quest: Cafe Hopper",
-    xp: 20,
-  },
-];
+import { fetchUserProfile, fetchUserAchievements } from "../../features/userSlice.js";
+import { fetchOngoingQuests } from "../../features/questSlice.js";
 
 function StatCard({ label, value }) {
   return (
@@ -41,6 +25,56 @@ function ActivityCard({ image, title, xp }) {
 
 export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState("overview");
+  const dispatch = useDispatch();
+  
+  // Get user data from Redux
+  const { userData: authUserData } = useSelector(state => state.auth);
+  const { userProfile, stats, achievements, loading } = useSelector(state => state.user);
+  const { ongoingQuests: questsInProgress } = useSelector(state => state.quest);
+  
+  // Use auth data as primary source
+  const user = authUserData || userProfile;
+  const userStats = stats;
+
+  // Fetch data on component mount
+  useEffect(() => {
+    if (authUserData?._id) {
+      dispatch(fetchUserProfile(authUserData._id));
+      dispatch(fetchUserAchievements(authUserData._id));
+      dispatch(fetchOngoingQuests(authUserData._id));
+    }
+  }, [dispatch, authUserData?._id]);
+
+  // Use backend data or fallback to mock data
+  const activities = questsInProgress && questsInProgress.length > 0 ? questsInProgress.slice(0, 3).map(quest => ({
+    image: quest.files?.[0]?.file_url || "/assets/hero.png",
+    title: `Ongoing Quest: ${quest.title}`,
+    xp: quest.xp || 50,
+  })) : [
+    {
+      image: "/assets/hero.png",
+      title: "Completed Quest: City Landmark Tour",
+      xp: 50,
+    },
+    {
+      image: "/images/activity-park.jpg",
+      title: "Completed Quest: Park Exploration",
+      xp: 30,
+    },
+    {
+      image: "/images/activity-cafe.jpg",
+      title: "Completed Quest: Cafe Hopper",
+      xp: 20,
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="bg-slate-50 min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#7F56D9]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-slate-50 min-h-screen pb-16">
@@ -54,27 +88,40 @@ export default function UserProfilePage() {
           />
           <div className="absolute left-1/2 top-32 transform -translate-x-1/2 -translate-y-1/2">
             <img
-              src="/assets/user-avatar2.jpeg"
+              src={user?.avatar || "/assets/user-avatar2.jpeg"}
               alt="Avatar"
-              className="w-24 h-24 rounded-full border-4 border-white bg-slate-200 shadow"
+              className="w-24 h-24 rounded-full border-4 border-white bg-slate-200 shadow object-cover"
             />
           </div>
         </div>
         {/* User Info */}
         <div className="flex flex-col items-center mt-8 mb-2">
-          <div className="text-2xl font-bold text-slate-800">Sophia Carter</div>
-          <div className="text-teal-500 font-medium">@sophia_c</div>
+          <div className="text-2xl font-bold text-slate-800">
+            {user?.fullName || user?.username || 'Unknown User'}
+          </div>
+          <div className="text-teal-500 font-medium">
+            @{user?.username || 'username'}
+          </div>
           <div className="flex items-center gap-4 mt-2 mb-2">
-            <span className="text-teal-600 font-bold">Level 7</span>
+            <span className="text-teal-600 font-bold">
+              Level {userStats?.level || 1}
+            </span>
             <div className="flex items-center gap-2">
               <div className="w-32 h-2 bg-teal-100 rounded-full overflow-hidden">
-                <div className="h-2 bg-teal-500 rounded-full" style={{ width: "70%" }} />
+                <div 
+                  className="h-2 bg-teal-500 rounded-full" 
+                  style={{ 
+                    width: `${userStats ? ((userStats.currentXP / userStats.nextLevelXP) * 100) : 0}%` 
+                  }} 
+                />
               </div>
-              <span className="text-teal-600 text-sm font-semibold">3500/5000 XP</span>
+              <span className="text-teal-600 text-sm font-semibold">
+                {userStats?.currentXP || 0}/{userStats?.nextLevelXP || 100} XP
+              </span>
             </div>
           </div>
           <div className="text-slate-500 text-center max-w-lg px-4 mb-4">
-            Urban explorer, coffee enthusiast, and seeker of hidden gems. Join me on my quests to uncover the city's secrets!
+            {user?.bio || 'No bio available'}
           </div>
           <button className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded-full font-semibold shadow mt-2 mb-2">
             Edit Profile
@@ -116,10 +163,10 @@ export default function UserProfilePage() {
             {/* Stats */}
             <div className="font-bold text-lg text-slate-800 mb-4">Stats</div>
             <div className="flex flex-wrap gap-6 mb-10">
-              <StatCard label="Quests Completed" value="125" />
-              <StatCard label="Total XP Earned" value="3500" />
-              <StatCard label="Badges Earned" value="32" />
-              <StatCard label="Distance Explored" value="75 km" />
+              <StatCard label="Quests Completed" value={userStats?.questsCompleted || 0} />
+              <StatCard label="Total XP Earned" value={userStats?.totalXP || 0} />
+              <StatCard label="Badges Earned" value={userStats?.badgesEarned || 0} />
+              <StatCard label="Distance Explored" value={`${userStats?.distanceExplored || 0} km`} />
             </div>
             {/* Recent Activity */}
             <div className="flex items-center justify-between mb-4">

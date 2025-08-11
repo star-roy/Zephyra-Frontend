@@ -1,19 +1,46 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import MapRoutingControl from '../../components/MapRoutingControl';
+import AdvancedMarker from '../../components/AdvancedMarker';
+import { watchLiveLocation, stopLocationWatch, calculateDistance } from '../../utils/locationUtils';
+import { fetchQuestById, fetchQuestProgress } from '../../features/questSlice';
 
 const zephyraBlue = "#7F56D9";
 const zephyraGold = "#FDB022";
 
+// Google Maps configuration
+const GOOGLE_MAPS_LIBRARIES = ['places'];
+const MAP_CONTAINER_STYLE = {
+  width: '100%',
+  height: '300px'
+};
+
+// Default map center
+const DEFAULT_CENTER = {
+  lat: 34.6290,
+  lng: -78.6050
+};
+
 // --- Quest Tips & Safety Card ---
-function QuestTipsCard() {
+function QuestTipsCard({ tips = [] }) {
   return (
     <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-7 w-full max-w-[340px] flex flex-col gap-2 self-start">
       <div className="font-bold text-[#22223B] text-lg mb-2">Quest Tips & Safety</div>
       <ul className="list-disc ml-4 text-[#667085] text-base mb-2">
-        <li>Stay hydrated and wear comfortable shoes.</li>
-        <li>Be mindful of traffic when exploring urban areas.</li>
-        <li>Ask locals for recommendations—they know the hidden gems!</li>
-        <li>Respect public spaces and preserve the environment.</li>
+        {tips.length > 0 ? (
+          tips.map((tip, index) => (
+            <li key={index}>{tip.tip_text}</li>
+          ))
+        ) : (
+          <>
+            <li>Stay hydrated and wear comfortable shoes.</li>
+            <li>Be mindful of traffic when exploring urban areas.</li>
+            <li>Ask locals for recommendations—they know the hidden gems!</li>
+            <li>Respect public spaces and preserve the environment.</li>
+          </>
+        )}
       </ul>
       <div className="mt-3 text-sm text-[#7F56D9] font-semibold">
         Need help? <a href="/support" className="underline hover:text-[#5d3bb2]">Contact support</a>
@@ -23,22 +50,87 @@ function QuestTipsCard() {
 }
 
 export default function QuestInProgressPage() {
-  const [objectives, setObjectives] = useState([
-    {
-      label: "Visit the historic Delton Clock Tower and take a photo.",
-      completed: true
-    },
-    {
-      label: "Find the hidden mural in the alley behind Main Street Cafe.",
-      completed: false
-    },
-    {
-      label: "Enjoy a pastry at the local bakery, 'Sweet Delights'.",
-      completed: false
-    }
-  ]);
-  const [hintRevealed, setHintRevealed] = useState(false);
+  const { questId } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  // Redux state
+  const { currentQuest, questProgress, loading, error } = useSelector((state) => state.quest);
+  
+  const [hintRevealed, setHintRevealed] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationTracking, setLocationTracking] = useState(false);
+  const [watchId, setWatchId] = useState(null);
+  const [locationAccuracy, setLocationAccuracy] = useState(null);
+
+  // Google Maps API key
+  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+  // Fetch quest data and progress on component mount
+  useEffect(() => {
+    if (questId) {
+      dispatch(fetchQuestById(questId));
+      dispatch(fetchQuestProgress(questId));
+    }
+  }, [dispatch, questId]);
+
+  // Get quest route data from currentQuest
+  const questRoute = currentQuest?.routes?.[0] || {
+    waypoints: [
+      { lat: 34.6290, lng: -78.6050 }, // Default waypoints if no route data
+      { lat: 34.6295, lng: -78.6045 },
+      { lat: 34.6300, lng: -78.6040 },
+      { lat: 34.6305, lng: -78.6035 },
+    ]
+  };
+
+  // Get objectives from quest tasks and progress
+  const objectives = currentQuest?.tasks?.map((task) => ({
+    label: task.description, // Backend returns 'description', not 'task_description'
+    completed: questProgress?.completed_tasks?.includes(task._id) || false
+  })) || [];
+
+  // Live location tracking functions
+  const startLocationTracking = () => {
+    if (watchId) return; // Already tracking
+    
+    setLocationTracking(true);
+    const id = watchLiveLocation(
+      (location) => {
+        setUserLocation(location);
+        setLocationAccuracy(location.accuracy);
+        
+        // Optional: Check if user is near next objective
+        const nextWaypoint = questRoute.waypoints[1]; // Next destination
+        if (nextWaypoint) {
+          const distance = calculateDistance(
+            location.lat, location.lng,
+            nextWaypoint.lat, nextWaypoint.lng
+          );
+          
+          // If within 10 meters of waypoint, could trigger completion
+          if (distance < 10) {
+            console.log("Near objective!");
+          }
+        }
+      },
+      (error) => {
+        console.error("Live tracking error:", error);
+        setLocationTracking(false);
+      }
+    );
+    setWatchId(id);
+  };
+
+  const stopLocationTracking = () => {
+    if (watchId) {
+      stopLocationWatch(watchId);
+      setWatchId(null);
+      setLocationTracking(false);
+      setUserLocation(null);
+      setLocationAccuracy(null);
+    }
+  };
 
   // Height sync refs
   const proofRef = useRef(null);
@@ -57,15 +149,65 @@ export default function QuestInProgressPage() {
     }
     syncHeights();
     window.addEventListener("resize", syncHeights);
-    return () => window.removeEventListener("resize", syncHeights);
-  }, []);
+    
+    // Cleanup location tracking on unmount
+    return () => {
+      window.removeEventListener("resize", syncHeights);
+      if (watchId) {
+        stopLocationWatch(watchId);
+      }
+    };
+  }, [watchId]);
 
-  const progressPercent = Math.round(
+  const progressPercent = objectives.length > 0 ? Math.round(
     (objectives.filter((o) => o.completed).length / objectives.length) * 100
-  );
+  ) : 0;
 
-  const mapEmbedUrl =
-    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3271.800283801106!2d-78.60498768476413!3d34.6290504804516!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89aa2acbb7e5c3f9%3A0x46e0e5b2ac1e9b1e!2sElizabethtown%2C%20NC%2028327!5e0!3m2!1sen!2sus!4v1659557566468!5m2!1sen!2sus";
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="bg-[#F8FAFC] min-h-screen pb-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#7F56D9] mx-auto"></div>
+          <p className="mt-4 text-[#667085]">Loading quest...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="bg-[#F8FAFC] min-h-screen pb-12 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error loading quest: {error}</p>
+          <button 
+            onClick={() => navigate('/quest')}
+            className="px-4 py-2 bg-[#7F56D9] text-white rounded-lg hover:bg-[#6B46C1]"
+          >
+            Back to Quests
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show message if no quest data
+  if (!currentQuest) {
+    return (
+      <div className="bg-[#F8FAFC] min-h-screen pb-12 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-[#667085] mb-4">Quest not found</p>
+          <button 
+            onClick={() => navigate('/quest')}
+            className="px-4 py-2 bg-[#7F56D9] text-white rounded-lg hover:bg-[#6B46C1]"
+          >
+            Back to Quests
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#F8FAFC] min-h-screen pb-12">
@@ -77,10 +219,10 @@ export default function QuestInProgressPage() {
               Quest in Progress
             </div>
             <div className="text-[2rem] font-bold text-[#22223B] mb-2 leading-tight">
-              Discover Downtown Delton
+              {currentQuest.title}
             </div>
             <div className="text-[#667085] text-[1.08rem]">
-              Embark on an urban adventure through the heart of Delton, uncovering hidden gems and local favorites.
+              {currentQuest.description}
             </div>
           </div>
           <div className="flex items-center gap-4 min-w-[220px] justify-end flex-none">
@@ -106,6 +248,27 @@ export default function QuestInProgressPage() {
           {/* Tools box */}
           <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-6 flex-1 min-w-[260px] max-w-md">
             <div className="font-semibold text-[#22223B] text-lg mb-4">Tools</div>
+            
+            {/* Live Location Tracking */}
+            <div className="mb-4">
+              <div className="text-[#667085] font-medium mb-2">Live Location:</div>
+              <button
+                onClick={locationTracking ? stopLocationTracking : startLocationTracking}
+                className={`px-4 py-2 rounded-lg font-medium text-sm w-full ${
+                  locationTracking 
+                    ? 'bg-red-100 text-red-700 hover:bg-red-200' 
+                    : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                }`}
+              >
+                {locationTracking ? '🔴 Stop Tracking' : '📍 Start Live Tracking'}
+              </button>
+              {locationAccuracy && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Accuracy: ±{Math.round(locationAccuracy)}m
+                </div>
+              )}
+            </div>
+            
             <div className="text-[#667085] font-medium mb-2">Directions:</div>
             <ol className="list-decimal text-[#667085] text-base ml-5 mb-0">
               <li>Head east on Main St toward Central Ave.</li>
@@ -113,19 +276,63 @@ export default function QuestInProgressPage() {
               <li>The Delton Clock Tower will be on your left.</li>
             </ol>
           </div>
-          {/* Google Embedded Map */}
+          {/* Google Maps */}
           <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-4 flex-2 flex items-center justify-center min-w-0 w-full">
-            <iframe
-              title="Delton Map"
-              src={mapEmbedUrl}
-              width="100%"
-              height="300"
-              className="rounded-xl border-0 w-full min-w-[350px] max-w-full"
-              allowFullScreen=""
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              style={{ minWidth: "350px", maxWidth: "100%" }}
-            ></iframe>
+            <div className="w-full h-[300px] rounded-xl overflow-hidden">
+              {googleMapsApiKey ? (
+                <LoadScript googleMapsApiKey={googleMapsApiKey} libraries={GOOGLE_MAPS_LIBRARIES}>
+                  <GoogleMap
+                    mapContainerStyle={MAP_CONTAINER_STYLE}
+                    center={DEFAULT_CENTER}
+                    zoom={15}
+                    options={{
+                      zoomControl: true,
+                      streetViewControl: false,
+                      mapTypeControl: false,
+                      fullscreenControl: false,
+                      gestureHandling: 'greedy',
+                      clickableIcons: false,
+                      disableDoubleClickZoom: false,
+                      keyboardShortcuts: true
+                    }}
+                  >
+                    {/* Route visualization */}
+                    <MapRoutingControl waypoints={questRoute.waypoints} />
+                    
+                    {/* Waypoint markers */}
+                    {questRoute.waypoints.map((waypoint, idx) => (
+                      <AdvancedMarker 
+                        key={idx} 
+                        position={{ lat: waypoint.lat, lng: waypoint.lng }}
+                        title={`Quest Stop ${idx + 1}`}
+                        label={`${idx + 1}`}
+                      />
+                    ))}
+                    
+                    {/* User's live location marker */}
+                    {userLocation && (
+                      <AdvancedMarker 
+                        position={{ lat: userLocation.lat, lng: userLocation.lng }}
+                        title="Your Location"
+                        icon={{
+                          url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iOCIgZmlsbD0iIzAwN0FFQyIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI0IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
+                          scaledSize: { width: 16, height: 16 }
+                        }}
+                      />
+                    )}
+                  </GoogleMap>
+                </LoadScript>
+              ) : (
+                <div className="flex items-center justify-center h-full text-slate-500">
+                  <div className="text-center">
+                    <svg className="w-12 h-12 mx-auto mb-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
+                    </svg>
+                    <p className="text-sm">Google Maps API key required</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -193,7 +400,7 @@ export default function QuestInProgressPage() {
             <div className="flex justify-center mb-8">
               <button
                 className="px-7 py-3 bg-[#7F56D9] text-white font-semibold rounded-xl text-base border-none cursor-pointer hover:bg-[#632bb5] shadow transition"
-                onClick={() => navigate("/quest-proof-upload")}
+                onClick={() => navigate(`/quest-proof-upload/${questId}`)}
               >
                 Upload File
               </button>
@@ -214,21 +421,30 @@ export default function QuestInProgressPage() {
                   <span className="w-6 h-6 rounded-full bg-[#F2F4F7] flex items-center justify-center">
                     <span style={{ color: zephyraGold, fontWeight: 700, fontSize: "1.12rem" }}>✪</span>
                   </span>
-                  100 Points
+                  {currentQuest?.xp || 0} Points
                 </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#F2F4F7] flex items-center justify-center">
-                    <span style={{ color: zephyraBlue, fontWeight: 700, fontSize: "1.12rem" }}>🏅</span>
-                  </span>
-                  "Delton Explorer" Badge
-                </li>
+                {currentQuest?.achievements?.map((achievement, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[#F2F4F7] flex items-center justify-center">
+                      <span style={{ color: zephyraBlue, fontWeight: 700, fontSize: "1.12rem" }}>🏅</span>
+                    </span>
+                    {achievement.title || achievement.name || "Achievement Badge"}
+                  </li>
+                )) || (
+                  <li className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[#F2F4F7] flex items-center justify-center">
+                      <span style={{ color: zephyraBlue, fontWeight: 700, fontSize: "1.12rem" }}>🏅</span>
+                    </span>
+                    Explorer Badge
+                  </li>
+                )}
               </ul>
               <div className="text-[#667085] text-sm mt-2">
                 Complete all objectives to claim your rewards and boost your standing on the leaderboard!
               </div>
             </div>
             {/* Quest Tips & Safety Card */}
-            <QuestTipsCard />
+            <QuestTipsCard tips={currentQuest?.tips || []} />
           </div>
         </div>
       </div>

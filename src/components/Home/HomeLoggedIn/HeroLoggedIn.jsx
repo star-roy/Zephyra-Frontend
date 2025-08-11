@@ -1,9 +1,34 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FaStar, FaCompass } from "react-icons/fa";
 import { HiMiniFire } from "react-icons/hi2";
 import heroImage from "/assets/bg.jpg"; // ✅ Update if needed
 
-function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUserProfile } from "../../../features/userSlice";
+
+function HeroLoggedIn() {
+  const dispatch = useDispatch();
+  
+  // Get user data from auth slice (which should have current user info)
+  const { userData: authUser } = useSelector((state) => state.auth);
+  const { userProfile, stats } = useSelector(
+    (state) => state.user
+  );
+
+  // Use auth user data as primary source, fallback to userProfile
+  const name = authUser?.username || userProfile?.username || "Explorer";
+  const level = authUser?.level || stats?.level || 1;
+  const xp = authUser?.xp || stats?.totalXP || 0;
+  const currentTitle = authUser?.rank || stats?.rank || "Novice Explorer";
+  const questCount = authUser?.questsCompleted || stats?.questsCompleted || 0;
+
+  useEffect(() => {
+    // Only fetch user profile if we have a user ID and don't already have profile data
+    if (authUser?._id && !userProfile) {
+      dispatch(fetchUserProfile(authUser._id));
+    }
+  }, [dispatch, authUser?._id, userProfile]);
+
   return (
     <section className="w-full px-4 sm:px-6 md:px-10 xl:px-14 py-8">
       <div
@@ -21,7 +46,7 @@ function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
         <div className="relative z-10 h-full flex flex-col justify-between px-6 sm:px-10 py-6 text-white">
           {/* 🔝 Top Content */}
           <div className="pt-5">
-          <h1 className="md:text-5xl text-4xl sm:text-3xl lg:text-6xl font-bold truncate max-w-full bg-gradient-to-r from-blue-300 via-blue-500 to-blue-700 bg-clip-text text-transparent">
+            <h1 className="md:text-5xl text-4xl sm:text-3xl lg:text-6xl font-bold truncate max-w-full bg-gradient-to-r from-blue-300 via-blue-500 to-blue-700 bg-clip-text text-transparent">
               Welcome back, {name}!
             </h1>
             <p className="text-sm sm:text-base text-[#e5edf5] lg:text-2xl mt-1">
@@ -41,7 +66,9 @@ function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
                   <p className="text-sm font-semibold lg:text-lg text-blue-300">
                     Level {level}
                   </p>
-                  <p className="text-xs lg:text-sm text-[#e5edf5]">{currentTitle}</p>
+                  <p className="text-xs lg:text-sm text-[#e5edf5]">
+                    {currentTitle}
+                  </p>
                 </div>
               </div>
 
@@ -51,8 +78,12 @@ function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
                   <FaStar className="text-white text-xl" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold lg:text-lg text-blue-300">{xp} XP</p>
-                  <p className="text-xs lg:text-sm text-[#e5edf5]">Current Progress</p>
+                  <p className="text-sm font-semibold lg:text-lg text-blue-300">
+                    {xp} XP
+                  </p>
+                  <p className="text-xs lg:text-sm text-[#e5edf5]">
+                    Current Progress
+                  </p>
                 </div>
               </div>
 
@@ -65,7 +96,9 @@ function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
                   <p className="text-sm lg:text-lg font-semibold text-blue-300">
                     {questCount} Quests
                   </p>
-                  <p className="text-xs lg:text-sm text-[#e5edf5]">In Progress</p>
+                  <p className="text-xs lg:text-sm text-[#e5edf5]">
+                    In Progress
+                  </p>
                 </div>
               </div>
             </div>
@@ -77,7 +110,6 @@ function HeroLoggedIn({ name, level, xp, currentTitle, questCount }) {
             >
               Start New Adventure
             </button>
-
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   BrowseCategories,
   FeaturedQuest,
@@ -6,44 +7,41 @@ import {
   PopularQuests,
   UserExploreHero,
 } from "../../components/index.js";
+import { fetchQuests } from "../../features/questSlice.js";
 
 function ExploreLoggedIn() {
-  const featured = [
+  const dispatch = useDispatch();
+  const { 
+    quests = [], 
+    loading, 
+    error 
+  } = useSelector(state => state.quest);
+
+  // Fetch data on component mount
+  useEffect(() => {
+    // Fetch popular quests
+    dispatch(fetchQuests({ 
+      page: 1, 
+      limit: 12, 
+      filters: { status: 'approved' },
+      sortBy: 'popular'
+    }));
+  }, [dispatch]);
+
+  // Use backend data or fallback to mock data
+  const featured = quests.length > 0 ? quests.slice(0, 3) : [
     {
-      id: "f2",
-      title: "Old City Food Crawl",
-      subtitle: "Taste authentic dishes in a guided street food quest.",
-      xp: 100,
-      difficulty: "Easy",
-      image: "/assets/food-trail1.jpeg",
-    },
-    {
-      id: "f3",
-      title: "Heritage Trail Quest",
-      subtitle: "Discover historic sites and complete mini trivia challenges.",
-      xp: 120,
-      difficulty: "Hard",
-      image: "/assets/food-trail1.jpeg",
-    },
-    {
-      id: "f4",
-      title: "Heritage Trail Quest",
-      subtitle: "Discover historic sites and complete mini trivia challenges.",
-      xp: 120,
-      difficulty: "Hard",
-      image: "/assets/food-trail1.jpeg",
-    },
-    {
-      id: "f9",
-      title: "Old City Food Crawl",
-      subtitle: "Taste authentic dishes in a guided street food quest.",
-      xp: 100,
+      id: "f1",
+      title: "Art Lane Photo Walk",
+      subtitle: "Capture murals and share your journey to earn XP.",
+      xp: 85,
       difficulty: "Easy",
       image: "/assets/food-trail1.jpeg",
     },
   ];
 
-  const popular = [
+  // Use backend data or fallback to mock data
+  const popular = quests.length > 0 ? quests.slice(0, 4) : [
     {
       id: "p1",
       title: "City Secrets Walk",
@@ -78,7 +76,7 @@ function ExploreLoggedIn() {
     },
   ];
 
-  const quests = [
+  const questsForYou = quests.length > 0 ? quests.slice(4, 8) : [
     {
       id: "jfy1",
       title: "Try 3 Local Snacks",
@@ -86,28 +84,22 @@ function ExploreLoggedIn() {
       xp: 60,
       image: "/assets/community5.jpeg",
     },
-    {
-      id: "jfy2",
-      title: "Art Lane Photo Walk",
-      subtitle: "Capture murals and share your journey to earn XP.",
-      xp: 85,
-      image: "/assets/community5.jpeg",
-    },
-    {
-      id: "jfy3",
-      title: "Art Lane Photo Walk",
-      subtitle: "Capture murals and share your journey to earn XP.",
-      xp: 85,
-      image: "/assets/community5.jpeg",
-    },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#7F56D9]"></div>
+      </div>
+    );
+  }
 
   return (
     <>
       <UserExploreHero />
       <FeaturedQuest quests={featured} />
       <PopularQuests quests={popular} />
-      <JustForYou quests={quests} />
+      <JustForYou quests={questsForYou} />
       <BrowseCategories />
     </>
   );

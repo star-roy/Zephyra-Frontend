@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api from "../utils/axiosConfig";
 
 // Initial state
 const initialState = {
@@ -41,7 +41,7 @@ export const fetchUserProfile = createAsyncThunk(
     'user/fetchUserProfile',
     async (userId, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`/api/v1/users/profile/${userId}`);
+            const response = await api.get(`/api/v1/users/profile/${userId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch user profile');
@@ -53,7 +53,7 @@ export const updateUserProfile = createAsyncThunk(
     'user/updateUserProfile',
     async (profileData, { rejectWithValue }) => {
         try {
-            const response = await axios.patch('/api/v1/users/update-profile', profileData, {
+            const response = await api.patch('/api/v1/users/update-profile', profileData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             return response.data.data;
@@ -67,7 +67,7 @@ export const updateUserSettings = createAsyncThunk(
     'user/updateUserSettings',
     async (settings, { rejectWithValue }) => {
         try {
-            const response = await axios.patch('/api/v1/users/settings', { settings });
+            const response = await api.patch('/api/v1/users/settings', { settings });
             return response.data.data.settings;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to update settings');
@@ -79,7 +79,7 @@ export const fetchUserAchievements = createAsyncThunk(
     'user/fetchUserAchievements',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/api/v1/users/achievements');
+            const response = await api.get('/api/v1/users/achievements');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch achievements');
@@ -91,7 +91,7 @@ export const fetchUserBadges = createAsyncThunk(
     'user/fetchUserBadges',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/api/v1/users/badges');
+            const response = await api.get('/api/v1/users/badges');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch badges');
@@ -103,7 +103,7 @@ export const fetchUserFriends = createAsyncThunk(
     'user/fetchUserFriends',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/api/v1/friends');
+            const response = await api.get('/api/v1/friends');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch friends');
@@ -115,7 +115,7 @@ export const fetchUserNotifications = createAsyncThunk(
     'user/fetchUserNotifications',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/api/v1/users/notifications');
+            const response = await api.get('/api/v1/users/notifications');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch notifications');
@@ -127,7 +127,7 @@ export const fetchCompletedQuests = createAsyncThunk(
     'user/fetchCompletedQuests',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/api/v1/users/completed-quests');
+            const response = await api.get('/api/v1/users/completed-quests');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch completed quests');
@@ -139,7 +139,7 @@ export const sendFriendRequest = createAsyncThunk(
     'user/sendFriendRequest',
     async (userId, { rejectWithValue }) => {
         try {
-            const response = await axios.post('/api/v1/friends/request', { userId });
+            const response = await api.post('/api/v1/friends/request', { userId });
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to send friend request');
@@ -151,7 +151,7 @@ export const acceptFriendRequest = createAsyncThunk(
     'user/acceptFriendRequest',
     async (requestId, { rejectWithValue }) => {
         try {
-            const response = await axios.patch(`/api/v1/friends/accept/${requestId}`);
+            const response = await api.patch(`/api/v1/friends/accept/${requestId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to accept friend request');
@@ -163,7 +163,7 @@ export const markNotificationAsRead = createAsyncThunk(
     'user/markNotificationAsRead',
     async (notificationId, { rejectWithValue }) => {
         try {
-            await axios.patch(`/api/v1/users/notifications/${notificationId}/read`);
+            await api.patch(`/api/v1/users/notifications/${notificationId}/read`);
             return notificationId;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to mark notification as read');

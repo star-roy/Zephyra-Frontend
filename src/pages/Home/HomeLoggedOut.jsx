@@ -8,13 +8,14 @@ import {
 } from "../../components/index.js";
 
 function HomeLoggedOut() {
+  
   return (
     <main>
-      <HomeHeroSection />
-      <ActionSection />
-      <FeatureSection />
-      <TestimonialSection />
-      <JoinCTA />
+        <HomeHeroSection />
+        <ActionSection />
+        <FeatureSection />
+        <TestimonialSection />
+        <JoinCTA />
     </main>
   );
 }

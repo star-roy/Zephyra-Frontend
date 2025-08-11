@@ -8,15 +8,6 @@ import {
 } from "../../components/index.js";
 
 function HomeLoggedIn() {
-  // Replace with real user data
-  const user = {
-    name: "Kelly",
-    level: 3,
-    xp: 1260,
-    currentTitle: "Pathfinder",
-    questCount: 3,
-  };
-
   const quests = [
     // {
     //   id: 1,
@@ -114,7 +105,7 @@ function HomeLoggedIn() {
 
   return (
     <>
-      <HeroLoggedIn {...user} />
+      <HeroLoggedIn />
       <OngoingQuestsSection quests={quests} />
       <YourNextAdventureSection adventures={adventures} />
       <UpcomingEventsSection events={events} />;

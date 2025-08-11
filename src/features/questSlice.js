@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api from "../utils/axiosConfig";
 
 // Initial state
 const initialState = {
@@ -43,7 +43,7 @@ export const fetchQuests = createAsyncThunk(
                 limit,
                 ...filters
             });
-            const response = await axios.get(`/api/v1/quests?${params}`);
+            const response = await api.get(`/api/v1/quests?${params}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch quests');
@@ -55,7 +55,7 @@ export const fetchQuestById = createAsyncThunk(
     'quest/fetchQuestById',
     async (questId, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`/api/v1/quests/${questId}`);
+            const response = await api.get(`/api/v1/quests/${questId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch quest');
@@ -67,7 +67,7 @@ export const createQuest = createAsyncThunk(
     'quest/createQuest',
     async (questData, { rejectWithValue }) => {
         try {
-            const response = await axios.post('/api/v1/quests', questData, {
+            const response = await api.post('/api/v1/quests/create-quest', questData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             return response.data.data;
@@ -81,7 +81,7 @@ export const updateQuest = createAsyncThunk(
     'quest/updateQuest',
     async ({ questId, questData }, { rejectWithValue }) => {
         try {
-            const response = await axios.patch(`/api/v1/quests/${questId}`, questData);
+            const response = await api.patch(`/api/v1/quests/${questId}`, questData);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to update quest');
@@ -93,7 +93,7 @@ export const deleteQuest = createAsyncThunk(
     'quest/deleteQuest',
     async (questId, { rejectWithValue }) => {
         try {
-            await axios.delete(`/api/v1/quests/${questId}`);
+            await api.delete(`/api/v1/quests/${questId}`);
             return questId;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to delete quest');
@@ -105,7 +105,7 @@ export const startQuest = createAsyncThunk(
     'quest/startQuest',
     async (questId, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`/api/v1/quest-progress/start/${questId}`);
+            const response = await api.post(`/api/v1/quest-progress/start/${questId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to start quest');
@@ -117,7 +117,7 @@ export const completeQuestTask = createAsyncThunk(
     'quest/completeQuestTask',
     async ({ questId, taskOrder, proofData }, { rejectWithValue }) => {
         try {
-            const response = await axios.post(
+            const response = await api.post(
                 `/api/v1/quest-progress/${questId}/task/${taskOrder}/complete`,
                 proofData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
@@ -133,7 +133,7 @@ export const submitQuestProof = createAsyncThunk(
     'quest/submitQuestProof',
     async ({ questId, proofData }, { rejectWithValue }) => {
         try {
-            const response = await axios.post(
+            const response = await api.post(
                 `/api/v1/quest-progress/${questId}/submit-proof`,
                 proofData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
@@ -149,7 +149,7 @@ export const fetchQuestProgress = createAsyncThunk(
     'quest/fetchQuestProgress',
     async (questId, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`/api/v1/quest-progress/${questId}`);
+            const response = await api.get(`/api/v1/quest-progress/${questId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch quest progress');
@@ -161,7 +161,7 @@ export const fetchOngoingQuests = createAsyncThunk(
     'quest/fetchOngoingQuests',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/api/v1/quest-progress/ongoing');
+            const response = await api.get('/api/v1/quest-progress/ongoing');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch ongoing quests');
@@ -173,7 +173,7 @@ export const fetchUserCreatedQuests = createAsyncThunk(
     'quest/fetchUserCreatedQuests',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/api/v1/quests/my-quests');
+            const response = await api.get('/api/v1/quests/my-quests');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch user created quests');
@@ -185,7 +185,7 @@ export const fetchQuestTasks = createAsyncThunk(
     'quest/fetchQuestTasks',
     async (questId, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`/api/v1/quest-tasks/${questId}`);
+            const response = await api.get(`/api/v1/quest-tasks/${questId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch quest tasks');
@@ -197,7 +197,7 @@ export const fetchQuestReviews = createAsyncThunk(
     'quest/fetchQuestReviews',
     async (questId, { rejectWithValue }) => {
         try {
-            const response = await axios.get(`/api/v1/quest-reviews/${questId}`);
+            const response = await api.get(`/api/v1/quest-reviews/${questId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch quest reviews');
@@ -209,7 +209,7 @@ export const submitQuestReview = createAsyncThunk(
     'quest/submitQuestReview',
     async ({ questId, reviewData }, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`/api/v1/quest-reviews/${questId}`, reviewData);
+            const response = await api.post(`/api/v1/quest-reviews/${questId}`, reviewData);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to submit review');
@@ -225,7 +225,7 @@ export const searchQuests = createAsyncThunk(
                 search: query,
                 ...filters
             });
-            const response = await axios.get(`/api/v1/quests/search?${params}`);
+            const response = await api.get(`/api/v1/quests/search?${params}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to search quests');

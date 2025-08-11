@@ -1,18 +1,47 @@
 import React, { useState } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import { FiMenu, FiX } from "react-icons/fi";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import logo from "/logo1.png";
 import XPProgressBar from "./XPProgressBar";
-import LogoutModal from "../Cards/LogoutModal"; // Adjust path if needed
+import LogoutModal from "../Cards/LogoutModal";
+import { logoutUser } from "../../features/authSlice";
 
 function NavbarLoggedIn() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { userData } = useSelector(state => state.auth);
+  
   const [isOpen, setIsOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const toggleAvatarMenu = () => setAvatarOpen(!avatarOpen);
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      setShowLogoutModal(false);
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Still navigate to login even if logout fails
+      setShowLogoutModal(false);
+      navigate('/login');
+    }
+  };
+
+  // Get user data with defaults
+  const userXP = userData?.xp || 0;
+  const userLevel = userData?.level || 1;
+  const userAvatar = userData?.avatar || "/assets/user-avatar2.jpeg";
+  const username = userData?.username || "User";
+  
+  // Calculate level XP (simple formula: level * 100)
+  const levelXP = userLevel * 100;
 
   const navItems = [
     { name: "Explore", to: "/explore" },
@@ -46,27 +75,15 @@ function NavbarLoggedIn() {
           </div>
           <div className="hidden sm:flex items-center space-x-5 relative">
             <div className="hidden lg:block ">
-              <XPProgressBar currentXP={320} levelXP={500} level={3} />
+              <XPProgressBar currentXP={userXP} levelXP={levelXP} level={userLevel} />
             </div>
-            <button className="relative text-[#2C3E50] hover:text-[#4A90E2]">
-              <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full" />
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path d="M15 17h5l-1.4-1.4A2.03 2.03 0 0118 14.2V11a6 6 0 10-12 0v3c0 .54-.2 1.05-.6 1.44L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
-              </svg>
-            </button>
             <div className="relative">
               <button
                 onClick={toggleAvatarMenu}
                 className="flex items-center space-x-1 focus:outline-none"
               >
                 <img
-                  src="/assets/user-avatar2.jpeg"
+                  src={userAvatar}
                   alt="User Avatar"
                   className="h-9 w-9 rounded-full border-2 border-[#869AB8] object-cover"
                 />
@@ -124,11 +141,11 @@ function NavbarLoggedIn() {
             <hr className="border-t border-[#CADCFC]" />
             <div className="flex justify-between items-center">
               <span className="bg-[#D6E4FF] text-[#4A90E2] text-xs font-semibold px-3 py-1 rounded-full">
-                +320 XP
+                +{userXP} XP
               </span>
               <Link to="/profile" onClick={() => setIsOpen(false)}>
                 <img
-                  src="/assets/user-avatar2.jpeg"
+                  src={userAvatar}
                   alt="User Avatar"
                   className="h-8 w-8 rounded-full border-2 border-[#869AB8] object-cover"
                 />
@@ -141,11 +158,7 @@ function NavbarLoggedIn() {
       {showLogoutModal && (
         <LogoutModal
           onCancel={() => setShowLogoutModal(false)}
-          onLogout={() => {
-            localStorage.removeItem("loggedIn");
-            setShowLogoutModal(false);
-            location.href = "/login";
-          }}
+          onLogout={handleLogout}
         />
       )}
     </header>

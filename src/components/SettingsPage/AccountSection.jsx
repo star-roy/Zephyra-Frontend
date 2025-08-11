@@ -1,24 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { FaPen, FaTimes } from "react-icons/fa";
+import { fetchUserProfile } from "../../features/userSlice";
 
 export default function AccountSection() {
-  const [username] = useState("LocalExplorer123");
-  const [fullname, setFullname] = useState("Jane Explorer");
+  const dispatch = useDispatch();
+  const { userData } = useSelector(state => state.auth);
+  const { userProfile } = useSelector(state => state.user);
+  
+  // Use auth data as primary source
+  const user = userData || userProfile;
+  
+  const [username] = useState(user?.username || "LocalExplorer123");
+  const [fullname, setFullname] = useState(user?.fullName || "Jane Explorer");
   const [isEditingFullname, setIsEditingFullname] = useState(false);
 
   // Avatar (profile pic) states
-  const [profilePic, setProfilePic] = useState("/profile-default.png");
+  const [profilePic, setProfilePic] = useState(user?.avatar || "/profile-default.png");
   const [tempProfilePic, setTempProfilePic] = useState(profilePic);
   const [isEditingProfilePic, setIsEditingProfilePic] = useState(false);
 
   // Cover image states
-  const [coverImage, setCoverImage] = useState("/cover-default.jpg");
+  const [coverImage, setCoverImage] = useState(user?.coverImage || "/cover-default.jpg");
   const [tempCoverImage, setTempCoverImage] = useState(coverImage);
   const [isEditingCoverImage, setIsEditingCoverImage] = useState(false);
 
   // Bio (max 200 characters)
-  const [bio, setBio] = useState("Explorer, traveler, and demo user.");
+  const [bio, setBio] = useState(user?.bio || "Explorer, traveler, and demo user.");
   const [isEditingBio, setIsEditingBio] = useState(false);
+
+  // Fetch user profile if not available
+  useEffect(() => {
+    if (userData?._id && !userProfile) {
+      dispatch(fetchUserProfile(userData._id));
+    }
+  }, [dispatch, userData?._id, userProfile]);
+
+  // Update local state when user data changes
+  useEffect(() => {
+    if (user) {
+      setFullname(user.fullName || "Jane Explorer");
+      setProfilePic(user.avatar || "/profile-default.png");
+      setTempProfilePic(user.avatar || "/profile-default.png");
+      setCoverImage(user.coverImage || "/cover-default.jpg");
+      setTempCoverImage(user.coverImage || "/cover-default.jpg");
+      setBio(user.bio || "Explorer, traveler, and demo user.");
+    }
+  }, [user]);
 
   // Avatar handlers
   const handleProfilePicChange = (e) => {
@@ -206,7 +234,7 @@ export default function AccountSection() {
         <label className="block text-sm text-gray-700 mb-2">Email Address</label>
         <input
           type="email"
-          value="explorer@email.com"
+          value={user?.email || "explorer@email.com"}
           readOnly
           className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-50 text-gray-800"
         />

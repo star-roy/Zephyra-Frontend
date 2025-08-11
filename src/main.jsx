@@ -23,11 +23,7 @@ import { setStore } from "./utils/axiosConfig.js";
 setStore(store);
 
 // Route components
-import { VerifyEmail } from "./pages/index.js";
-import { ForgotPasswordPage } from "./pages/index.js";
-import { ResetPasswordPage } from "./pages/index.js";
 
-import { AboutPage as About } from "./pages/index.js";
 import { Home } from "./pages/index.js";
 import { Explore } from "./pages/index.js";
 import { Compass } from "./pages/index.js";
@@ -39,6 +35,7 @@ import { AccessDenied } from "./pages/index.js";
 import { Help } from "./pages/index.js";
 import { Privacy } from "./pages/index.js";
 import { Terms } from "./pages/index.js";
+import { AboutPage as About } from "./pages/index.js";
 import { Settings } from "./pages/index.js";
 
 import { QuestInProgressPage } from "./pages/index.js";
@@ -55,22 +52,15 @@ import { BadgeCollectionPage } from "./pages/index.js";
 import { BadgesGallery } from "./pages/index.js";
 
 import { UserProfilePage } from "./pages/index.js";
+import { VerifyEmail } from "./pages/index.js";
+import { ForgotPasswordPage } from "./pages/index.js";
+import { ResetPasswordPage } from "./pages/index.js";
 
 // Admin Dashboard Components
 import { AdminDashboard, SuperAdminDashboard, UserManagement, QuestModeration } from "./pages/index.js";
 import { AdminLayout } from "./components/index.js";
 
 import { FeatureUnderDevelopment } from "./pages/index.js";
-// 🔐 Dummy auth logic (replace with real one)
-// const PrivateRoute = ({ children }) => {
-//   const isLoggedIn = true; // Or get from localStorage/context
-
-//   if (!isLoggedIn) {
-//     return <Navigate to="/access-denied" replace />;
-//   }
-
-//   return <>{children}</>;
-// };
 
 // 🚀 Router
 const router = createBrowserRouter(
@@ -83,13 +73,7 @@ const router = createBrowserRouter(
       <Route path="signup" element={<SignUp />} />
       <Route path="access-denied" element={<AccessDenied />} />
 
-      <Route
-        path="verify-email"
-        element={
-            <VerifyEmail />
-        }
-      />
-
+      <Route path="verify-email" element={<VerifyEmail />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
@@ -151,22 +135,14 @@ const router = createBrowserRouter(
           </PrivateRoute>
         }
       />
-      {/* <Route
-        path="quest/:questId"
-        element={
-          <PrivateRoute>
-            <QuestOverview />
-          </PrivateRoute>
-        }
-      /> */}
       <Route
-        path="quest/:questId"
+        path="quest-overview/:questId"
         element={
             <QuestOverviewPage />
         }
       />
       <Route
-        path="quest-in-progress"
+        path="quest-in-progress/:questId"
         element={
             <QuestInProgressPage />
         }
@@ -202,7 +178,7 @@ const router = createBrowserRouter(
         }
       />
       <Route
-        path="quest-proof-upload"
+        path="quest-proof-upload/:questId"
         element={
             <QuestProofUpload />
         }

@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserFriends } from "../../features/friendsSlice";
 
 // Dummy Data
 const quests = [
@@ -69,44 +71,6 @@ const badges = [
     desc: "Awarded for exploring 5 historical sites.",
     image: "/images/badge-history.jpg",
     earned: true,
-  },
-];
-
-const friends = [
-  {
-    name: "Alex Kim",
-    handle: "@alexk",
-    avatar: "/images/avatar-alex.png",
-    status: "Online",
-    bio: "Urban adventurer & photographer.",
-  },
-  {
-    name: "Priya Patel",
-    handle: "@priyap",
-    avatar: "/images/avatar-priya.png",
-    status: "Offline",
-    bio: "Foodie and art lover.",
-  },
-  {
-    name: "Liam Nguyen",
-    handle: "@liamng",
-    avatar: "/images/avatar-liam.png",
-    status: "Online",
-    bio: "Nature explorer & cyclist.",
-  },
-  {
-    name: "Sara Lee",
-    handle: "@saralee",
-    avatar: "/images/avatar-sara.png",
-    status: "Online",
-    bio: "Coffee lover & city walker.",
-  },
-  {
-    name: "David Chen",
-    handle: "@davidc",
-    avatar: "/images/avatar-david.png",
-    status: "Offline",
-    bio: "History buff & foodie.",
   },
 ];
 
@@ -248,22 +212,51 @@ function BadgesTab() {
 
 // --- Friends Tab ---
 function FriendsTab() {
+  const dispatch = useDispatch();
+  const { friends, isLoading } = useSelector(state => state.friends);
+  const { userData } = useSelector(state => state.auth);
+  
   const [showAll, setShowAll] = useState(false);
+  
+  useEffect(() => {
+    if (userData?._id) {
+      dispatch(getUserFriends());
+    }
+  }, [dispatch, userData?._id]);
+  
   const MAX = 3;
   const displayedFriends = showAll ? friends : friends.slice(0, MAX);
   const hasMore = friends.length > MAX && !showAll;
+  
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
+      </div>
+    );
+  }
+  
+  if (friends.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-slate-500 mb-4">No friends found</div>
+        <div className="text-slate-400 text-sm">Start connecting with other users to see them here!</div>
+      </div>
+    );
+  }
+  
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-8">
         {displayedFriends.map((friend, i) => (
           <div
-            key={i}
+            key={friend._id || i}
             className="rounded-2xl bg-white shadow-lg border border-slate-100 flex flex-col items-center p-6 transition hover:shadow-xl hover:-translate-y-1"
           >
             <div className="relative mb-2">
               <img
-                src={friend.avatar}
-                alt={friend.name}
+                src={friend.avatar || "/images/avatar-default.png"}
+                alt={friend.fullName || friend.username}
                 className="w-16 h-16 rounded-full object-cover border-4 border-teal-100 shadow"
               />
               <span
@@ -273,12 +266,18 @@ function FriendsTab() {
                     : "bg-slate-300 text-slate-600"
                 }`}
               >
-                {friend.status}
+                {friend.status || "Offline"}
               </span>
             </div>
-            <div className="font-bold text-slate-900 text-md mb-1">{friend.name}</div>
-            <div className="text-teal-500 font-medium mb-1">{friend.handle}</div>
-            <div className="text-slate-500 text-sm text-center mb-2">{friend.bio}</div>
+            <div className="font-bold text-slate-900 text-md mb-1">
+              {friend.fullName || friend.username}
+            </div>
+            <div className="text-teal-500 font-medium mb-1">
+              @{friend.username}
+            </div>
+            <div className="text-slate-500 text-sm text-center mb-2">
+              {friend.bio || "No bio available"}
+            </div>
             <button className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white rounded-full py-2 px-5 font-semibold shadow mt-auto">
               View Profile
             </button>

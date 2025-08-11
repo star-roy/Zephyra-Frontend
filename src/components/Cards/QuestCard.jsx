@@ -1,13 +1,30 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function QuestCard({ id, image, title, description, difficulty = "Medium", xp = 150 }) {
+export default function QuestCard({ quest }) {
   const navigate = useNavigate();
+  
+  // Guard clause to handle undefined quest
+  if (!quest) {
+    return null; // or return a placeholder component
+  }
+
+  // Destructure quest data from backend
+  const { 
+    _id: id, 
+    title, 
+    description, 
+    difficulty = "Medium", 
+    xp = 150,
+    files = [] // quest photos from backend
+  } = quest;
 
   const handleViewQuest = () => {
     navigate(`/quest-overview/${id}`);
   };
 
+  // Get first image from quest files or use fallback
+  const questImage = files.length > 0 ? files[0].file_url : null;
   const fallbackImg = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80";
   return (
     <div
@@ -18,7 +35,7 @@ export default function QuestCard({ id, image, title, description, difficulty = 
       {/* Image with overlay gradient */}
       <div className="relative overflow-hidden">
         <img
-          src={image || fallbackImg}
+          src={questImage || fallbackImg}
           alt={title}
           className="w-full h-35 object-cover rounded-t-3xl bg-gray-50 transition-transform duration-300 group-hover:scale-105"
           style={{ height: '140px' }}

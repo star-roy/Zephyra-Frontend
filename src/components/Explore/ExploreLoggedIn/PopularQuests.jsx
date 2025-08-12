@@ -1,10 +1,9 @@
 import React from "react";
 import ForYouCard from "../../Cards/QuestCard";
-import useGridColumnCount from "../../../Hook/useGridColumnCount"; // Adjust the path if needed
 
 function PopularQuests({ quests = [] }) {
-  const columns = useGridColumnCount();
-  const displayQuests = quests.slice(0, columns);
+  // Show exactly 4 popular quests
+  const displayQuests = quests.slice(0, 4);
 
   if (!displayQuests.length) return null;
 
@@ -27,7 +26,7 @@ function PopularQuests({ quests = [] }) {
         {/* Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
           {displayQuests.map((quest) => (
-            <ForYouCard key={quest.id} {...quest} />
+            <ForYouCard key={quest._id} quest={quest} />
           ))}
         </div>
       </div>

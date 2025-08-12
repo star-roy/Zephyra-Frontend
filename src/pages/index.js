@@ -34,6 +34,9 @@ import VerifyEmail from "./VerifyEmail.jsx";
 import ForgotPasswordPage from "./ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./ResetPasswordPage.jsx";
 
+// 404 Page
+import NotFound from "./NotFound/NotFound.jsx";
+
 //export all pages
 export {
     AboutPage,
@@ -66,5 +69,6 @@ export {
     Terms,
     VerifyEmail,
     ForgotPasswordPage,
-    ResetPasswordPage
+    ResetPasswordPage,
+    NotFound
 };

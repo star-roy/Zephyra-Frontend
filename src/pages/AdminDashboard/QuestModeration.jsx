@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Search, Filter, MapPin, Clock, CheckCircle, XCircle, Eye, Edit, Trash2, Star, Users, Calendar } from 'lucide-react';
-import { fetchAllQuestsForAdmin, approveQuest, rejectQuest } from '../../features/adminSlice';
+import { fetchAllQuestsForAdmin, approveQuest, rejectQuest, deleteQuestByAdmin } from '../../features/adminSlice';
+import EditQuestModal from '../../components/EditQuestModal';
 
 const QuestModeration = () => {
   const dispatch = useDispatch();
@@ -12,6 +13,10 @@ const QuestModeration = () => {
   const [filterCategory, setFilterCategory] = useState('all');
   const [selectedQuest, setSelectedQuest] = useState(null);
   const [showQuestModal, setShowQuestModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [questToEdit, setQuestToEdit] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [questToDelete, setQuestToDelete] = useState(null);
 
   useEffect(() => {
     // Debounce search to avoid too many API calls
@@ -38,6 +43,15 @@ const QuestModeration = () => {
         await dispatch(approveQuest({ questId, feedback: 'Quest approved by admin' }));
       } else if (action === 'reject') {
         await dispatch(rejectQuest({ questId, reason }));
+      } else if (action === 'delete') {
+        const result = await dispatch(deleteQuestByAdmin(questId));
+        
+        if (deleteQuestByAdmin.fulfilled.match(result)) {
+          // Quest deleted successfully - no need for alert, modal will handle feedback
+        } else {
+          alert(`Delete failed: ${result.payload?.message || result.payload || 'Unknown error'}`);
+          return; // Don't refresh if delete failed
+        }
       }
       
       // Refresh the quests list
@@ -50,7 +64,26 @@ const QuestModeration = () => {
       }));
     } catch (error) {
       console.error(`Error ${action}ing quest:`, error);
+      alert(`Error ${action}ing quest: ${error.message}`);
     }
+  };
+
+  const handleEditQuest = (quest) => {
+    setQuestToEdit(quest);
+    setShowEditModal(true);
+  };
+
+  const handleEditModalClose = () => {
+    setShowEditModal(false);
+    setQuestToEdit(null);
+    // Refresh the quests list after edit
+    dispatch(fetchAllQuestsForAdmin({ 
+      page: 1, 
+      limit: 50,
+      status: filterStatus,
+      category: filterCategory,
+      search: searchTerm
+    }));
   };
 
   const getStatusColor = (status) => {
@@ -93,152 +126,202 @@ const QuestModeration = () => {
           </div>
           
           <div className="p-6">
-                <div className="flex gap-6 mb-6">
-                  <img
-                    src={quest.images?.[0] || quest.image || '/assets/default-quest.jpg'}
-                    alt={quest.title}
-                    className="w-48 h-32 object-cover rounded-lg"
-                  />
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{quest.title}</h3>
-                    <p className="text-gray-600 mb-4">{quest.description}</p>
-                    
-                    <div className="flex items-center gap-4 mb-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(quest.status)}`}>
-                        {quest.status?.toUpperCase()}
-                      </span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(quest.difficulty)}`}>
-                        {quest.difficulty}
-                      </span>
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                        {quest.category}
-                      </span>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
-                        {quest.city || 'Not specified'}, {quest.state || ''}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        {quest.estimatedTime || quest.duration || 'Not specified'}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        {quest.completions || 0} completions
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Star className="w-4 h-4" />
-                        {quest.averageRating > 0 ? `${quest.averageRating}/5` : 'Not rated'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Quest Tasks</h4>
-                  <ol className="list-decimal list-inside space-y-2">
-                    {quest.tasks && quest.tasks.length > 0 ? (
-                      quest.tasks.map((task, index) => (
-                        <li key={index} className="text-gray-700">
-                          {typeof task === 'string' ? task : task.description || task.name}
-                        </li>
-                      ))
-                    ) : (
-                      <li className="text-gray-500">No specific tasks listed</li>
-                    )}
-                  </ol>
-                </div>
-
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                    <Calendar className="w-4 h-4" />
-                    Created by @{quest.submittedBy?.username || quest.createdBy || 'Unknown'} on {new Date(quest.createdAt).toLocaleDateString()}
+            <div>
+              <div className="flex gap-6 mb-6">
+                <img
+                  src={quest.images?.[0] || quest.image || '/assets/default-quest.jpg'}
+                  alt={quest.title}
+                  className="w-48 h-32 object-cover rounded-lg"
+                />
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{quest.title}</h3>
+                  <p className="text-gray-600 mb-4">{quest.description}</p>
+                  
+                  <div className="flex items-center gap-4 mb-4">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(quest.status)}`}>
+                      {quest.status?.toUpperCase()}
+                    </span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(quest.difficulty)}`}>
+                      {quest.difficulty}
+                    </span>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                      {quest.category}
+                    </span>
                   </div>
                   
-                  {quest.rejectionReason && (
-                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-sm text-red-800">
-                        <strong>Rejection Reason:</strong> {quest.rejectionReason}
-                      </p>
+                  <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      {quest.city || 'Not specified'}, {quest.state || ''}
                     </div>
-                  )}
-                </div>            {showRejectForm ? (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <h5 className="font-medium text-red-900 mb-2">Reason for Rejection</h5>
-                <textarea
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  placeholder="Please provide a detailed reason for rejecting this quest..."
-                  className="w-full p-3 border border-red-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  rows="3"
-                />
-                <div className="flex gap-3 mt-3">
-                  <button
-                    onClick={() => {
-                      if (rejectionReason.trim()) {
-                        handleQuestAction(quest._id, 'reject', rejectionReason);
-                        onClose();
-                      }
-                    }}
-                    disabled={!rejectionReason.trim()}
-                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
-                  >
-                    Confirm Rejection
-                  </button>
-                  <button
-                    onClick={() => setShowRejectForm(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
-                  >
-                    Cancel
-                  </button>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      {quest.estimatedTime || quest.duration || 'Not specified'}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      {quest.completions || 0} completions
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4" />
+                      {quest.averageRating > 0 ? `${quest.averageRating}/5` : 'Not rated'}
+                    </div>
+                  </div>
                 </div>
               </div>
-            ) : (
-              <div className="flex gap-3 pt-6 border-t border-gray-200">
-                {quest.status === 'pending' && (
-                  <>
+
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold text-gray-900 mb-3">Quest Tasks</h4>
+                <ol className="list-decimal list-inside space-y-2">
+                  {quest.tasks && quest.tasks.length > 0 ? (
+                    quest.tasks.map((task, index) => (
+                      <li key={index} className="text-gray-700">
+                        {typeof task === 'string' ? task : task.description || task.name}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-gray-500">No specific tasks listed</li>
+                  )}
+                </ol>
+              </div>
+
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                  <Calendar className="w-4 h-4" />
+                  Created by @{quest.submittedBy?.username || quest.createdBy || 'Unknown'} on {new Date(quest.createdAt).toLocaleDateString()}
+                </div>
+                
+                {quest.rejectionReason && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-800">
+                      <strong>Rejection Reason:</strong> {quest.rejectionReason}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              {showRejectForm ? (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h5 className="font-medium text-red-900 mb-2">Reason for Rejection</h5>
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    placeholder="Please provide a detailed reason for rejecting this quest..."
+                    className="w-full p-3 border border-red-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    rows="3"
+                  />
+                  <div className="flex gap-3 mt-3">
                     <button
                       onClick={() => {
-                        handleQuestAction(quest._id, 'approve');
-                        onClose();
+                        if (rejectionReason.trim()) {
+                          handleQuestAction(quest._id, 'reject', rejectionReason);
+                          onClose();
+                        }
                       }}
-                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center gap-2"
+                      disabled={!rejectionReason.trim()}
+                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
                     >
-                      <CheckCircle className="w-4 h-4" />
-                      Approve Quest
+                      Confirm Rejection
                     </button>
                     <button
-                      onClick={() => setShowRejectForm(true)}
-                      className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
+                      onClick={() => setShowRejectForm(false)}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
                     >
-                      <XCircle className="w-4 h-4" />
-                      Reject Quest
+                      Cancel
                     </button>
-                  </>
-                )}
-                
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2">
-                  <Edit className="w-4 h-4" />
-                  Edit Quest
-                </button>
-                
-                <button
-                  onClick={() => {
-                    if (confirm('Are you sure you want to delete this quest? This action cannot be undone.')) {
-                      // handleQuestAction(quest._id, 'delete');
-                      console.log('Delete functionality not yet implemented');
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-3 pt-6 border-t border-gray-200">
+                  {quest.status === 'pending' && (
+                    <>
+                      <button
+                        onClick={() => {
+                          handleQuestAction(quest._id, 'approve');
+                          onClose();
+                        }}
+                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center gap-2"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Approve Quest
+                      </button>
+                      <button
+                        onClick={() => setShowRejectForm(true)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        Reject Quest
+                      </button>
+                    </>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      handleEditQuest(quest);
                       onClose();
-                    }
-                  }}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors flex items-center gap-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete Quest
-                </button>
-              </div>
-            )}
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edit Quest
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setQuestToDelete(quest);
+                      setShowDeleteModal(true);
+                      onClose();
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Quest
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const DeleteConfirmationModal = ({ quest, onClose, onConfirm }) => {
+    if (!quest) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
+          <div className="p-6">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+              <Trash2 className="w-6 h-6 text-red-600" />
+            </div>
+            
+            <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+              Delete Quest
+            </h3>
+            
+            <p className="text-sm text-gray-600 text-center mb-6">
+              Are you sure you want to delete "<strong>{quest.title}</strong>"? This action cannot be undone and will permanently remove the quest and all associated data.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={onClose}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  onConfirm();
+                  onClose();
+                }}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Delete Quest
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -306,20 +389,22 @@ const QuestModeration = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredQuests.map((quest) => (
-                <div key={quest._id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="relative">
-                    <img
-                      src={quest.images?.[0] || quest.image || '/assets/default-quest.jpg'}
-                      alt={quest.title}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(quest.status)}`}>
-                        {quest.status?.toUpperCase()}
-                      </span>
-                    </div>
-                  </div>                <div className="p-6">
+            {filteredQuests.map((quest) => (
+              <div key={quest._id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                <div className="relative">
+                  <img
+                    src={quest.images?.[0] || quest.image || '/assets/default-quest.jpg'}
+                    alt={quest.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(quest.status)}`}>
+                      {quest.status?.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{quest.title}</h3>
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">{quest.description}</p>
                   
@@ -400,6 +485,26 @@ const QuestModeration = () => {
           onClose={() => {
             setShowQuestModal(false);
             setSelectedQuest(null);
+          }}
+        />
+      )}
+
+      {showEditModal && (
+        <EditQuestModal
+          quest={questToEdit}
+          onClose={handleEditModalClose}
+        />
+      )}
+
+      {showDeleteModal && (
+        <DeleteConfirmationModal
+          quest={questToDelete}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setQuestToDelete(null);
+          }}
+          onConfirm={() => {
+            handleQuestAction(questToDelete._id, 'delete');
           }}
         />
       )}

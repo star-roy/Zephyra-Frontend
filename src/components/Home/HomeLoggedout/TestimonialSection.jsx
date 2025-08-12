@@ -32,7 +32,8 @@ function TestimonialSection() {
           Hear From Our Community
         </h2>
         <p className="text-center sm:text-lg text-[#CADCFC] mb-12">
-          Real stories from explorers who’ve transformed their relationship with their city.
+          From routine streets to hidden wonders - journeys that change the way you see home.<br />
+          Real stories from explorers who’ve transformed their bond with their world.
         </p>
 
         <div className="grid gap-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

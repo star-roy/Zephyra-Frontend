@@ -32,7 +32,7 @@ function OngoingQuestsSection({ quests }) {
         {hasQuests ? (
           <div className="grid gap-16 md:gap-12 grid-cols-1">
             {displayQuests.map((quest) => (
-              <OngoingQuestCard key={quest.id} {...quest} />
+              <OngoingQuestCard key={quest._id || quest.id} quest={quest} />
             ))}
           </div>
         ) : (

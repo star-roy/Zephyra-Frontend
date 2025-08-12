@@ -7,6 +7,7 @@ import InlineQuestScroller from "./Cards/InlineQuestScroller.jsx";
 import LogoutModal from "./Cards/LogoutModal.jsx";
 import OngoingQuestCard from "./Cards/OngoingQuestCard.jsx";
 import QuestCard from "./Cards/QuestCard.jsx";
+import QuestLimitModal from "./Modals/QuestLimitModal.jsx";
 
 // Navigation bar
 import Navbar from "./Navbar/Navbar.jsx";
@@ -81,6 +82,7 @@ export {
     LogoutModal,
     OngoingQuestCard,
     QuestCard,
+    QuestLimitModal,
 
     // Navigation bar
     Navbar,

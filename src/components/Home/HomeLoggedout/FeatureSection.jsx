@@ -22,7 +22,7 @@ function FeatureSection() {
       icon: <FiUsers size={28} className="text-blue-600" />,
       title: "Connect with Explorers",
       description:
-        "Join a community of local adventurers, share your experiences, and discover together.",
+        "Join a community of adventurers, share your experiences, and discover together.",
       bg: "bg-gradient-to-br from-blue-100 via-blue-50 to-white"
     },
   ];

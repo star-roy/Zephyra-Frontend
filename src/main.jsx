@@ -61,6 +61,7 @@ import { AdminDashboard, SuperAdminDashboard, UserManagement, QuestModeration } 
 import { AdminLayout } from "./components/index.js";
 
 import { FeatureUnderDevelopment } from "./pages/index.js";
+import { NotFound } from "./pages/index.js";
 
 // 🚀 Router
 const router = createBrowserRouter(
@@ -90,9 +91,7 @@ const router = createBrowserRouter(
       <Route
         path="contact-us"
         element={
-          <PrivateRoute>
             <Contact />
-          </PrivateRoute>
         }
       />
       <Route
@@ -138,7 +137,9 @@ const router = createBrowserRouter(
       <Route
         path="quest-overview/:questId"
         element={
+          <PrivateRoute>
             <QuestOverviewPage />
+          </PrivateRoute>
         }
       />
       <Route
@@ -156,7 +157,9 @@ const router = createBrowserRouter(
       <Route
         path="create-quest"
         element={
+          <PrivateRoute>
             <CreateQuestPage />
+          </PrivateRoute>
         }
       />
       <Route
@@ -247,12 +250,14 @@ const router = createBrowserRouter(
           </AdminRoute>
         }
       />
+
+      {/* Catch-all route for 404 - MUST be last */}
+      <Route path="*" element={<NotFound />} />
     </Route>
     
   )
 );
 
-// 🧷 Mount App
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Provider store={store}>

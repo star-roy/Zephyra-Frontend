@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Navbar from "./components/Navbar/Navbar.jsx";
 import Footer from "./components/Footer/Footer.jsx";
 import ScrollToTop from "./components/ScrollToTop";
+import LoadingSpinner from "./components/LoadingSpinner.jsx";
 import { getCurrentUser, initializeAuth } from "./features/authSlice";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -13,6 +14,13 @@ function Layout() {
   const dispatch = useDispatch();
   const { isAuthenticated, userData } = useSelector((state) => state.auth);
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const [loading, setLoading] = React.useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    const timer = setTimeout(() => setLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
 
   useEffect(() => {
     AOS.init({ duration: 1000 });
@@ -26,6 +34,10 @@ function Layout() {
       dispatch(getCurrentUser());
     }
   }, [dispatch, isAuthenticated, userData]);
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FaMapMarkerAlt, FaStar, FaCheckCircle, FaCamera, FaRedoAlt, FaShareAlt } from "react-icons/fa";
@@ -8,7 +8,8 @@ import { HiOutlineArrowNarrowRight } from "react-icons/hi";
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import MapRoutingControl from '../../components/MapRoutingControl';
 import AdvancedMarker from '../../components/AdvancedMarker';
-import { fetchQuestById, startQuest } from '../../features/questSlice';
+import QuestLimitModal from '../../components/Modals/QuestLimitModal';
+import { fetchQuestById, startQuest, fetchMyQuestDashboard } from '../../features/questSlice';
 
 // Google Maps configuration
 const GOOGLE_MAPS_LIBRARIES = ['places'];
@@ -155,13 +156,36 @@ function QuestOverviewPage() {
   const { questId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { currentQuest: quest, loading, error } = useSelector(state => state.quest);
+  const { currentQuest: questData, loading, error } = useSelector(state => state.quest);
   
   const [showAllSteps, setShowAllSteps] = useState(false);
   const [userRating, setUserRating] = useState(0);
   const [userReview, setUserReview] = useState("");
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [startingQuest, setStartingQuest] = useState(false);
+  const [showQuestLimitModal, setShowQuestLimitModal] = useState(false);
+
+  // Extract quest data from the response structure
+  const quest = useMemo(() => questData?.quest || questData, [questData]);
+  const tasks = useMemo(() => questData?.tasks || quest?.tasks || [], [questData, quest]);
+  const tips = useMemo(() => questData?.tips || quest?.tips || [], [questData, quest]);
+  const files = useMemo(() => questData?.photos || questData?.files || quest?.files || [], [questData, quest]);
+  const routes = useMemo(() => questData?.routes || quest?.routes || [], [questData, quest]);
+  const reviews = useMemo(() => questData?.reviews || quest?.recentReviews || [], [questData, quest]);
+  const communityRating = useMemo(() => questData?.communityRating || {
+    average: quest?.averageRating || 0,
+    totalReviews: quest?.totalReviews || 0,
+    breakdown: quest?.ratingBreakdown || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+  }, [questData, quest]);
+
+  // Get first quest image or fallback
+  const questImage = useMemo(() => {
+    if (files && files.length > 0) {
+      const firstFile = files[0];
+      return firstFile.file_url || firstFile.fileUrl || "/assets/downtown.jpg";
+    }
+    return "/assets/downtown.jpg";
+  }, [files]);
 
   // Fetch quest data on mount
   useEffect(() => {
@@ -170,20 +194,55 @@ function QuestOverviewPage() {
     }
   }, [dispatch, questId]);
 
+  // Calculate map center from waypoints
+  const getMapCenter = () => {
+    if (routes && routes.length > 0 && routes[0].waypoints && routes[0].waypoints.length > 0) {
+      const waypoints = routes[0].waypoints;
+      const latSum = waypoints.reduce((sum, wp) => sum + (wp.lat || 0), 0);
+      const lngSum = waypoints.reduce((sum, wp) => sum + (wp.lng || 0), 0);
+      return { lat: latSum / waypoints.length, lng: lngSum / waypoints.length };
+    }
+    return { lat: 39.9612, lng: -82.9988 }; // Default center
+  };
+
   // Handle start quest
   const handleStartQuest = async () => {
-    if (!quest?._id) return;
+    if (!quest?._id && !quest?.id) return;
     
     setStartingQuest(true);
     try {
-      await dispatch(startQuest(quest._id)).unwrap();
-      navigate(`/quest-in-progress/${quest._id}`);
+      const id = quest._id || quest.id;
+      await dispatch(startQuest(id)).unwrap();
+      // Refresh the quest dashboard to update ongoing quests
+      dispatch(fetchMyQuestDashboard());
+      navigate(`/quest-in-progress/${id}`);
     } catch (error) {
       console.error('Failed to start quest:', error);
-      // You can add error handling here
+      
+      // Check if it's a quest limit error
+      if (error.includes('3 ongoing quests') || error.includes('429')) {
+        setShowQuestLimitModal(true);
+      } else {
+        // Show generic error message for other errors
+        alert('Failed to start quest. Please try again.');
+      }
     } finally {
       setStartingQuest(false);
     }
+  };
+
+  // Handle quest limit modal close
+  const handleQuestLimitModalClose = () => {
+    setShowQuestLimitModal(false);
+    // Optionally navigate to My Quest page
+    navigate('/my-quest');
+  };
+
+  // Handle rating submission
+  const handleSubmitRating = (e) => {
+    e.preventDefault();
+    setRatingSubmitted(true);
+    // Here you would send the rating and review to your backend or analytics
   };
 
   if (loading) {
@@ -213,27 +272,7 @@ function QuestOverviewPage() {
     );
   }
 
-  const stepsToShow = showAllSteps ? (quest.tasks || []) : (quest.tasks || []).slice(0, 2);
-
-  const handleSubmitRating = (e) => {
-    e.preventDefault();
-    setRatingSubmitted(true);
-    // Here you would send the rating and review to your backend or analytics
-  };
-
-  // Calculate map center from waypoints
-  const getMapCenter = () => {
-    if (quest.routes && quest.routes.length > 0 && quest.routes[0].waypoints && quest.routes[0].waypoints.length > 0) {
-      const waypoints = quest.routes[0].waypoints;
-      const latSum = waypoints.reduce((sum, wp) => sum + wp.lat, 0);
-      const lngSum = waypoints.reduce((sum, wp) => sum + wp.lng, 0);
-      return { lat: latSum / waypoints.length, lng: lngSum / waypoints.length };
-    }
-    return { lat: 39.9612, lng: -82.9988 }; // Default center
-  };
-
-  // Get first quest image or fallback
-  const questImage = quest.files && quest.files.length > 0 ? quest.files[0].file_url : "/assets/downtown.jpg";
+  const stepsToShow = showAllSteps ? tasks : tasks.slice(0, 2);
 
   // Google Maps API key
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -248,7 +287,7 @@ function QuestOverviewPage() {
             <div className="relative h-56 xs:h-64 sm:h-72 md:h-80 lg:h-[430px] w-full transition-all">
               <img
                 src={questImage}
-                alt={quest.title}
+                alt={quest?.title || 'Quest'}
                 className="w-full h-full object-cover"
               />
               {/* QUEST tag */}
@@ -257,7 +296,7 @@ function QuestOverviewPage() {
               </span>
               {/* Title */}
               <span className="absolute bottom-4 left-24 text-white text-lg xs:text-xl md:text-2xl lg:text-3xl font-bold drop-shadow">
-                {quest.title}
+                {quest?.title || 'Quest Title'}
               </span>
             </div>
           </div>
@@ -266,7 +305,7 @@ function QuestOverviewPage() {
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3">
                 <span className="font-semibold text-[#7F56D9] text-base mr-2">Quest Details</span>
-                {(quest.tags || []).map((tag) => (
+                {(quest?.tags || []).map((tag) => (
                   <span
                     key={tag}
                     className="bg-[#F2F4F7] text-[#667085] text-xs px-3 py-1 rounded-full font-medium"
@@ -275,11 +314,11 @@ function QuestOverviewPage() {
                   </span>
                 ))}
               </div>
-              <p className="text-[#344054] text-base">{quest.description}</p>
+              <p className="text-[#344054] text-base">{quest?.description}</p>
             </div>
             <div className="absolute top-4 right-4 md:static">
               <span className="bg-[#FDB022] text-white font-bold px-4 py-2 rounded-xl text-sm shadow">
-                +{quest.xp} XP
+                +{quest?.xp || 0} XP
               </span>
             </div>
           </div>
@@ -289,7 +328,7 @@ function QuestOverviewPage() {
               <h2 className="font-semibold text-lg text-[#7F56D9]">
                 Start Your Adventure
               </h2>
-              {(quest.tasks || []).length > 2 && (
+              {tasks.length > 2 && (
                 <button
                   className="text-[#7F56D9] text-sm font-semibold hover:underline focus:outline-none"
                   onClick={() => setShowAllSteps((open) => !open)}
@@ -300,7 +339,7 @@ function QuestOverviewPage() {
             </div>
             <ol className="space-y-4">
               {stepsToShow.map((task, idx) => (
-                <li key={idx} className="flex items-start gap-3">
+                <li key={task._id || task.id || idx} className="flex items-start gap-3">
                   <span className="bg-[#7F56D9] text-white font-bold w-8 h-8 flex items-center justify-center rounded-full text-base mt-0.5 shrink-0">
                     {task.order || idx + 1}
                   </span>
@@ -341,11 +380,7 @@ function QuestOverviewPage() {
           </div>
           {/* Community Rating & Actions - horizontally */}
           <div className="flex flex-col sm:flex-row gap-4 w-full">
-            <CommunityRatingSection ratingData={{
-              average: quest.averageRating || 0,
-              totalReviews: quest.totalReviews || 0,
-              breakdown: quest.ratingBreakdown || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
-            }} />
+            <CommunityRatingSection ratingData={communityRating} />
             <ActionsSection />
           </div>
         </div>
@@ -354,7 +389,7 @@ function QuestOverviewPage() {
           {/* Map Card with Route */}
           <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-3 sm:p-4 flex flex-col">
             <div className="w-full aspect-square rounded-xl overflow-hidden mb-3 border border-[#F2F4F7]">
-              {quest.routes && quest.routes.length > 0 && quest.routes[0].waypoints ? (
+              {routes && routes.length > 0 && routes[0].waypoints ? (
                 googleMapsApiKey ? (
                   <LoadScript googleMapsApiKey={googleMapsApiKey} libraries={GOOGLE_MAPS_LIBRARIES}>
                     <GoogleMap
@@ -373,14 +408,14 @@ function QuestOverviewPage() {
                       }}
                     >
                       {/* Route using proper road routing */}
-                      <MapRoutingControl waypoints={quest.routes[0].waypoints} />
+                      <MapRoutingControl waypoints={routes[0].waypoints} />
                       
                       {/* Waypoint markers */}
-                      {quest.routes[0].waypoints.map((waypoint, idx) => (
+                      {routes[0].waypoints.map((waypoint, idx) => (
                         <AdvancedMarker 
                           key={idx} 
                           position={{ lat: waypoint.lat, lng: waypoint.lng }}
-                          title={`Stop ${idx + 1}: ${idx === 0 ? quest.routes[0].start_location : idx === quest.routes[0].waypoints.length - 1 ? quest.routes[0].end_location : `Waypoint ${idx + 1}`}`}
+                          title={`Stop ${idx + 1}: ${idx === 0 ? routes[0].start_location || routes[0].startLocation : idx === routes[0].waypoints.length - 1 ? routes[0].end_location || routes[0].endLocation : `Waypoint ${idx + 1}`}`}
                           label={`${idx + 1}`}
                         />
                       ))}
@@ -409,20 +444,20 @@ function QuestOverviewPage() {
             </div>
             
             {/* Route Information */}
-            {quest.routes && quest.routes.length > 0 && (
+            {routes && routes.length > 0 && (
               <div className="mb-4">
                 <div className="bg-slate-50 rounded-lg p-3 mb-3">
                   <div className="text-sm font-medium text-slate-700 mb-2">Quest Route</div>
                   <div className="flex items-center gap-2 text-sm text-slate-600 mb-1">
                     <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                    <span>Start: {quest.routes[0].start_location}</span>
+                    <span>Start: {routes[0].start_location || routes[0].startLocation}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
                     <span className="w-3 h-3 bg-red-500 rounded-full"></span>
-                    <span>End: {quest.routes[0].end_location}</span>
+                    <span>End: {routes[0].end_location || routes[0].endLocation}</span>
                   </div>
                   <div className="text-xs text-slate-500">
-                    {quest.routes[0].waypoints?.length || 0} waypoint{(quest.routes[0].waypoints?.length || 0) !== 1 ? 's' : ''} along the route
+                    {routes[0].waypoints?.length || 0} waypoint{(routes[0].waypoints?.length || 0) !== 1 ? 's' : ''} along the route
                   </div>
                 </div>
               </div>
@@ -430,13 +465,13 @@ function QuestOverviewPage() {
             
             <div className="flex items-center text-sm text-[#667085] mb-4">
               <FaMapMarkerAlt className="mr-2 text-[#7F56D9]" />
-              <span>{quest.city || 'Location not specified'}</span>
+              <span>{quest?.city || 'Location not specified'}</span>
             </div>
             
             {/* Address display */}
             <div className="bg-slate-100 px-4 py-3 rounded-lg text-slate-700 text-base font-medium mb-4">
               <span className="font-semibold text-[#7F56D9]">Address: </span>
-              {quest.address}, {quest.city} {quest.pincode && `- ${quest.pincode}`}
+              {quest?.address}, {quest?.city} {quest?.pincode && `- ${quest.pincode}`}
             </div>
             <button 
               className={`w-full py-3 text-white font-semibold rounded-xl transition text-base ${
@@ -457,35 +492,42 @@ function QuestOverviewPage() {
               Explorer Tips
             </div>
             <ul className="space-y-2 text-sm text-[#667085]">
-              {(quest.tips || []).map((tip, i) => (
-                <li key={i} className="flex items-start gap-2">
+              {tips.map((tip, i) => (
+                <li key={tip._id || tip.id || i} className="flex items-start gap-2">
                   <BsFillInfoCircleFill className="min-w-4 mt-1 text-[#7F56D9]" />
-                  <span>{typeof tip === 'string' ? tip : tip.tip_text}</span>
+                  <span>{typeof tip === 'string' ? tip : tip.tip_text || tip.tipText}</span>
                 </li>
               ))}
+              {tips.length === 0 && (
+                <li className="text-[#667085]">No tips available for this quest.</li>
+              )}
             </ul>
           </div>
           {/* Explorer Reviews */}
           <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-4 sm:p-5">
             <div className="font-semibold mb-2 text-[#7F56D9]">Explorer Reviews</div>
             <div className="space-y-4">
-              {(quest.recentReviews || []).slice(0, 3).map((review, i) => (
-                <div key={i} className="flex items-start gap-3">
+              {reviews.slice(0, 3).map((review, i) => (
+                <div key={review._id || review.id || i} className="flex items-start gap-3">
                   <img
-                    src={review.user?.avatar || "/assets/default-avatar.jpg"}
-                    alt={review.user?.fullName || review.user?.username || "User"}
+                    src={review.user?.avatar || review.avatar || "/assets/default-avatar.jpg"}
+                    alt={review.user?.fullName || review.user?.username || review.name || "User"}
                     className="w-9 h-9 rounded-full object-cover border border-gray-200"
                   />
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-[#7F56D9]">{review.user?.fullName || review.user?.username || "Anonymous"}</span>
+                      <span className="font-medium text-[#7F56D9]">
+                        {review.user?.fullName || review.user?.username || review.name || "Anonymous"}
+                      </span>
                       <StarRating rating={review.rating || 0} />
                     </div>
-                    <div className="text-sm text-[#667085]">&quot;{review.comment || review.text || "Great quest!"}&quot;</div>
+                    <div className="text-sm text-[#667085]">
+                      &quot;{review.comment || review.text || review.review_text || "Great quest!"}&quot;
+                    </div>
                   </div>
                 </div>
               ))}
-              {(!quest.recentReviews || quest.recentReviews.length === 0) && (
+              {reviews.length === 0 && (
                 <p className="text-sm text-[#667085]">No reviews yet. Be the first to review this quest!</p>
               )}
             </div>
@@ -516,6 +558,12 @@ function QuestOverviewPage() {
           </div>
         </aside>
       </main>
+
+      {/* Quest Limit Modal */}
+      <QuestLimitModal 
+        isOpen={showQuestLimitModal} 
+        onClose={handleQuestLimitModalClose} 
+      />
     </div>
   );
 }

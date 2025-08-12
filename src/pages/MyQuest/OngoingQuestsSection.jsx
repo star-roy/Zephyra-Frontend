@@ -2,8 +2,6 @@ import React from "react";
 import { OngoingQuestCard, EmptyOngoingQuests} from "../../components/index.js";
 
 export default function OngoingQuestsSection({ ongoingQuests = [] }) {
-  console.log('OngoingQuestsSection received:', ongoingQuests);
-  
   const maxOngoingQuests = 3;
   const hasOngoingQuests = ongoingQuests && Array.isArray(ongoingQuests) && ongoingQuests.length > 0;
 
@@ -22,12 +20,13 @@ export default function OngoingQuestsSection({ ongoingQuests = [] }) {
       
       {hasOngoingQuests ? (
         <div className="space-y-8">
-          {ongoingQuests.map((quest, index) => {
-            console.log(`Quest ${index}:`, quest);
+          {ongoingQuests.map((questProgress, index) => {
+            // Use the QuestProgress _id as key since it should be unique per user-quest combination
+            const progressId = questProgress?._id || `quest-progress-${index}`;
             return (
               <OngoingQuestCard 
-                key={quest?.id || `quest-${index}`} 
-                quest={quest}
+                key={progressId} 
+                quest={questProgress}
               />
             );
           })}

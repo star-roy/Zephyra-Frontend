@@ -9,7 +9,8 @@ function JoinCTA() {
           Flow Freely. Discover Deeply.
         </h2>
         <p className="text-blue-500 text-base sm:text-lg mb-10 font-medium">
-          Sign up today and unlock a world of curated quests, local adventures, and a community of fellow explorers.
+          Sign up today and unlock a world of curated quests, local adventures, and a community of fellow explorers.<br />
+          From hidden gems to epic journeys - it’s all here.
         </p>
         <Link
           to="/signup"

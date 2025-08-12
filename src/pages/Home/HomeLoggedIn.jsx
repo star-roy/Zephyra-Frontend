@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   ExplorerHubSection,
   HeroLoggedIn,
@@ -6,81 +7,31 @@ import {
   UpcomingEventsSection,
   YourNextAdventureSection,
 } from "../../components/index.js";
+import { fetchQuests, fetchOngoingQuests } from "../../features/questSlice.js";
 
 function HomeLoggedIn() {
-  const quests = [
-    // {
-    //   id: 1,
-    //   title: "Uncover Old Delhi",
-    //   description:
-    //     "Explore the hidden corners of Old Delhi. Explore the hidden corners of Old Delhi. Explore the hidden corners of Old Delhi. Explore the hidden corners of Old Delhi.",
-    //   currentStep: 3,
-    //   totalSteps: 5,
-    //   progressText: "3 of 5 Steps", // optional
-    //   stepLabel: "steps", // optional
-    // },
-    // {
-    //   id: 2,
-    //   title: "Uncover Old Delhi",
-    //   description: "Explore the hidden corners of Old Delhi",
-    //   currentStep: 4,
-    //   totalSteps: 5,
-    //   progressText: "4 of 5 Steps", // optional
-    //   stepLabel: "steps", // optional
-    // },
-    // {
-    //   id: 3,
-    //   title: "Uncover Old Delhi",
-    //   description: "Explore the hidden corners of Old Delhi",
-    //   currentStep: 1,
-    //   totalSteps: 5, // optional
-    //   progressText: "1 of 5 Steps", // optional
-    //   stepLabel: "steps", // optional
-    // },
-  ];
+  const dispatch = useDispatch();
+  const { 
+    quests = [], 
+    ongoingQuests = []
+  } = useSelector(state => state.quest);
 
-  const adventures = [
-    {
-      id: "abc123",
-      title: "Explore Humayun's Tomb",
-      subtitle:
-        "Wander through this hidden Mughal marvel and uncover lost stories.",
-      xp: 120,
-      image: "/assets/community4.jpeg",
-      tag: "New",
-      difficulty: "Medium", // optional: "Easy", "Medium", "Hard"
-    },
-    {
-      id: "abc124",
-      title: "Explore Humayun's Tomb",
-      subtitle:
-        "Wander through this hidden Mughal marvel and uncover lost stories.Wander through this hidden Mughal marvel and uncover lost stories",
-      xp: 120,
-      image: "/assets/community6.jpeg",
-      tag: "New",
-      difficulty: "Easy", // optional: "Easy", "Medium", "Hard"
-    },
-    {
-      id: "abc125",
-      title: "Explore Humayun's Tomb",
-      subtitle:
-        "Wander through this hidden Mughal marvel and uncover lost stories.",
-      xp: 120,
-      image: "/assets/community3.jpeg",
-      tag: "New",
-      difficulty: "Hard", // optional: "Easy", "Medium", "Hard"
-    },
-    {
-      id: "abc126",
-      title: "Explore Humayun's Tomb",
-      subtitle:
-        "Wander through this hidden Mughal marvel and uncover lost stories.",
-      xp: 120,
-      image: "/assets/community3.jpeg",
-      tag: "New",
-      difficulty: "Hard", // optional: "Easy", "Medium", "Hard"
-    },
-  ];
+  // Fetch data on component mount
+  useEffect(() => {
+    dispatch(fetchQuests({ page: 1, limit: 4 })); // Get 4 quests from database
+    dispatch(fetchOngoingQuests());
+  }, [dispatch]);
+
+  // Convert ongoing quest data for OngoingQuestsSection
+  const formattedOngoingQuests = ongoingQuests.map(progressData => ({
+    id: progressData._id,
+    title: progressData.quest_id?.title,
+    description: progressData.quest_id?.description,
+    currentStep: progressData.completed_tasks?.length || 0,
+    totalSteps: progressData.total_tasks || 5,
+    progressText: `${progressData.completed_tasks?.length || 0} of ${progressData.total_tasks || 5} Steps`,
+    stepLabel: "steps",
+  }));
 
   const events = [
     {
@@ -106,9 +57,9 @@ function HomeLoggedIn() {
   return (
     <>
       <HeroLoggedIn />
-      <OngoingQuestsSection quests={quests} />
-      <YourNextAdventureSection adventures={adventures} />
-      <UpcomingEventsSection events={events} />;
+      <OngoingQuestsSection quests={formattedOngoingQuests} />
+      <YourNextAdventureSection quests={quests} />
+      <UpcomingEventsSection events={events} />
       <ExplorerHubSection />
     </>
   );

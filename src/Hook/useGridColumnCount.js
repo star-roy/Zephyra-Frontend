@@ -6,7 +6,7 @@ export default function useGridColumnCount() {
   useEffect(() => {
     function updateColumns() {
       if (window.innerWidth >= 1280) { // xl
-        setColumns(4);
+        setColumns(3);
       }
       else if (window.innerWidth >= 1024) { // lg
         setColumns(3);

@@ -1,12 +1,9 @@
 import React from "react";
 import ForYouCard from "../../Cards/QuestCard"; // Adjust the import path if necessary
-import useGridColumnCount from "../../../Hook/useGridColumnCount"; // Adjust the path if needed
 
 function FeaturedQuest({ quests = [] }) {
-  // Use the responsive column count hook
-  const columns = useGridColumnCount();
-  // Only show as many cards as columns for the current screen size
-  const displayQuests = quests.slice(0, columns);
+  // Show exactly 3 featured quests
+  const displayQuests = quests.slice(0, 3);
 
   if (!displayQuests.length) return null;
 
@@ -29,7 +26,7 @@ function FeaturedQuest({ quests = [] }) {
         {/* Responsive grid: 1, 2, 2, 3, or 4 columns depending on screen size */}
         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-8">
           {displayQuests.map((quest) => (
-            <ForYouCard key={quest.id} {...quest} />
+            <ForYouCard key={quest._id} quest={quest} />
           ))}
         </div>
       </div>

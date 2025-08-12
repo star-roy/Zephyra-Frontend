@@ -42,7 +42,7 @@ const column1Items = [
 const column2Items = [
   {
     type: "stat",
-    title: "1,200+",
+    title: "1,252+",
     sub: "Quests Completed",
     titleColor: 'text-[#0D1B2A]',
     style: "bg-[#E0F7FA]",
@@ -89,7 +89,7 @@ const column4Items = [
   },
   {
     type: "stat",
-    title: "500+",
+    title: "454+",
     sub: "Active Explorers",
     style: "bg-[#CADCFC]",
   },

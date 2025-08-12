@@ -1,19 +1,25 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function OngoingQuestCard({
-  id,
-  image,
-  title,
-  description,
-  progress,
-  xpReward = 200,
-  timeRemaining = "2 days left",
-}) {
+export default function OngoingQuestCard({ quest }) {
   const navigate = useNavigate();
 
+  // Extract data from quest object
+  const questData = quest?.quest_id || quest;
+  const questId = questData?._id; // This is the actual quest ID, not the progress ID
+  const image = questData?.files?.[0]?.file_url || questData?.image;
+  const title = questData?.title;
+  const description = questData?.description;
+  const progress = quest?.progress || 0;
+  const xpReward = questData?.xp || 200;
+  const timeRemaining = "2 days left"; // This could be calculated from quest start date
+
   const handleContinueQuest = () => {
-    navigate(`/quest/${id}`);
+    if (questId) {
+      navigate(`/quest-in-progress/${questId}`);
+    } else {
+      console.error('Quest ID not found', quest);
+    }
   };
 
   // Ensure progress is a valid number between 0 and 100

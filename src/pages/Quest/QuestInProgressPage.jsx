@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import { useJsApiLoader, GoogleMap } from '@react-google-maps/api';
 import MapRoutingControl from '../../components/MapRoutingControl';
 import AdvancedMarker from '../../components/AdvancedMarker';
 import { watchLiveLocation, stopLocationWatch, calculateDistance } from '../../utils/locationUtils';
@@ -63,6 +63,13 @@ export default function QuestInProgressPage() {
   const [watchId, setWatchId] = useState(null);
   const [locationAccuracy, setLocationAccuracy] = useState(null);
 
+  // Google Maps API loading
+  const { isLoaded: mapLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    libraries: GOOGLE_MAPS_LIBRARIES,
+  });
+
   // Google Maps API key
   const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -75,14 +82,24 @@ export default function QuestInProgressPage() {
   }, [dispatch, questId]);
 
   // Get quest route data from currentQuest
-  const questRoute = currentQuest?.routes?.[0] || {
-    waypoints: [
-      { lat: 34.6290, lng: -78.6050 }, // Default waypoints if no route data
-      { lat: 34.6295, lng: -78.6045 },
-      { lat: 34.6300, lng: -78.6040 },
-      { lat: 34.6305, lng: -78.6035 },
-    ]
+  const questRoute = currentQuest?.routes?.[0];
+  
+  // Get waypoints from quest route or use default center location
+  const waypoints = questRoute?.waypoints || [];
+  const hasValidWaypoints = waypoints.length > 0;
+  
+  // Calculate map center from waypoints or use quest location
+  const getMapCenter = () => {
+    if (hasValidWaypoints) {
+      const latSum = waypoints.reduce((sum, wp) => sum + (wp.lat || 0), 0);
+      const lngSum = waypoints.reduce((sum, wp) => sum + (wp.lng || 0), 0);
+      return { lat: latSum / waypoints.length, lng: lngSum / waypoints.length };
+    }
+    // Fallback to default center if no waypoints
+    return { lat: 39.9612, lng: -82.9988 };
   };
+
+  const mapCenter = getMapCenter();
 
   // Get objectives from quest tasks and progress
   const objectives = currentQuest?.tasks?.map((task) => ({
@@ -270,65 +287,83 @@ export default function QuestInProgressPage() {
             </div>
             
             <div className="text-[#667085] font-medium mb-2">Directions:</div>
-            <ol className="list-decimal text-[#667085] text-base ml-5 mb-0">
-              <li>Head east on Main St toward Central Ave.</li>
-              <li>Turn right onto Central Ave.</li>
-              <li>The Delton Clock Tower will be on your left.</li>
-            </ol>
+            {hasValidWaypoints ? (
+              <ol className="list-decimal text-[#667085] text-base ml-5 mb-0">
+                {questRoute?.start_location && (
+                  <li>Start at: {typeof questRoute.start_location === 'string' ? questRoute.start_location : 'Starting location'}</li>
+                )}
+                {waypoints.map((waypoint, idx) => (
+                  <li key={idx}>
+                    {waypoint.name || waypoint.address || `Visit waypoint ${idx + 1}`}
+                    {waypoint.address && waypoint.name && ` (${waypoint.address})`}
+                  </li>
+                ))}
+                {questRoute?.end_location && (
+                  <li>End at: {typeof questRoute.end_location === 'string' ? questRoute.end_location : 'Final destination'}</li>
+                )}
+              </ol>
+            ) : (
+              <p className="text-[#667085] text-base ml-5">No route directions available for this quest.</p>
+            )}
           </div>
           {/* Google Maps */}
           <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-4 flex-2 flex items-center justify-center min-w-0 w-full">
             <div className="w-full h-[300px] rounded-xl overflow-hidden">
-              {googleMapsApiKey ? (
-                <LoadScript googleMapsApiKey={googleMapsApiKey} libraries={GOOGLE_MAPS_LIBRARIES}>
-                  <GoogleMap
-                    mapContainerStyle={MAP_CONTAINER_STYLE}
-                    center={DEFAULT_CENTER}
-                    zoom={15}
-                    options={{
-                      zoomControl: true,
-                      streetViewControl: false,
-                      mapTypeControl: false,
-                      fullscreenControl: false,
-                      gestureHandling: 'greedy',
-                      clickableIcons: false,
-                      disableDoubleClickZoom: false,
-                      keyboardShortcuts: true
-                    }}
-                  >
-                    {/* Route visualization */}
-                    <MapRoutingControl waypoints={questRoute.waypoints} />
-                    
-                    {/* Waypoint markers */}
-                    {questRoute.waypoints.map((waypoint, idx) => (
-                      <AdvancedMarker 
-                        key={idx} 
-                        position={{ lat: waypoint.lat, lng: waypoint.lng }}
-                        title={`Quest Stop ${idx + 1}`}
-                        label={`${idx + 1}`}
-                      />
-                    ))}
-                    
-                    {/* User's live location marker */}
-                    {userLocation && (
-                      <AdvancedMarker 
-                        position={{ lat: userLocation.lat, lng: userLocation.lng }}
-                        title="Your Location"
-                        icon={{
-                          url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iOCIgZmlsbD0iIzAwN0FFQyIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI0IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
-                          scaledSize: { width: 16, height: 16 }
-                        }}
-                      />
-                    )}
-                  </GoogleMap>
-                </LoadScript>
+              {mapLoaded && googleMapsApiKey ? (
+                <GoogleMap
+                  mapContainerStyle={MAP_CONTAINER_STYLE}
+                  center={mapCenter}
+                  zoom={hasValidWaypoints ? 14 : 10}
+                  options={{
+                    zoomControl: true,
+                    streetViewControl: false,
+                    mapTypeControl: false,
+                    fullscreenControl: false,
+                    gestureHandling: 'greedy',
+                    clickableIcons: false,
+                    disableDoubleClickZoom: false,
+                    keyboardShortcuts: true
+                  }}
+                >
+                  {/* Route visualization - only show if we have valid waypoints */}
+                  {hasValidWaypoints && <MapRoutingControl waypoints={waypoints} />}
+                  
+                  {/* Waypoint markers - only show if we have valid waypoints */}
+                  {hasValidWaypoints && waypoints.map((waypoint, idx) => (
+                    <AdvancedMarker 
+                      key={idx} 
+                      position={{ lat: waypoint.lat, lng: waypoint.lng }}
+                      title={waypoint.name || `Quest Stop ${idx + 1}`}
+                      label={`${idx + 1}`}
+                    />
+                  ))}
+                  
+                  {/* User's live location marker */}
+                  {userLocation && (
+                    <AdvancedMarker 
+                      position={{ lat: userLocation.lat, lng: userLocation.lng }}
+                      title="Your Location"
+                      icon={{
+                        url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iOCIgZmlsbD0iIzAwN0FFQyIvPgo8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSI0IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
+                        scaledSize: { width: 16, height: 16 }
+                      }}
+                    />
+                  )}
+                  
+                  {/* Show message if no waypoints available */}
+                  {!hasValidWaypoints && (
+                    <div className="absolute top-4 left-4 bg-white p-2 rounded shadow">
+                      <p className="text-sm text-gray-600">No route data available for this quest</p>
+                    </div>
+                  )}
+                </GoogleMap>
               ) : (
                 <div className="flex items-center justify-center h-full text-slate-500">
                   <div className="text-center">
                     <svg className="w-12 h-12 mx-auto mb-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
                     </svg>
-                    <p className="text-sm">Google Maps API key required</p>
+                    <p className="text-sm">{!mapLoaded ? 'Loading map...' : 'Google Maps API key required'}</p>
                   </div>
                 </div>
               )}

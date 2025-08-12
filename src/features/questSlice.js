@@ -7,7 +7,14 @@ const initialState = {
     ongoingQuests: [],
     completedQuests: [],
     userCreatedQuests: [],
+    recommendedQuests: [],
     featuredQuests: [],
+    popularQuests: [],
+    dashboardStats: {
+        totalOngoing: 0,
+        totalCompleted: 0,
+        totalCreated: 0
+    },
     currentQuest: null,
     questProgress: {},
     questTasks: [],
@@ -16,6 +23,7 @@ const initialState = {
     questRoutes: [],
     questReviews: [],
     loading: false,
+    dashboardLoading: false,
     error: null,
     pagination: {
         currentPage: 1,
@@ -43,7 +51,7 @@ export const fetchQuests = createAsyncThunk(
                 limit,
                 ...filters
             });
-            const response = await api.get(`/api/v1/quests?${params}`);
+            const response = await api.get(`/quests?${params}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch quests');
@@ -55,7 +63,7 @@ export const fetchQuestById = createAsyncThunk(
     'quest/fetchQuestById',
     async (questId, { rejectWithValue }) => {
         try {
-            const response = await api.get(`/api/v1/quests/${questId}`);
+            const response = await api.get(`/quests/${questId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch quest');
@@ -67,7 +75,7 @@ export const createQuest = createAsyncThunk(
     'quest/createQuest',
     async (questData, { rejectWithValue }) => {
         try {
-            const response = await api.post('/api/v1/quests/create-quest', questData, {
+            const response = await api.post('/quests/create-quest', questData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             return response.data.data;
@@ -81,7 +89,7 @@ export const updateQuest = createAsyncThunk(
     'quest/updateQuest',
     async ({ questId, questData }, { rejectWithValue }) => {
         try {
-            const response = await api.patch(`/api/v1/quests/${questId}`, questData);
+            const response = await api.patch(`/quests/${questId}`, questData);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to update quest');
@@ -93,7 +101,7 @@ export const deleteQuest = createAsyncThunk(
     'quest/deleteQuest',
     async (questId, { rejectWithValue }) => {
         try {
-            await api.delete(`/api/v1/quests/${questId}`);
+            await api.delete(`/quests/${questId}`);
             return questId;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to delete quest');
@@ -105,7 +113,7 @@ export const startQuest = createAsyncThunk(
     'quest/startQuest',
     async (questId, { rejectWithValue }) => {
         try {
-            const response = await api.post(`/api/v1/quest-progress/start/${questId}`);
+            const response = await api.post('/quest-progress/start', { questId });
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to start quest');
@@ -118,7 +126,7 @@ export const completeQuestTask = createAsyncThunk(
     async ({ questId, taskOrder, proofData }, { rejectWithValue }) => {
         try {
             const response = await api.post(
-                `/api/v1/quest-progress/${questId}/task/${taskOrder}/complete`,
+                `/quest-progress/task-proof/${questId}/${taskOrder}`,
                 proofData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
@@ -134,7 +142,7 @@ export const submitQuestProof = createAsyncThunk(
     async ({ questId, proofData }, { rejectWithValue }) => {
         try {
             const response = await api.post(
-                `/api/v1/quest-progress/${questId}/submit-proof`,
+                `/quest-progress/${questId}/submit-proof`,
                 proofData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
@@ -149,10 +157,22 @@ export const fetchQuestProgress = createAsyncThunk(
     'quest/fetchQuestProgress',
     async (questId, { rejectWithValue }) => {
         try {
-            const response = await api.get(`/api/v1/quest-progress/${questId}`);
+            const response = await api.get(`/quest-progress/${questId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch quest progress');
+        }
+    }
+);
+
+export const fetchMyQuestDashboard = createAsyncThunk(
+    'quest/fetchMyQuestDashboard',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get('/quests/my-dashboard');
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch quest dashboard');
         }
     }
 );
@@ -161,7 +181,7 @@ export const fetchOngoingQuests = createAsyncThunk(
     'quest/fetchOngoingQuests',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get('/api/v1/quest-progress/ongoing');
+            const response = await api.get('/quest-progress/ongoing');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch ongoing quests');
@@ -173,7 +193,7 @@ export const fetchUserCreatedQuests = createAsyncThunk(
     'quest/fetchUserCreatedQuests',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get('/api/v1/quests/my-quests');
+            const response = await api.get('/quests/my-quests');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch user created quests');
@@ -225,10 +245,34 @@ export const searchQuests = createAsyncThunk(
                 search: query,
                 ...filters
             });
-            const response = await api.get(`/api/v1/quests/search?${params}`);
+            const response = await api.get(`/quests/search?${params}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to search quests');
+        }
+    }
+);
+
+export const fetchFeaturedQuests = createAsyncThunk(
+    'quest/fetchFeaturedQuests',
+    async (limit = 4, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/quests/featured?limit=${limit}`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch featured quests');
+        }
+    }
+);
+
+export const fetchPopularQuests = createAsyncThunk(
+    'quest/fetchPopularQuests',
+    async (limit = 4, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/quests/popular?limit=${limit}`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch popular quests');
         }
     }
 );
@@ -269,7 +313,7 @@ const questSlice = createSlice({
                 state.questProgress[questId].completed_tasks.push(taskOrder);
             }
         },
-        clearQuestData: (state) => {
+        clearQuestData: () => {
             return initialState;
         },
     },
@@ -282,8 +326,25 @@ const questSlice = createSlice({
             })
             .addCase(fetchQuests.fulfilled, (state, action) => {
                 state.loading = false;
-                state.quests = action.payload.quests;
-                state.pagination = action.payload.pagination;
+                // Handle different response structures from backend
+                if (action.payload.docs) {
+                    // Paginated response from aggregatePaginate
+                    state.quests = action.payload.docs;
+                    state.pagination = {
+                        currentPage: action.payload.page,
+                        totalPages: action.payload.totalPages,
+                        totalQuests: action.payload.totalDocs,
+                        hasNextPage: action.payload.hasNextPage,
+                        hasPreviousPage: action.payload.hasPrevPage
+                    };
+                } else if (action.payload.quests) {
+                    // Nested quests response
+                    state.quests = action.payload.quests;
+                    state.pagination = action.payload.pagination;
+                } else {
+                    // Direct array response
+                    state.quests = action.payload;
+                }
                 state.error = null;
             })
             .addCase(fetchQuests.rejected, (state, action) => {
@@ -298,7 +359,14 @@ const questSlice = createSlice({
             })
             .addCase(fetchQuestById.fulfilled, (state, action) => {
                 state.loading = false;
-                state.currentQuest = action.payload;
+                // Handle both nested and direct quest data structures
+                if (action.payload.quest) {
+                    // If data comes in nested format from comprehensive endpoint
+                    state.currentQuest = action.payload;
+                } else {
+                    // If data comes directly as quest object
+                    state.currentQuest = action.payload;
+                }
                 state.error = null;
             })
             .addCase(fetchQuestById.rejected, (state, action) => {
@@ -382,7 +450,26 @@ const questSlice = createSlice({
                 state.error = action.payload;
             })
             
-            // Fetch ongoing quests
+            // Fetch my quest dashboard (comprehensive data)
+            .addCase(fetchMyQuestDashboard.pending, (state) => {
+                state.dashboardLoading = true;
+                state.error = null;
+            })
+            .addCase(fetchMyQuestDashboard.fulfilled, (state, action) => {
+                state.dashboardLoading = false;
+                state.ongoingQuests = action.payload.ongoingQuests;
+                state.completedQuests = action.payload.completedQuests;
+                state.userCreatedQuests = action.payload.userCreatedQuests;
+                state.recommendedQuests = action.payload.recommendedQuests;
+                state.dashboardStats = action.payload.stats;
+                state.error = null;
+            })
+            .addCase(fetchMyQuestDashboard.rejected, (state, action) => {
+                state.dashboardLoading = false;
+                state.error = action.payload;
+            })
+            
+            // Fetch ongoing quests (separate endpoint)
             .addCase(fetchOngoingQuests.fulfilled, (state, action) => {
                 state.ongoingQuests = action.payload;
                 action.payload.forEach(quest => {
@@ -438,6 +525,22 @@ const questSlice = createSlice({
             })
             .addCase(searchQuests.rejected, (state, action) => {
                 state.loading = false;
+                state.error = action.payload;
+            })
+            
+            // Fetch featured quests
+            .addCase(fetchFeaturedQuests.fulfilled, (state, action) => {
+                state.featuredQuests = action.payload;
+            })
+            .addCase(fetchFeaturedQuests.rejected, (state, action) => {
+                state.error = action.payload;
+            })
+            
+            // Fetch popular quests  
+            .addCase(fetchPopularQuests.fulfilled, (state, action) => {
+                state.popularQuests = action.payload;
+            })
+            .addCase(fetchPopularQuests.rejected, (state, action) => {
                 state.error = action.payload;
             });
     },

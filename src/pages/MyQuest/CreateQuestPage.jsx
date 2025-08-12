@@ -1,12 +1,15 @@
 import React, { useState, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Autocomplete, Marker, DirectionsRenderer } from '@react-google-maps/api';
 import { createQuest } from "../../features/questSlice";
 import MapRoutingControl from '../../components/MapRoutingControl';
 import AdvancedMarker from '../../components/AdvancedMarker';
 import SimpleMap from '../../components/SimpleMap';
 import { getPreciseLocation } from '../../utils/locationUtils';
+
+// Define libraries outside component to prevent re-renders
+const GOOGLE_MAPS_LIBRARIES = ['places', 'geometry'];
 
 const QUEST_CATEGORIES = [
   "Art",
@@ -23,8 +26,6 @@ const DIFFICULTY_LEVELS = [
   "Hard",
 ];
 
-// Google Maps configuration
-const GOOGLE_MAPS_LIBRARIES = ['places'];
 const MAP_CONTAINER_STYLE = {
   width: '100%',
   height: '320px'
@@ -37,11 +38,25 @@ const DEFAULT_CENTER = {
 };
 
 function CreateQuestPage() {
+  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+  if (!googleMapsApiKey) {
+    return <CreateQuestPageContent />;
+  }
+
+  return (
+    <LoadScript googleMapsApiKey={googleMapsApiKey} libraries={GOOGLE_MAPS_LIBRARIES}>
+      <CreateQuestPageContent />
+    </LoadScript>
+  );
+}
+
+function CreateQuestPageContent() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error } = useSelector((state) => state.quest);
   
-  const [tasks, setTasks] = useState(["Describe the first task", "Describe the second task"]);
+  const [tasks, setTasks] = useState([""]);
   const [tips, setTips] = useState([""]); // Tips state
   const [waypoints, setWaypoints] = useState([]); // Waypoints state
   const [showPreview, setShowPreview] = useState(false);
@@ -75,8 +90,15 @@ function CreateQuestPage() {
   const [geoMessage, setGeoMessage] = useState(""); // For geolocation messages
   const [shouldUpdateMap, setShouldUpdateMap] = useState(false); // Control map updates
 
-  // Google Maps API key
-  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  // Google Places Autocomplete refs
+  const startLocationAutocomplete = useRef(null);
+  const endLocationAutocomplete = useRef(null);
+  const waypointSearchAutocomplete = useRef(null);
+  
+  // Place search state
+  const [placeSearchQuery, setPlaceSearchQuery] = useState("");
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [showPlaceSearch, setShowPlaceSearch] = useState(false);
   // Simple location function
   const handleUseCurrentLocationForWaypoints = async () => {
     setGeoLoading(true);
@@ -108,6 +130,137 @@ function CreateQuestPage() {
         setGeoMessage(progressMessage);
       }
     );
+  };
+
+  // Google Places Autocomplete handlers
+  const onStartLocationLoad = (autocomplete) => {
+    startLocationAutocomplete.current = autocomplete;
+  };
+
+  const onEndLocationLoad = (autocomplete) => {
+    endLocationAutocomplete.current = autocomplete;
+  };
+
+  const onWaypointSearchLoad = (autocomplete) => {
+    waypointSearchAutocomplete.current = autocomplete;
+  };
+
+  const onStartLocationPlaceChanged = () => {
+    if (startLocationAutocomplete.current !== null) {
+      const place = startLocationAutocomplete.current.getPlace();
+      if (place.geometry) {
+        setForm({
+          ...form,
+          startLocation: place.name || place.formatted_address,
+          address: form.address || place.formatted_address || form.address,
+          city: form.city || (place.address_components?.find(comp => 
+            comp.types.includes('locality'))?.long_name) || form.city
+        });
+        
+        // Update map center to the selected place
+        const location = {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng()
+        };
+        setMapCenter(location);
+        setMapZoom(15);
+      }
+    }
+  };
+
+  const onEndLocationPlaceChanged = () => {
+    if (endLocationAutocomplete.current !== null) {
+      const place = endLocationAutocomplete.current.getPlace();
+      if (place.geometry) {
+        setForm({
+          ...form,
+          endLocation: place.name || place.formatted_address,
+          address: form.address || place.formatted_address || form.address,
+          city: form.city || (place.address_components?.find(comp => 
+            comp.types.includes('locality'))?.long_name) || form.city
+        });
+        
+        // Update map center to the selected place
+        const location = {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng()
+        };
+        setMapCenter(location);
+        setMapZoom(15);
+      }
+    }
+  };
+
+  const onWaypointPlaceChanged = () => {
+    if (waypointSearchAutocomplete.current !== null) {
+      const place = waypointSearchAutocomplete.current.getPlace();
+      if (place.geometry) {
+        const newWaypoint = {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+          id: Date.now(),
+          name: place.name || place.formatted_address,
+          address: place.formatted_address
+        };
+        
+        const updatedWaypoints = [...waypoints, newWaypoint];
+        setWaypoints(updatedWaypoints);
+        setForm({ ...form, waypoints: updatedWaypoints });
+        
+        // Update map center and zoom to show the new waypoint
+        setMapCenter(newWaypoint);
+        setMapZoom(16);
+        setSelectedPlace(place);
+        setPlaceSearchQuery("");
+        setGeoMessage(`Added waypoint: ${place.name || place.formatted_address}`);
+        setTimeout(() => setGeoMessage(""), 3000);
+      }
+    }
+  };
+
+  // Manual waypoint input handler
+  const handleManualWaypointAdd = () => {
+    const latInput = document.getElementById('manual-lat');
+    const lngInput = document.getElementById('manual-lng');
+    const nameInput = document.getElementById('manual-name');
+    
+    const lat = parseFloat(latInput.value);
+    const lng = parseFloat(lngInput.value);
+    const name = nameInput.value.trim();
+    
+    if (isNaN(lat) || isNaN(lng)) {
+      setGeoMessage("Please enter valid latitude and longitude values");
+      setTimeout(() => setGeoMessage(""), 3000);
+      return;
+    }
+    
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      setGeoMessage("Please enter valid coordinate ranges (Lat: -90 to 90, Lng: -180 to 180)");
+      setTimeout(() => setGeoMessage(""), 3000);
+      return;
+    }
+    
+    const newWaypoint = {
+      lat,
+      lng,
+      id: Date.now(),
+      name: name || `Custom Location`,
+      address: `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+    };
+    
+    const updatedWaypoints = [...waypoints, newWaypoint];
+    setWaypoints(updatedWaypoints);
+    setForm({ ...form, waypoints: updatedWaypoints });
+    setMapCenter(newWaypoint);
+    setMapZoom(16);
+    
+    // Clear inputs
+    latInput.value = "";
+    lngInput.value = "";
+    nameInput.value = "";
+    
+    setGeoMessage(`Added custom waypoint: ${newWaypoint.name}`);
+    setTimeout(() => setGeoMessage(""), 3000);
   };
 
   // Map click handler
@@ -215,8 +368,18 @@ function CreateQuestPage() {
     if (!form.address?.trim()) errors.push("Address is required.");
     if (!form.city?.trim()) errors.push("City is required.");
     if (!form.pincode?.trim()) errors.push("Pincode is required.");
-    if (!form.startLocation?.trim()) errors.push("Start location is required.");
-    if (!form.endLocation?.trim()) errors.push("End location is required.");
+    
+    // Validate start and end locations
+    if (!form.startLocation || 
+        (typeof form.startLocation === 'object' && !form.startLocation.lat) ||
+        (typeof form.startLocation === 'string' && !form.startLocation.trim())) {
+      errors.push("Start location is required.");
+    }
+    if (!form.endLocation || 
+        (typeof form.endLocation === 'object' && !form.endLocation.lat) ||
+        (typeof form.endLocation === 'string' && !form.endLocation.trim())) {
+      errors.push("End location is required.");
+    }
 
     const validTasks = tasks.filter(task => task.trim());
     if (validTasks.length === 0) {
@@ -243,8 +406,20 @@ function CreateQuestPage() {
       formData.append('address', form.address);
       formData.append('city', form.city);
       formData.append('pincode', form.pincode);
-      formData.append('startLocation', form.startLocation || '');
-      formData.append('endLocation', form.endLocation || '');
+      
+      // Handle start and end locations (can be string or object)
+      if (typeof form.startLocation === 'object' && form.startLocation.lat) {
+        formData.append('startLocation', JSON.stringify(form.startLocation));
+      } else {
+        formData.append('startLocation', form.startLocation || '');
+      }
+      
+      if (typeof form.endLocation === 'object' && form.endLocation.lat) {
+        formData.append('endLocation', JSON.stringify(form.endLocation));
+      } else {
+        formData.append('endLocation', form.endLocation || '');
+      }
+      
       formData.append('xp', form.xp || '0');
       formData.append('tags', form.tags || '');
       formData.append('proofInstructions', form.proof || '');
@@ -290,7 +465,7 @@ function CreateQuestPage() {
             waypoints: [],
             photos: [],
           });
-          setTasks(["Describe the first task", "Describe the second task"]);
+          setTasks([""]);
           setTips([""]);
           setWaypoints([]);
           setPhotoPreviews([]);
@@ -633,33 +808,53 @@ function CreateQuestPage() {
               Add waypoints to create a route for your quest. Click on the map to add locations that questers should visit.
             </p>
             
-            {/* Start and End Location Fields */}
+            {/* Start and End Location Fields with Google Places Search */}
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <div className="sm:w-1/2">
                 <label className="block font-medium mb-1">Start Location</label>
-                <input
-                  type="text"
-                  name="startLocation"
-                  placeholder="e.g., Main Square, City Park"
-                  value={form.startLocation}
-                  onChange={handleChange}
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
-                  required
-                />
-                <div className="text-slate-400 text-xs mt-1">Where does the quest begin?</div>
+                <Autocomplete
+                  onLoad={onStartLocationLoad}
+                  onPlaceChanged={onStartLocationPlaceChanged}
+                  options={{
+                    componentRestrictions: { country: ['in'] }, // Restrict to India, modify as needed
+                    fields: ['name', 'formatted_address', 'geometry', 'address_components'],
+                    types: ['establishment', 'geocode']
+                  }}
+                >
+                  <input
+                    type="text"
+                    name="startLocation"
+                    placeholder="Search for start location..."
+                    value={form.startLocation}
+                    onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
+                    required
+                  />
+                </Autocomplete>
+                <div className="text-slate-400 text-xs mt-1">Where does the quest begin? (Start typing to search places)</div>
               </div>
               <div className="sm:w-1/2">
                 <label className="block font-medium mb-1">End Location</label>
-                <input
-                  type="text"
-                  name="endLocation"
-                  placeholder="e.g., Central Park, Museum"
-                  value={form.endLocation}
-                  onChange={handleChange}
-                  className="w-full border border-slate-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
-                  required
-                />
-                <div className="text-slate-400 text-xs mt-1">Where does the quest end?</div>
+                <Autocomplete
+                  onLoad={onEndLocationLoad}
+                  onPlaceChanged={onEndLocationPlaceChanged}
+                  options={{
+                    componentRestrictions: { country: ['in'] }, // Restrict to India, modify as needed
+                    fields: ['name', 'formatted_address', 'geometry', 'address_components'],
+                    types: ['establishment', 'geocode']
+                  }}
+                >
+                  <input
+                    type="text"
+                    name="endLocation"
+                    placeholder="Search for end location..."
+                    value={form.endLocation}
+                    onChange={handleChange}
+                    className="w-full border border-slate-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
+                    required
+                  />
+                </Autocomplete>
+                <div className="text-slate-400 text-xs mt-1">Where does the quest end? (Start typing to search places)</div>
               </div>
             </div>
 
@@ -734,6 +929,108 @@ function CreateQuestPage() {
                 Click this button to center the map on your current location and automatically jump to your position.
               </div>
             </div>
+
+            {/* Waypoint Search Section */}
+            <div className="mb-6 bg-slate-50 rounded-lg p-4 border border-slate-200">
+              <h3 className="font-medium text-slate-700 mb-3">Add Waypoints</h3>
+              <p className="text-slate-600 text-sm mb-4">
+                Add places that questers should visit. You can search for places, add coordinates manually, or click on the map.
+              </p>
+              
+              {/* Google Places Search for Waypoints */}
+              <div className="mb-4">
+                <label className="block font-medium mb-2 text-sm">Search Places</label>
+                <div className="flex gap-2">
+                  <Autocomplete
+                    onLoad={onWaypointSearchLoad}
+                    onPlaceChanged={onWaypointPlaceChanged}
+                    options={{
+                      componentRestrictions: { country: ['in'] }, // Modify as needed
+                      fields: ['name', 'formatted_address', 'geometry', 'address_components', 'types'],
+                      types: ['establishment', 'tourist_attraction', 'point_of_interest', 'geocode']
+                    }}
+                  >
+                    <input
+                      type="text"
+                      placeholder="Search for places, landmarks, attractions..."
+                      value={placeSearchQuery}
+                      onChange={(e) => setPlaceSearchQuery(e.target.value)}
+                      className="flex-1 border border-slate-200 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
+                    />
+                  </Autocomplete>
+                </div>
+                <div className="text-slate-400 text-xs mt-1">
+                  Start typing to search for places, landmarks, or attractions to add as waypoints.
+                </div>
+              </div>
+
+              {/* Manual Coordinate Entry */}
+              <div className="mb-4">
+                <button
+                  type="button"
+                  onClick={() => setShowPlaceSearch(!showPlaceSearch)}
+                  className="flex items-center gap-2 text-teal-600 hover:text-teal-800 text-sm font-medium mb-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showPlaceSearch ? "M19 9l-7 7-7-7" : "M9 5l7 7-7 7"} />
+                  </svg>
+                  Add Coordinates Manually
+                </button>
+                
+                {showPlaceSearch && (
+                  <div className="bg-white rounded-lg p-3 border border-slate-200">
+                    <label className="block font-medium mb-2 text-sm">Manual Coordinates</label>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                      <div>
+                        <input
+                          type="number"
+                          id="manual-lat"
+                          placeholder="Latitude"
+                          step="any"
+                          min="-90"
+                          max="90"
+                          className="w-full border border-slate-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-100"
+                        />
+                        <div className="text-slate-400 text-xs mt-1">-90 to 90</div>
+                      </div>
+                      <div>
+                        <input
+                          type="number"
+                          id="manual-lng"
+                          placeholder="Longitude"
+                          step="any"
+                          min="-180"
+                          max="180"
+                          className="w-full border border-slate-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-100"
+                        />
+                        <div className="text-slate-400 text-xs mt-1">-180 to 180</div>
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          id="manual-name"
+                          placeholder="Place name (optional)"
+                          className="w-full border border-slate-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-100"
+                        />
+                        <div className="text-slate-400 text-xs mt-1">Custom name</div>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          onClick={handleManualWaypointAdd}
+                          className="w-full bg-teal-100 text-teal-700 rounded px-3 py-2 text-sm font-medium hover:bg-teal-200 transition"
+                        >
+                          Add Point
+                        </button>
+                      </div>
+                    </div>
+                    <div className="text-slate-400 text-xs mt-2">
+                      Enter exact latitude and longitude coordinates to add a custom waypoint.
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
             
             {/* Waypoints List */}
             {waypoints.length > 0 && (
@@ -741,28 +1038,50 @@ function CreateQuestPage() {
                 <h3 className="font-medium text-slate-700 mb-2">Added Waypoints ({waypoints.length})</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {waypoints.map((waypoint, idx) => (
-                    <div key={idx} className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                    <div key={waypoint.id || idx} className="bg-slate-50 rounded-lg p-3 border border-slate-200">
                       <div className="flex justify-between items-start">
-                        <div>
+                        <div className="flex-1">
                           <span className="font-semibold text-teal-600">Waypoint {idx + 1}</span>
+                          {waypoint.name && (
+                            <div className="text-sm font-medium text-slate-700 mt-1">{waypoint.name}</div>
+                          )}
+                          {waypoint.address && waypoint.address !== waypoint.name && (
+                            <div className="text-xs text-slate-500 mt-1">{waypoint.address}</div>
+                          )}
                           <div className="text-xs text-slate-500 mt-1">
                             Lat: {waypoint.lat.toFixed(6)}, Lng: {waypoint.lng.toFixed(6)}
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newWaypoints = waypoints.filter((_, i) => i !== idx);
-                            setWaypoints(newWaypoints);
-                            setForm({ ...form, waypoints: newWaypoints });
-                          }}
-                          className="text-red-500 hover:text-red-700 text-sm"
-                          title="Remove waypoint"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+                        <div className="flex gap-1 ml-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMapCenter({ lat: waypoint.lat, lng: waypoint.lng });
+                              setMapZoom(18);
+                            }}
+                            className="text-blue-500 hover:text-blue-700 text-sm p-1"
+                            title="Center map on this waypoint"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newWaypoints = waypoints.filter((_, i) => i !== idx);
+                              setWaypoints(newWaypoints);
+                              setForm({ ...form, waypoints: newWaypoints });
+                            }}
+                            className="text-red-500 hover:text-red-700 text-sm p-1"
+                            title="Remove waypoint"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -797,13 +1116,11 @@ function CreateQuestPage() {
 
             {/* Interactive Map for Waypoints */}
             <div className="quest-map-container bg-slate-100 rounded-lg h-80 border border-slate-200 overflow-hidden">
-              {googleMapsApiKey ? (
-                <LoadScript googleMapsApiKey={googleMapsApiKey} libraries={GOOGLE_MAPS_LIBRARIES}>
-                  <GoogleMap
-                    mapContainerStyle={{ height: "100%", width: "100%" }}
-                    center={mapCenter}
-                    zoom={mapZoom}
-                    onClick={onMapClick}
+              <GoogleMap
+                mapContainerStyle={{ height: "100%", width: "100%" }}
+                center={mapCenter}
+                zoom={mapZoom}
+                onClick={onMapClick}
                     onLoad={onLoad}
                     options={{
                       zoomControl: true,
@@ -833,18 +1150,6 @@ function CreateQuestPage() {
                       <MapRoutingControl waypoints={waypoints} />
                     )}
                   </GoogleMap>
-                </LoadScript>
-              ) : (
-                <div className="flex items-center justify-center h-full text-slate-500">
-                  <div className="text-center">
-                    <svg className="w-12 h-12 mx-auto mb-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
-                    </svg>
-                    <p className="text-sm">Google Maps API key required</p>
-                    <p className="text-xs text-slate-400">Please add your API key to .env file</p>
-                  </div>
-                </div>
-              )}
             </div>
             
             <div className="text-slate-400 text-xs mt-2">

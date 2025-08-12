@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import {
-  FaFacebookF,
   FaInstagram,
   FaTwitter,
   FaGithub,
@@ -51,10 +50,9 @@ function Footer() {
           <div>
             <h4 className="text-white text-base font-semibold mb-3 tracking-wide">Follow Us</h4>
             <div className="flex justify-end space-x-3 text-lg">
-              <a href="#" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="Facebook"><FaFacebookF /></a>
-              <a href="#" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="Instagram"><FaInstagram /></a>
-              <a href="#" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="Twitter"><FaTwitter /></a>
-              <a href="#" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="GitHub"><FaGithub /></a>
+              <a href="https://instagram.com/yourpage" target="_blank" rel="noopener noreferrer" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="Instagram"><FaInstagram /></a>
+              <a href="https://x.com/dibyar4j?t=BLzRJmCVaW-Xfi2dY27W9A&s=09" target="_blank" rel="noopener noreferrer" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="Twitter"><FaTwitter /></a>
+              <a href="https://github.com/star-roy" target="_blank" rel="noopener noreferrer" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="GitHub"><FaGithub /></a>
             </div>
           </div>
         </div>

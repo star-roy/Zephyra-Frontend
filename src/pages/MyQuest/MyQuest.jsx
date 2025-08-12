@@ -4,13 +4,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { QuestCard, CompletedQuestRow } from "../../components/index.js";
 import OngoingQuestsSection from "./OngoingQuestsSection.jsx";
 import useGridColumnCount from "../../Hook/useGridColumnCount.js";
-import { fetchQuests, fetchUserCreatedQuests, fetchOngoingQuests } from "../../features/questSlice.js";
+import { fetchMyQuestDashboard } from "../../features/questSlice.js";
 import { fetchUserProfile } from "../../features/userSlice.js";
 
 // User Created Quest Card Component
 function UserCreatedQuestCard({ files = [], title, description, status, createdAt }) {
   // Get first image from quest files or use fallback
-  const image = files.length > 0 ? files[0].file_url : "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80";
+  const image = files && files.length > 0 && files[0]?.file_url 
+    ? files[0].file_url 
+    : "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80";
   
   // Mock participants for now (can be added to backend later)
   const participants = Math.floor(Math.random() * 50) + 1;
@@ -45,6 +47,10 @@ function UserCreatedQuestCard({ files = [], title, description, status, createdA
           alt={title}
           className="w-full object-cover bg-gray-50"
           style={{ height: '140px' }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80";
+          }}
         />
         <div className="absolute top-3 left-3">
           <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(status)}`}>
@@ -131,10 +137,12 @@ function CreateQuestSection() {
 function MyQuestsPage() {
   const dispatch = useDispatch();
   const { 
-    quests = [], 
     ongoingQuests = [], 
+    completedQuests = [],
     userCreatedQuests = [], 
-    loading, 
+    recommendedQuests = [],
+    dashboardStats = {},
+    dashboardLoading, 
     error 
   } = useSelector(state => state.quest);
   
@@ -150,29 +158,16 @@ function MyQuestsPage() {
   const recommendedColumns = useGridColumnCount();
   const createdColumns = useGridColumnCount();
 
-  // Fetch data on component mount
+  // Fetch data on component mount - single API call for all dashboard data
   useEffect(() => {
-    // Fetch approved quests for recommendations
-    dispatch(fetchQuests({ 
-      page: 1, 
-      limit: 6, 
-      filters: { status: 'approved' } 
-    }));
+    // Fetch all quest dashboard data in one efficient call
+    dispatch(fetchMyQuestDashboard());
     
-    // Fetch user's ongoing quests
-    dispatch(fetchOngoingQuests());
-    
-    // Fetch user created quests
-    dispatch(fetchUserCreatedQuests());
-    
-    // Fetch user profile data - use current user's ID from auth
+    // Fetch user profile data if needed
     if (authUserData?._id) {
       dispatch(fetchUserProfile(authUserData._id));
     }
   }, [dispatch, authUserData?._id]);
-
-  // Mock completed quests for now (you can add this to quest slice later)
-  const completedQuests = [];
 
   // Format last login time
   const formatLastLogin = (dateString) => {
@@ -187,7 +182,7 @@ function MyQuestsPage() {
     }) + ' UTC';
   };
 
-  if (loading) {
+  if (dashboardLoading) {
     return (
       <div className="bg-slate-50 min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -234,7 +229,7 @@ function MyQuestsPage() {
               Level {userStats?.level || currentUser?.level || 3}
             </span>
             <span>{userStats?.totalXP || currentUser?.totalXP || 1250} XP</span>
-            <span>{userStats?.questsCompleted || currentUser?.questsCompleted || 8} Quests Completed</span>
+            <span>{dashboardStats?.totalCompleted || userStats?.questsCompleted || currentUser?.questsCompleted || 8} Quests Completed</span>
             <span className="text-green-600">{userStats?.currentStreak || currentUser?.currentStreak || 5} day streak 🔥</span>
           </div>
         </div>
@@ -251,7 +246,7 @@ function MyQuestsPage() {
             Recommended For You
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(quests || []).filter(quest => quest != null).slice(0, recommendedColumns).map((quest) => (
+            {(recommendedQuests || []).filter(quest => quest != null).slice(0, recommendedColumns).map((quest) => (
               <QuestCard key={quest._id} quest={quest} />
             ))}
           </div>
@@ -262,7 +257,7 @@ function MyQuestsPage() {
           <div className="mb-12">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-bold text-2xl text-gray-900">
-                My Created Quests ({userCreatedQuests.length})
+                My Created Quests ({dashboardStats?.totalCreated || userCreatedQuests.length})
               </h2>
               <button className="text-indigo-600 hover:text-indigo-800 font-medium text-sm transition-colors duration-200">
                 Manage All
@@ -279,11 +274,11 @@ function MyQuestsPage() {
         {/* Completed Quests */}
         <div>
           <h2 className="font-bold text-2xl text-gray-900 mb-5">
-            Completed Quests ({(completedQuests || []).length})
+            Completed Quests ({dashboardStats?.totalCompleted || (completedQuests || []).length})
           </h2>
           <div className="space-y-3">
-            {(completedQuests || []).map((q) => (
-              <CompletedQuestRow key={q.id} {...q} />
+            {(completedQuests || []).map((progressData, index) => (
+              <CompletedQuestRow key={progressData._id || index} {...progressData.quest_id} />
             ))}
           </div>
         </div>

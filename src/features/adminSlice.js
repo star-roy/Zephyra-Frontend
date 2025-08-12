@@ -107,6 +107,34 @@ export const rejectQuest = createAsyncThunk(
     }
 );
 
+export const deleteQuestByAdmin = createAsyncThunk(
+    'admin/deleteQuestByAdmin',
+    async (questId, { rejectWithValue }) => {
+        try {
+            const response = await api.delete(`/admin/quests/${questId}`);
+            return { questId, data: response.data.data };
+        } catch (error) {
+            return rejectWithValue({
+                message: error.response?.data?.message || 'Failed to delete quest',
+                status: error.response?.status,
+                details: error.response?.data
+            });
+        }
+    }
+);
+
+export const updateQuestByAdmin = createAsyncThunk(
+    'admin/updateQuestByAdmin',
+    async ({ questId, updateData }, { rejectWithValue }) => {
+        try {
+            const response = await api.put(`/admin/quests/${questId}`, updateData);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to update quest');
+        }
+    }
+);
+
 export const fetchUsersForManagement = createAsyncThunk(
     'admin/fetchUsersForManagement',
     async ({ page = 1, limit = 20, search = '', role = 'all', status = 'all' }, { rejectWithValue }) => {
@@ -430,6 +458,47 @@ const adminSlice = createSlice({
                 state.questManagement.pendingQuests -= 1;
             })
             .addCase(rejectQuest.rejected, (state, action) => {
+                state.actionLoading = false;
+                state.error = action.payload;
+            })
+            
+            // Delete quest by admin
+            .addCase(deleteQuestByAdmin.pending, (state) => {
+                state.actionLoading = true;
+            })
+            .addCase(deleteQuestByAdmin.fulfilled, (state, action) => {
+                state.actionLoading = false;
+                const questId = action.payload.questId;
+                // Remove from all quest arrays
+                state.pendingQuests = state.pendingQuests.filter(q => q._id !== questId);
+                state.allQuests = state.allQuests.filter(q => q._id !== questId);
+                // Update counts
+                state.questManagement.totalQuests -= 1;
+            })
+            .addCase(deleteQuestByAdmin.rejected, (state, action) => {
+                state.actionLoading = false;
+                state.error = action.payload;
+            })
+            
+            // Update quest by admin
+            .addCase(updateQuestByAdmin.pending, (state) => {
+                state.actionLoading = true;
+            })
+            .addCase(updateQuestByAdmin.fulfilled, (state, action) => {
+                state.actionLoading = false;
+                const updatedQuest = action.payload;
+                // Update in all quests
+                const questIndex = state.allQuests.findIndex(q => q._id === updatedQuest._id);
+                if (questIndex !== -1) {
+                    state.allQuests[questIndex] = updatedQuest;
+                }
+                // Update in pending quests if it exists there
+                const pendingIndex = state.pendingQuests.findIndex(q => q._id === updatedQuest._id);
+                if (pendingIndex !== -1) {
+                    state.pendingQuests[pendingIndex] = updatedQuest;
+                }
+            })
+            .addCase(updateQuestByAdmin.rejected, (state, action) => {
                 state.actionLoading = false;
                 state.error = action.payload;
             })

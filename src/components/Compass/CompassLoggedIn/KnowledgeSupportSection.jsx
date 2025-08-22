@@ -16,13 +16,12 @@ function KnowledgeSupportSection() {
   const navigate = useNavigate();
 
   const guides = [
-    { title: "Quests & Progression", icon: <FaMapSigns className="text-zephyraBlue" /> },
-    { title: "Community & Social", icon: <FaUsers className="text-zephyraBlue" /> },
-    { title: "Technical Help", icon: <FaTools className="text-zephyraBlue" /> },
-    { title: "App Features", icon: <FaMobileAlt className="text-zephyraBlue" /> },
+    { title: "Quests & Progression", icon: <FaMapSigns className="text-blue-500" /> },
+    { title: "Community & Social", icon: <FaUsers className="text-blue-500" /> },
+    { title: "Technical Help", icon: <FaTools className="text-blue-500" /> },
+    { title: "App Features", icon: <FaMobileAlt className="text-blue-500" /> },
   ];
 
-  // Map each support option to a path
   const supportOptions = [
     { label: "Chat with Support", icon: <FaComments />, primary: true, path: "/chat-support" },
     { label: "Submit a Ticket", icon: <FaTicketAlt />, path: "/submit-ticket" },
@@ -34,7 +33,6 @@ function KnowledgeSupportSection() {
     <section className="w-full px-4 sm:px-6 md:px-10 xl:px-14 py-10">
       <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8">
 
-        {/* 🧠 Knowledge Base */}
         <div className="sm:col-span-2">
           <h2 className="text-xl sm:text-2xl font-semibold text-midnightIndigo mb-4">
             Knowledge Base & Guides
@@ -58,7 +56,6 @@ function KnowledgeSupportSection() {
           </div>
         </div>
 
-        {/* 🆘 Support Pathways */}
         <div className="space-y-4">
           <h2 className="text-xl sm:text-2xl font-semibold text-midnightIndigo mb-4">
             Need More Help?
@@ -68,10 +65,10 @@ function KnowledgeSupportSection() {
             <button
               key={index}
               onClick={() => navigate(option.path)}
-              className={`w-full flex items-center justify-start gap-3 text-sm sm:text-base font-semibold px-4 py-3 rounded-lg transition ${
+              className={`shine-sweep w-full flex items-center justify-start gap-3 text-sm sm:text-base font-semibold px-4 py-3 rounded-lg transition ${
                 option.primary
-                  ? "bg-zephyraBlue text-white hover:bg-zephyraDark"
-                  : "bg-white border border-gray-300 text-midnightIndigo hover:bg-gray-50"
+                  ? "bg-blue-500 text-white hover:bg-zephyraDark"
+                  : "bg-white border border-gray-300 text-midnightIndigo hover:text-blue-500 hover:bg-gray-100"
               }`}
             >
               <span className="text-lg">{option.icon}</span>

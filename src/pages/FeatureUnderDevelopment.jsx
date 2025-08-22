@@ -3,7 +3,7 @@ import React from "react";
 export default function FeatureUnderDevelopment() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] w-full px-4 py-10">
-      <h1 className="text-4xl font-bold text-zephyraBlue mb-8 text-center tracking-tight drop-shadow">
+      <h1 className="text-4xl font-bold text-indigo-500 mb-8 text-center tracking-tight drop-shadow">
         Feature Under Development
       </h1>
       <div className="w-full max-w-2xl flex justify-center mb-10 ">

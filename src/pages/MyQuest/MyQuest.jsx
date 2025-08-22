@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { QuestCard, CompletedQuestRow } from "../../components/index.js";
 import OngoingQuestsSection from "./OngoingQuestsSection.jsx";
-import useGridColumnCount from "../../Hook/useGridColumnCount.js";
+import useGridColumnCount from "../../hooks/useGridColumnCount.js";
 import { fetchMyQuestDashboard } from "../../features/questSlice.js";
-import { fetchUserProfile } from "../../features/userSlice.js";
+import { fetchCurrentUserProfile } from "../../features/userSlice.js";
 
 // User Created Quest Card Component
 function UserCreatedQuestCard({ files = [], title, description, status, createdAt }) {
@@ -146,26 +146,22 @@ function MyQuestsPage() {
     error 
   } = useSelector(state => state.quest);
   
-  // Get user data from Redux - check both auth and user slices
   const { userData: authUserData } = useSelector(state => state.auth);
   const { userProfile, stats } = useSelector(state => state.user);
   
-  // Use auth data as primary source, user profile as secondary
   const currentUser = authUserData || userProfile;
   const userStats = stats;
   
-  // Responsive grid columns for recommended, user created, etc.
   const recommendedColumns = useGridColumnCount();
   const createdColumns = useGridColumnCount();
 
-  // Fetch data on component mount - single API call for all dashboard data
   useEffect(() => {
     // Fetch all quest dashboard data in one efficient call
     dispatch(fetchMyQuestDashboard());
     
     // Fetch user profile data if needed
     if (authUserData?._id) {
-      dispatch(fetchUserProfile(authUserData._id));
+      dispatch(fetchCurrentUserProfile());
     }
   }, [dispatch, authUserData?._id]);
 
@@ -211,14 +207,12 @@ function MyQuestsPage() {
 
   return (
     <div className="bg-slate-50 min-h-screen">
-      {/* Main Content */}
       <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-10">
-        {/* Header */}
         <div className="mb-8">
-          <h1 className="font-extrabold text-3xl sm:text-4xl text-gray-900 mb-2">
+          <h1 className="font-bold text-3xl sm:text-4xl text-gray-900 mb-2">
             Welcome back, {currentUser?.displayName || currentUser?.username || currentUser?.fullName || "Adventure Seeker"}! 👋
           </h1>
-          <div className="text-gray-600 text-base sm:text-lg font-medium">
+          <div className="text-blue-500 text-base sm:text-lg font-medium">
             Track your adventures and revisit your favorite discoveries.
           </div>
           <div className="text-sm text-gray-500 mt-1">
@@ -226,21 +220,19 @@ function MyQuestsPage() {
           </div>
           <div className="flex items-center gap-4 mt-3 text-sm text-gray-600">
             <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-              Level {userStats?.level || currentUser?.level || 3}
+              Level {userStats?.level || currentUser?.level || 1}
             </span>
-            <span>{userStats?.totalXP || currentUser?.totalXP || 1250} XP</span>
-            <span>{dashboardStats?.totalCompleted || userStats?.questsCompleted || currentUser?.questsCompleted || 8} Quests Completed</span>
-            <span className="text-green-600">{userStats?.currentStreak || currentUser?.currentStreak || 5} day streak 🔥</span>
+            <span>{userStats?.totalXP || currentUser?.totalXP || 0} XP</span>
+            <span>{dashboardStats?.totalCompleted || userStats?.questsCompleted || currentUser?.questsCompleted || 0} Quests Completed</span>
+            <span className="text-green-600">{userStats?.currentStreak || currentUser?.currentStreak || 0} day streak 🔥</span>
           </div>
         </div>
 
-        {/* Ongoing Quests Section */}
+
         <OngoingQuestsSection ongoingQuests={ongoingQuests} />
 
-        {/* Create Quest Section */}
         <CreateQuestSection />
 
-        {/* For You */}
         <div className="mb-12">
           <h2 className="font-bold text-2xl text-gray-900 mb-5">
             Recommended For You
@@ -252,7 +244,6 @@ function MyQuestsPage() {
           </div>
         </div>
 
-        {/* User Created Quests - Only show if user has created quests */}
         {userCreatedQuests && userCreatedQuests.length > 0 && (
           <div className="mb-12">
             <div className="flex items-center justify-between mb-5">
@@ -271,7 +262,6 @@ function MyQuestsPage() {
           </div>
         )}
 
-        {/* Completed Quests */}
         <div>
           <h2 className="font-bold text-2xl text-gray-900 mb-5">
             Completed Quests ({dashboardStats?.totalCompleted || (completedQuests || []).length})

@@ -10,16 +10,13 @@ export default function EmptyOngoingQuests() {
 
   return (
     <div className="relative bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-2xl border border-indigo-100 p-8 text-center overflow-hidden">
-      {/* Animated Background Elements */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-4 right-8 w-20 h-20 bg-indigo-400 rounded-full animate-pulse"></div>
         <div className="absolute bottom-6 left-4 w-16 h-16 bg-purple-400 rounded-full animate-bounce"></div>
         <div className="absolute top-1/3 left-1/4 w-12 h-12 bg-pink-400 rounded-full animate-ping"></div>
       </div>
 
-      {/* Content Container */}
       <div className="relative z-10">
-        {/* Compact Icon */}
         <div className="flex justify-center mb-4">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full blur-xl opacity-20 scale-110 animate-pulse"></div>
@@ -41,7 +38,6 @@ export default function EmptyOngoingQuests() {
           </div>
         </div>
         
-        {/* Compact Text Content */}
         <div className="mb-6">
           <h3 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
             Ready for Adventure?
@@ -50,7 +46,6 @@ export default function EmptyOngoingQuests() {
             Your quest journal is empty. Discover amazing adventures waiting for you!
           </p>
           
-          {/* Compact feature highlights */}
           <div className="flex justify-center gap-3 mb-5">
             <div className="flex items-center gap-1.5 bg-white/60 backdrop-blur-sm rounded-full px-3 py-1.5 border border-indigo-100">
               <span className="text-indigo-500 text-sm">🌟</span>
@@ -66,8 +61,7 @@ export default function EmptyOngoingQuests() {
             </div>
           </div>
         </div>
-        
-        {/* Compact Action Button */}
+
         <button
           onClick={handleBrowseQuests}
           className="group bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-base px-8 py-3 rounded-xl hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 hover:scale-105 flex items-center gap-2 mx-auto relative overflow-hidden"

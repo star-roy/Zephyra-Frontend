@@ -1,48 +1,78 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchQuests } from '../../../features/questSlice';
+import { useGoogleMaps } from '../../../hooks/useGoogleMaps';
+import { MapPinIcon, StarIcon, ClockIcon } from '@heroicons/react/24/solid';
 
-const GOOGLE_MAPS_LIBRARIES = ['places'];
 const MAP_CONTAINER_STYLE = {
   width: '100%',
-  height: '400px'
+  height: '500px' 
 };
 
 const DEFAULT_CENTER = {
-  lat: 28.6139, // Delhi coordinates as fallback
+  lat: 28.6139,
   lng: 77.2090
 };
 
 function QuestNearbyMap() {
   const dispatch = useDispatch();
-  const { quests, loading } = useSelector((state) => state.quest);
+  const { quests } = useSelector((state) => state.quest);
   const [userLocation, setUserLocation] = useState(DEFAULT_CENTER);
   const [selectedQuest, setSelectedQuest] = useState(null);
   const [locationError, setLocationError] = useState(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const { isLoaded, loadError } = useGoogleMaps();
 
-  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-  // Get user's current location
   useEffect(() => {
+    const cachedLocation = sessionStorage.getItem('userLocationData');
+    const cacheTimestamp = sessionStorage.getItem('userLocationTimestamp');
+    const CACHE_DURATION = 10 * 60 * 1000;
+
+    if (cachedLocation && cacheTimestamp) {
+      const age = Date.now() - parseInt(cacheTimestamp);
+      if (age < CACHE_DURATION) {
+        const cached = JSON.parse(cachedLocation);
+        setUserLocation({ lat: cached.lat, lng: cached.lng });
+        return;
+      }
+    }
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const location = {
+          const newLocation = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           };
-          setUserLocation(location);
+          setUserLocation(newLocation);
+          
+          const locationData = {
+            address: 'Map location',
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          sessionStorage.setItem('userLocationData', JSON.stringify(locationData));
+          sessionStorage.setItem('userLocationTimestamp', Date.now().toString());
         },
         (error) => {
-          console.error('Error getting location:', error);
-          setLocationError('Unable to get your location. Showing default area.');
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              setLocationError('Permission denied. Please allow location access for better results.');
+              break;
+            case error.POSITION_UNAVAILABLE:
+              setLocationError('Location information is unavailable.');
+              break;
+            case error.TIMEOUT:
+              setLocationError('Location request timed out.');
+              break;
+            default:
+              setLocationError('Unable to get your location. Showing default area.');
+          }
         },
         {
-          enableHighAccuracy: true,
+          enableHighAccuracy: false, 
           timeout: 10000,
-          maximumAge: 600000 // 10 minutes
+          maximumAge: 600000
         }
       );
     } else {
@@ -50,168 +80,209 @@ function QuestNearbyMap() {
     }
   }, []);
 
-  // Fetch quests when component mounts
   useEffect(() => {
     if (!quests || quests.length === 0) {
-      dispatch(fetchQuests({ page: 1, limit: 50 })); // Get more quests for map
+      dispatch(fetchQuests({ page: 1, limit: 50 }));
     }
   }, [dispatch, quests]);
 
-  // Helper function to convert address to coordinates (mock implementation)
-  // In a real app, you'd use Google Geocoding API
   const getQuestCoordinates = (quest, index) => {
-    // For demo purposes, create coordinates around user location
-    const angleOffset = (index * 45) % 360; // Distribute around circle
-    const radius = 0.02 + (index % 3) * 0.01; // Vary distance
-    
+    const angleOffset = (index * 45) % 360;
+    const radius = 0.02 + (index % 3) * 0.01;
     const lat = userLocation.lat + (Math.cos(angleOffset * Math.PI / 180) * radius);
     const lng = userLocation.lng + (Math.sin(angleOffset * Math.PI / 180) * radius);
-    
     return { lat, lng };
   };
 
-  // Handle map load
-  const handleMapLoad = () => {
-    setMapLoaded(true);
+  const getUserMarkerIcon = () => {
+    if (!isLoaded) return null;
+    return {
+      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="25" cy="25" r="23" fill="#4F46E5" stroke="white" stroke-width="4"/>
+          <circle cx="25" cy="25" r="18" fill="white" stroke="#4F46E5" stroke-width="2"/>
+          <circle cx="25" cy="25" r="12" fill="#4F46E5"/>
+          <circle cx="25" cy="25" r="6" fill="white"/>
+          <circle cx="25" cy="25" r="3" fill="#4F46E5"/>
+        </svg>
+      `),
+      scaledSize: new window.google.maps.Size(50, 50),
+      anchor: new window.google.maps.Point(25, 25)
+    };
   };
 
-  if (!googleMapsApiKey) {
+  const getQuestMarkerIcon = (difficulty = 'medium') => {
+    if (!isLoaded) return null;
+    const colors = {
+      easy: '#10B981',
+      medium: '#F59E0B', 
+      hard: '#EF4444'
+    };
+    const color = colors[difficulty] || colors.medium;
+    
+    return {
+      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+        <svg width="60" height="75" viewBox="0 0 60 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M30 5c-13.25 0-24 10.75-24 24 0 18 24 41 24 41s24-23 24-41c0-13.25-10.75-24-24-24z" 
+                fill="${color}" stroke="white" stroke-width="3"/>
+          <circle cx="30" cy="29" r="15" fill="white"/>
+          <path d="M25 24h10v10h-10z" fill="${color}"/>
+          <text x="30" y="33" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Q</text>
+        </svg>
+      `),
+      scaledSize: new window.google.maps.Size(60, 75),
+      anchor: new window.google.maps.Point(30, 75)
+    };
+  };
+
+  if (loadError) {
+    return <div className="w-full h-96 flex items-center justify-center text-red-500">Error loading Google Maps</div>;
+  }
+
+  if (!isLoaded) {
     return (
-      <div className="w-full h-96 bg-gray-100 rounded-xl flex items-center justify-center">
+      <div className="w-full h-96 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center border border-purple-200">
         <div className="text-center">
-          <p className="text-gray-600 mb-2">🗺️ Google Maps</p>
-          <p className="text-gray-500 text-sm">Please configure your Google Maps API key</p>
-          <p className="text-gray-400 text-xs mt-1">Add VITE_GOOGLE_MAPS_API_KEY to .env file</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
+          <p className="text-purple-700 text-sm font-medium">Loading Beautiful Map...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-96 rounded-xl overflow-hidden border border-gray-200 relative">
+    <div className="relative w-full rounded-2xl overflow-hidden shadow-md border border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
       {locationError && (
-        <div className="absolute top-4 left-4 z-10 bg-yellow-100 border border-yellow-400 text-yellow-700 px-3 py-2 rounded-lg text-sm max-w-xs">
-          {locationError}
+        <div className="absolute top-6 left-6 z-10 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-xl text-sm max-w-xs shadow-lg backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <MapPinIcon className="h-4 w-4 text-yellow-600" />
+            <span className="font-medium">Location Notice</span>
+          </div>
+          <p className="mt-1 text-xs">{locationError}</p>
         </div>
       )}
-      
-      <LoadScript 
-        googleMapsApiKey={googleMapsApiKey} 
-        libraries={GOOGLE_MAPS_LIBRARIES}
-        loadingElement={
-          <div className="w-full h-96 bg-gray-100 rounded-xl flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
-              <p className="text-gray-600 text-sm">Loading Map...</p>
-            </div>
-          </div>
-        }
+
+      <GoogleMap
+        mapContainerStyle={MAP_CONTAINER_STYLE}
+        center={userLocation}
+        zoom={14}
+        options={{
+          zoomControl: true,
+          streetViewControl: false,
+          mapTypeControl: false,
+          fullscreenControl: true,
+          gestureHandling: 'greedy',
+          scrollwheel: true,
+          disableDoubleClickZoom: false,
+          styles: [
+            {
+              featureType: 'poi',
+              elementType: 'labels',
+              stylers: [{ visibility: 'off' }]
+            }
+          ]
+        }}
       >
-        <GoogleMap
-          mapContainerStyle={MAP_CONTAINER_STYLE}
-          center={userLocation}
-          zoom={13}
-          onLoad={handleMapLoad}
-          options={{
-            zoomControl: true,
-            streetViewControl: false,
-            mapTypeControl: false,
-            fullscreenControl: true,
-            gestureHandling: 'greedy',
-            scrollwheel: true,
-            disableDoubleClickZoom: false,
-            styles: [
-              {
-                featureType: 'poi',
-                elementType: 'labels',
-                stylers: [{ visibility: 'off' }]
-              }
-            ]
-          }}
-        >
-          {/* User location marker - only render when map is loaded */}
-          {mapLoaded && (
+
+        <Marker
+          position={userLocation}
+          icon={getUserMarkerIcon()}
+          title="Your Current Location"
+          zIndex={1000} 
+        />
+
+        {quests && quests.slice(0, 15).map((quest, index) => {
+          const position = getQuestCoordinates(quest, index);
+          return (
             <Marker
-              position={userLocation}
-              icon={{
-                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="8" fill="#4285F4" stroke="white" stroke-width="2"/>
-                    <circle cx="12" cy="12" r="3" fill="white"/>
-                  </svg>
-                `),
-                scaledSize: mapLoaded ? new window.google.maps.Size(24, 24) : undefined,
-                anchor: mapLoaded ? new window.google.maps.Point(12, 12) : undefined
-              }}
-              title="Your Location"
+              key={quest._id}
+              position={position}
+              onClick={() => setSelectedQuest({ ...quest, position })}
+              icon={getQuestMarkerIcon(quest.difficulty)}
+              title={quest.title}
+              animation={selectedQuest && selectedQuest._id === quest._id ? window.google.maps.Animation.BOUNCE : null}
             />
-          )}
+          );
+        })}
 
-          {/* Quest markers - only render when map is loaded */}
-          {mapLoaded && quests && quests.slice(0, 20).map((quest, index) => {
-            const position = getQuestCoordinates(quest, index);
-            return (
-              <Marker
-                key={quest._id}
-                position={position}
-                onClick={() => setSelectedQuest({ ...quest, position })}
-                icon={{
-                  url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M16 32l-8-8h4v-8h8v8h4l-8 8z" fill="#8B5CF6"/>
-                      <circle cx="16" cy="8" r="6" fill="#8B5CF6" stroke="white" stroke-width="2"/>
-                      <text x="16" y="12" text-anchor="middle" fill="white" font-size="8" font-weight="bold">Q</text>
-                    </svg>
-                  `),
-                  scaledSize: new window.google.maps.Size(32, 32),
-                  anchor: new window.google.maps.Point(16, 32)
-                }}
-                title={quest.title}
-              />
-            );
-          })}
-
-          {/* Info window for selected quest */}
-          {selectedQuest && (
-            <InfoWindow
-              position={selectedQuest.position}
-              onCloseClick={() => setSelectedQuest(null)}
-            >
-              <div className="p-2 max-w-xs">
-                <h3 className="font-semibold text-sm mb-1 text-purple-800">
+        {selectedQuest && (
+          <InfoWindow
+            position={selectedQuest.position}
+            onCloseClick={() => setSelectedQuest(null)}
+            options={{
+              pixelOffset: new window.google.maps.Size(0, -10)
+            }}
+          >
+            <div className="p-0 max-w-sm bg-white rounded-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-4 text-white">
+                <h3 className="font-bold text-lg mb-1 line-clamp-1">
                   {selectedQuest.title}
                 </h3>
-                <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                  {selectedQuest.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                    {selectedQuest.difficulty}
-                  </span>
-                  <span className="text-xs text-amber-600 font-semibold">
-                    +{selectedQuest.xp} XP
-                  </span>
+                <div className="flex items-center gap-2 text-purple-100">
+                  <StarIcon className="h-4 w-4" />
+                  <span className="text-sm">Featured Quest</span>
                 </div>
+              </div>
+
+              <div className="p-4">
+                <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
+                  {selectedQuest.description || "Embark on this exciting quest and discover new adventures!"}
+                </p>
+
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="text-center">
+                    <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold text-white mb-1 ${
+                      selectedQuest.difficulty === 'easy' ? 'bg-green-500' :
+                      selectedQuest.difficulty === 'medium' ? 'bg-yellow-500' :
+                      'bg-red-500'
+                    }`}>
+                      {selectedQuest.difficulty?.charAt(0).toUpperCase() || 'M'}
+                    </div>
+                    <p className="text-xs text-gray-500">Difficulty</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 text-xs font-bold mb-1">
+                      {selectedQuest.xp || '100'}
+                    </div>
+                    <p className="text-xs text-gray-500">XP Reward</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-xs font-bold mb-1">
+                      <ClockIcon className="h-4 w-4" />
+                    </div>
+                    <p className="text-xs text-gray-500">~30min</p>
+                  </div>
+                </div>
+
                 <button 
-                  className="mt-2 w-full bg-purple-600 text-white text-xs py-1 px-2 rounded hover:bg-purple-700 transition-colors"
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-sm font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
                   onClick={() => window.location.href = `/quest-overview/${selectedQuest._id}`}
                 >
-                  View Quest
+                  Start Quest Adventure
                 </button>
               </div>
-            </InfoWindow>
-          )}
-        </GoogleMap>
-      </LoadScript>
+            </div>
+          </InfoWindow>
+        )}
+      </GoogleMap>
 
-      {/* Quest count indicator */}
       {quests && quests.length > 0 && (
-        <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg">
-          <p className="text-sm font-medium text-gray-800">
-            🎯 {Math.min(quests.length, 20)} quests nearby
-          </p>
+        <div className="absolute bottom-6 left-6 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-3 rounded-xl shadow-lg backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            <p className="text-sm font-semibold">
+              🎯 {Math.min(quests.length, 15)} active quests nearby
+            </p>
+          </div>
         </div>
       )}
+
+      <div className="absolute bottom-6 left-60 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg border border-gray-200">
+        <div className="text-xs text-gray-600 flex items-center gap-1">
+          <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+          Live updates
+        </div>
+      </div>
     </div>
   );
 }

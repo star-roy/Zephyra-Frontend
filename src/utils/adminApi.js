@@ -140,44 +140,6 @@ const CATEGORIES = [
   "HiddenGems"
 ];
 
-// Usage in QuestModeration.jsx:
-// Replace useEffect with:
-/*
-useEffect(() => {
-  const loadQuests = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchQuests({
-        status: filterStatus,
-        category: filterCategory,
-        search: searchTerm
-      });
-      setQuests(data.quests || []);
-    } catch (error) {
-      console.error('Failed to load quests:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  loadQuests();
-}, [filterStatus, filterCategory, searchTerm]);
-*/
-
-// Update category options in frontend:
-/*
-<select
-  value={filterCategory}
-  onChange={(e) => setFilterCategory(e.target.value)}
-  className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
->
-  <option value="all">All Categories</option>
-  {CATEGORIES.map(category => (
-    <option key={category} value={category}>{category}</option>
-  ))}
-</select>
-*/
-
 export {
   fetchQuests,
   approveQuest,

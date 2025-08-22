@@ -19,6 +19,9 @@ import XPProgressBar from "./Navbar/XPProgressBar.jsx";
 import AdminNavbar from "./AdminNavbar/AdminNavbar.jsx";
 import AdminLayout from "./AdminLayout/AdminLayout.jsx";
 
+// Skeleton Components
+import Skeleton, { SkeletonCard, SkeletonStatCard, SkeletonProfile } from "./Skeleton/Skeleton.jsx";
+
 // Home - logged in users
 import ExplorerHubSection from "./Home/HomeLoggedIn/ExplorerHubSection.jsx";
 import HeroLoggedIn from "./Home/HomeLoggedIn/HeroLoggedIn.jsx";
@@ -139,6 +142,12 @@ export {
     // Admin Components
     AdminNavbar,
     AdminLayout,
+
+    // Skeleton Components
+    Skeleton,
+    SkeletonCard,
+    SkeletonStatCard,
+    SkeletonProfile,
 
     // Footer
     Footer,

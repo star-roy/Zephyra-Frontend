@@ -19,7 +19,6 @@ const QuestModeration = () => {
   const [questToDelete, setQuestToDelete] = useState(null);
 
   useEffect(() => {
-    // Debounce search to avoid too many API calls
     const timeoutId = setTimeout(() => {
       dispatch(fetchAllQuestsForAdmin({ 
         page: 1, 
@@ -33,7 +32,6 @@ const QuestModeration = () => {
     return () => clearTimeout(timeoutId);
   }, [dispatch, searchTerm, filterStatus, filterCategory]);
 
-  // Use allQuests from Redux - filtering is handled by backend
   const quests = allQuests || [];
   const filteredQuests = quests;
 
@@ -50,11 +48,10 @@ const QuestModeration = () => {
           // Quest deleted successfully - no need for alert, modal will handle feedback
         } else {
           alert(`Delete failed: ${result.payload?.message || result.payload || 'Unknown error'}`);
-          return; // Don't refresh if delete failed
+          return;
         }
       }
-      
-      // Refresh the quests list
+
       dispatch(fetchAllQuestsForAdmin({ 
         page: 1, 
         limit: 50,
@@ -76,7 +73,6 @@ const QuestModeration = () => {
   const handleEditModalClose = () => {
     setShowEditModal(false);
     setQuestToEdit(null);
-    // Refresh the quests list after edit
     dispatch(fetchAllQuestsForAdmin({ 
       page: 1, 
       limit: 50,
@@ -335,8 +331,6 @@ const QuestModeration = () => {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Quest Moderation</h1>
           <p className="text-gray-600">Review, approve, and manage user-submitted quests</p>
         </div>
-
-        {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
@@ -381,7 +375,6 @@ const QuestModeration = () => {
           </div>
         </div>
 
-        {/* Quests Grid */}
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>

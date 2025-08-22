@@ -6,7 +6,6 @@ function UpcomingEventsSection({ events }) {
   return (
     <section className="w-full px-4 sm:px-6 md:px-10 xl:px-14 py-8">
       <div className="max-w-[1400px] mx-auto">
-        {/* Title + View All (only visible on desktop) */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-midnightIndigo">
             Upcoming Events & Challenges
@@ -19,14 +18,12 @@ function UpcomingEventsSection({ events }) {
           </Link>
         </div>
 
-        {/* Cards */}
         <div className="flex flex-wrap gap-4 justify-between">
           {events.map((event) => (
             <UpcomingEventCard key={event.id} event={event} />
           ))}
         </div>
 
-        {/* Mobile View All Button */}
         <div className="mt-6 sm:hidden flex justify-center">
           <Link
             to="/events"

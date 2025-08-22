@@ -46,7 +46,6 @@ const NotFound = () => {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="space-y-6" data-aos="fade-up" data-aos-delay="200">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
             Page Not Found
@@ -60,7 +59,6 @@ const NotFound = () => {
             It might have been moved, deleted, or you entered the wrong URL.
           </p>
 
-          {/* Auto Redirect Counter */}
           {autoRedirect && (
             <div className="bg-blue-100 border border-blue-200 rounded-lg p-4 mb-6" data-aos="fade-in" data-aos-delay="400">
               <div className="flex items-center justify-center space-x-2 text-blue-700">
@@ -78,7 +76,6 @@ const NotFound = () => {
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8" data-aos="fade-up" data-aos-delay="600">
             <button
               onClick={handleGoHome}
@@ -105,7 +102,6 @@ const NotFound = () => {
             </button>
           </div>
 
-          {/* Helpful Links */}
           <div className="mt-12 pt-8 border-t border-gray-200" data-aos="fade-up" data-aos-delay="800">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               Try these instead:
@@ -138,7 +134,6 @@ const NotFound = () => {
             </div>
           </div>
 
-          {/* Additional Info */}
           <div className="mt-8 text-sm text-gray-400" data-aos="fade-up" data-aos-delay="1000">
             <p>If you believe this is an error, please contact our support team.</p>
           </div>

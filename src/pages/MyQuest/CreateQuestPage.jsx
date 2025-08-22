@@ -1,15 +1,14 @@
 import React, { useState, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { GoogleMap, LoadScript, Autocomplete, Marker, DirectionsRenderer } from '@react-google-maps/api';
+import { GoogleMap, Marker, DirectionsRenderer } from '@react-google-maps/api';
 import { createQuest } from "../../features/questSlice";
 import MapRoutingControl from '../../components/MapRoutingControl';
 import AdvancedMarker from '../../components/AdvancedMarker';
 import SimpleMap from '../../components/SimpleMap';
+import LazyAutocomplete, { AddressAutocomplete, EstablishmentAutocomplete } from '../../components/LazyAutocomplete';
 import { getPreciseLocation } from '../../utils/locationUtils';
-
-// Define libraries outside component to prevent re-renders
-const GOOGLE_MAPS_LIBRARIES = ['places', 'geometry'];
+import { useGoogleMaps } from '../../hooks/useGoogleMaps';
 
 const QUEST_CATEGORIES = [
   "Art",
@@ -31,24 +30,23 @@ const MAP_CONTAINER_STYLE = {
   height: '320px'
 };
 
-// Default map center (Delhi, India)
 const DEFAULT_CENTER = {
   lat: 28.6139,
   lng: 77.2090
 };
 
 function CreateQuestPage() {
-  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const { isLoaded } = useGoogleMaps();
 
-  if (!googleMapsApiKey) {
-    return <CreateQuestPageContent />;
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-500">Loading map...</p>
+      </div>
+    );
   }
 
-  return (
-    <LoadScript googleMapsApiKey={googleMapsApiKey} libraries={GOOGLE_MAPS_LIBRARIES}>
-      <CreateQuestPageContent />
-    </LoadScript>
-  );
+  return <CreateQuestPageContent />;
 }
 
 function CreateQuestPageContent() {
@@ -57,8 +55,8 @@ function CreateQuestPageContent() {
   const { loading, error } = useSelector((state) => state.quest);
   
   const [tasks, setTasks] = useState([""]);
-  const [tips, setTips] = useState([""]); // Tips state
-  const [waypoints, setWaypoints] = useState([]); // Waypoints state
+  const [tips, setTips] = useState([""]);
+  const [waypoints, setWaypoints] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [validationErrors, setValidationErrors] = useState([]);
@@ -77,8 +75,8 @@ function CreateQuestPageContent() {
     tags: "",
     proof: "",
     tasks: ["", ""],
-    tips: [""], // Add tips to form state
-    waypoints: [], // Add waypoints to form state
+    tips: [""],
+    waypoints: [],
     photos: [],
   });
   const [photoPreviews, setPhotoPreviews] = useState([]);
@@ -86,17 +84,14 @@ function CreateQuestPageContent() {
   const [geoLoading, setGeoLoading] = useState(false);
   const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState(13);
-  const [showRoutes, setShowRoutes] = useState(true); // Toggle for route visualization
-  const [geoMessage, setGeoMessage] = useState(""); // For geolocation messages
-  const [shouldUpdateMap, setShouldUpdateMap] = useState(false); // Control map updates
+  const [showRoutes, setShowRoutes] = useState(true);
+  const [geoMessage, setGeoMessage] = useState("");
+  const [shouldUpdateMap, setShouldUpdateMap] = useState(false);
 
-  // Google Places Autocomplete refs
-  const startLocationAutocomplete = useRef(null);
-  const endLocationAutocomplete = useRef(null);
-  const waypointSearchAutocomplete = useRef(null);
+  // Google Places Autocomplete refs - removing unused ones
   
   // Place search state
-  const [placeSearchQuery, setPlaceSearchQuery] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [showPlaceSearch, setShowPlaceSearch] = useState(false);
   // Simple location function
@@ -105,7 +100,6 @@ function CreateQuestPageContent() {
     
     getPreciseLocation(
       (location, message) => {
-        // Success: Got precise location
         const newLocation = {
           lat: location.lat,
           lng: location.lng,
@@ -126,99 +120,11 @@ function CreateQuestPageContent() {
         setTimeout(() => setGeoMessage(""), 5000);
       },
       (progressMessage) => {
-        // Progress: Update user on what's happening
         setGeoMessage(progressMessage);
       }
     );
   };
 
-  // Google Places Autocomplete handlers
-  const onStartLocationLoad = (autocomplete) => {
-    startLocationAutocomplete.current = autocomplete;
-  };
-
-  const onEndLocationLoad = (autocomplete) => {
-    endLocationAutocomplete.current = autocomplete;
-  };
-
-  const onWaypointSearchLoad = (autocomplete) => {
-    waypointSearchAutocomplete.current = autocomplete;
-  };
-
-  const onStartLocationPlaceChanged = () => {
-    if (startLocationAutocomplete.current !== null) {
-      const place = startLocationAutocomplete.current.getPlace();
-      if (place.geometry) {
-        setForm({
-          ...form,
-          startLocation: place.name || place.formatted_address,
-          address: form.address || place.formatted_address || form.address,
-          city: form.city || (place.address_components?.find(comp => 
-            comp.types.includes('locality'))?.long_name) || form.city
-        });
-        
-        // Update map center to the selected place
-        const location = {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng()
-        };
-        setMapCenter(location);
-        setMapZoom(15);
-      }
-    }
-  };
-
-  const onEndLocationPlaceChanged = () => {
-    if (endLocationAutocomplete.current !== null) {
-      const place = endLocationAutocomplete.current.getPlace();
-      if (place.geometry) {
-        setForm({
-          ...form,
-          endLocation: place.name || place.formatted_address,
-          address: form.address || place.formatted_address || form.address,
-          city: form.city || (place.address_components?.find(comp => 
-            comp.types.includes('locality'))?.long_name) || form.city
-        });
-        
-        // Update map center to the selected place
-        const location = {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng()
-        };
-        setMapCenter(location);
-        setMapZoom(15);
-      }
-    }
-  };
-
-  const onWaypointPlaceChanged = () => {
-    if (waypointSearchAutocomplete.current !== null) {
-      const place = waypointSearchAutocomplete.current.getPlace();
-      if (place.geometry) {
-        const newWaypoint = {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-          id: Date.now(),
-          name: place.name || place.formatted_address,
-          address: place.formatted_address
-        };
-        
-        const updatedWaypoints = [...waypoints, newWaypoint];
-        setWaypoints(updatedWaypoints);
-        setForm({ ...form, waypoints: updatedWaypoints });
-        
-        // Update map center and zoom to show the new waypoint
-        setMapCenter(newWaypoint);
-        setMapZoom(16);
-        setSelectedPlace(place);
-        setPlaceSearchQuery("");
-        setGeoMessage(`Added waypoint: ${place.name || place.formatted_address}`);
-        setTimeout(() => setGeoMessage(""), 3000);
-      }
-    }
-  };
-
-  // Manual waypoint input handler
   const handleManualWaypointAdd = () => {
     const latInput = document.getElementById('manual-lat');
     const lngInput = document.getElementById('manual-lng');
@@ -268,7 +174,7 @@ function CreateQuestPageContent() {
     const newWaypoint = { 
       lat: event.latLng.lat(), 
       lng: event.latLng.lng(),
-      id: Date.now() // Add unique ID for better tracking
+      id: Date.now()
     };
     const updatedWaypoints = [...waypoints, newWaypoint];
     setWaypoints(updatedWaypoints);
@@ -277,7 +183,6 @@ function CreateQuestPageContent() {
 
   // Map load handler
   const onLoad = useCallback((map) => {
-    // Map is ready
     if (shouldUpdateMap) {
       map.setCenter(mapCenter);
       map.setZoom(mapZoom);
@@ -285,7 +190,6 @@ function CreateQuestPageContent() {
     }
   }, [mapCenter, mapZoom, shouldUpdateMap]);
 
-  // Marker drag handler
   const onMarkerDragEnd = useCallback((event, index) => {
     const updatedWaypoints = [...waypoints];
     updatedWaypoints[index] = {
@@ -297,7 +201,7 @@ function CreateQuestPageContent() {
     setForm({ ...form, waypoints: updatedWaypoints });
   }, [waypoints, form]);
 
-  // Handlers
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -354,7 +258,6 @@ function CreateQuestPageContent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validation
     const errors = [];
     
     if (form.photos.length === 0) {
@@ -391,13 +294,11 @@ function CreateQuestPageContent() {
       return;
     }
 
-    // Clear any previous errors
     setValidationErrors([]);
 
     try {
       const formData = new FormData();
       
-      // Add basic quest data
       formData.append('title', form.title);
       formData.append('subtitle', form.subtitle || '');
       formData.append('category', form.category);
@@ -406,8 +307,7 @@ function CreateQuestPageContent() {
       formData.append('address', form.address);
       formData.append('city', form.city);
       formData.append('pincode', form.pincode);
-      
-      // Handle start and end locations (can be string or object)
+
       if (typeof form.startLocation === 'object' && form.startLocation.lat) {
         formData.append('startLocation', JSON.stringify(form.startLocation));
       } else {
@@ -424,27 +324,22 @@ function CreateQuestPageContent() {
       formData.append('tags', form.tags || '');
       formData.append('proofInstructions', form.proof || '');
       
-      // Add tasks and tips as JSON arrays
       formData.append('tasks', JSON.stringify(tasks.filter(task => task.trim())));
       formData.append('tips', JSON.stringify(tips.filter(tip => tip.trim())));
-      
-      // Add waypoints if any
+
       if (waypoints.length > 0) {
         formData.append('waypoints', JSON.stringify(waypoints));
       }
-      
-      // Add photos
+
       form.photos.forEach((photo) => {
         formData.append('photos', photo);
       });
 
-      // Dispatch Redux action to create quest
       const result = await dispatch(createQuest(formData));
       
       if (createQuest.fulfilled.match(result)) {
         setSuccessMessage("Quest submitted for review successfully! You'll be redirected to your quests page.");
-        
-        // Reset form
+
         setTimeout(() => {
           setForm({
             title: "",
@@ -469,8 +364,7 @@ function CreateQuestPageContent() {
           setTips([""]);
           setWaypoints([]);
           setPhotoPreviews([]);
-          
-          // Navigate to my quests page
+
           navigate("/my-quest");
         }, 2000);
       }
@@ -484,7 +378,6 @@ function CreateQuestPageContent() {
     setShowPreview(true);
   };
 
-  // Preview Modal Component
   const PreviewModal = () => (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center px-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -500,7 +393,6 @@ function CreateQuestPageContent() {
           </div>
           
           <div className="space-y-6">
-            {/* Quest Header */}
             <div>
               <h3 className="text-xl font-semibold mb-2">{form.title || "Quest Title"}</h3>
               {form.subtitle && <p className="text-slate-600 mb-2">{form.subtitle}</p>}
@@ -511,7 +403,6 @@ function CreateQuestPageContent() {
               </div>
             </div>
 
-            {/* Photos */}
             {photoPreviews.length > 0 && (
               <div>
                 <h4 className="font-medium mb-2">Quest Photos</h4>
@@ -523,13 +414,11 @@ function CreateQuestPageContent() {
               </div>
             )}
 
-            {/* Description */}
             <div>
               <h4 className="font-medium mb-2">Description</h4>
               <p className="text-slate-700">{form.description || "No description provided"}</p>
             </div>
 
-            {/* Location */}
             <div>
               <h4 className="font-medium mb-2">Location</h4>
               <p className="text-slate-700">{form.address}, {form.city} - {form.pincode}</p>
@@ -542,7 +431,6 @@ function CreateQuestPageContent() {
               )}
             </div>
 
-            {/* Tasks */}
             <div>
               <h4 className="font-medium mb-2">Quest Tasks</h4>
               <ol className="space-y-2">
@@ -555,7 +443,6 @@ function CreateQuestPageContent() {
               </ol>
             </div>
 
-            {/* Tips */}
             {tips.filter(tip => tip.trim()).length > 0 && (
               <div>
                 <h4 className="font-medium mb-2">Quest Tips</h4>
@@ -570,7 +457,6 @@ function CreateQuestPageContent() {
               </div>
             )}
 
-            {/* Waypoints */}
             {waypoints.length > 0 && (
               <div>
                 <h4 className="font-medium mb-2">Waypoints ({waypoints.length})</h4>
@@ -584,7 +470,6 @@ function CreateQuestPageContent() {
               </div>
             )}
 
-            {/* Proof Instructions */}
             {form.proof && (
               <div>
                 <h4 className="font-medium mb-2">Proof Instructions</h4>
@@ -618,7 +503,6 @@ function CreateQuestPageContent() {
 
   return (
     <div className="bg-slate-50 min-h-screen pb-12">
-      {/* Success Message */}
       {successMessage && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[9998] w-full max-w-md px-4">
           <div className="bg-gradient-to-r from-green-400 via-green-500 to-emerald-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-in slide-in-from-top duration-300">
@@ -630,7 +514,6 @@ function CreateQuestPageContent() {
         </div>
       )}
 
-      {/* Geolocation Message */}
       {geoMessage && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[9998] w-full max-w-md px-4">
           <div className="bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-in slide-in-from-top duration-300">
@@ -643,7 +526,6 @@ function CreateQuestPageContent() {
         </div>
       )}
 
-      {/* Validation Errors Modal */}
       {validationErrors.length > 0 && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center px-4">
           <div className="bg-white rounded-xl shadow-2xl p-6 sm:p-8 max-w-md w-full mx-4 text-center transform animate-in fade-in duration-300">
@@ -679,7 +561,6 @@ function CreateQuestPageContent() {
           Share your unique local exploration ideas with the community! Follow the steps below to submit your quest for review.
         </p>
         <form className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8" onSubmit={handleSubmit}>
-          {/* Quest Details */}
           <section className="mb-8">
             <h2 className="font-semibold text-lg text-slate-800 mb-3">Quest Details</h2>
             <div className="mb-4">
@@ -696,7 +577,6 @@ function CreateQuestPageContent() {
               />
               <div className="text-slate-400 text-xs mt-1">A catchy and descriptive title. (Max 80 characters)</div>
             </div>
-            {/* Subtitle Field */}
             <div className="mb-4">
               <label className="block font-medium mb-1">Subtitle</label>
               <input
@@ -725,7 +605,6 @@ function CreateQuestPageContent() {
                 ))}
               </select>
             </div>
-            {/* Difficulty Dropdown */}
             <div className="mb-4">
               <label className="block font-medium mb-1">Difficulty Level</label>
               <select
@@ -755,7 +634,6 @@ function CreateQuestPageContent() {
               />
               <div className="text-slate-400 text-xs mt-1">Provide a compelling narrative for your quest.</div>
             </div>
-            {/* Quest Photo Upload (after description) */}
             <div className="mt-6 mb-4">
               <label className="block font-medium mb-1">Quest Photos <span className="text-red-500">*</span></label>
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-wrap">
@@ -801,64 +679,77 @@ function CreateQuestPageContent() {
             </div>
           </section>
 
-          {/* Quest Route & Waypoints */}
           <section className="mb-8">
             <h2 className="font-semibold text-lg text-slate-800 mb-3">Quest Route & Waypoints</h2>
             <p className="text-slate-600 text-sm mb-4">
               Add waypoints to create a route for your quest. Click on the map to add locations that questers should visit.
             </p>
             
-            {/* Start and End Location Fields with Google Places Search */}
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <div className="sm:w-1/2">
                 <label className="block font-medium mb-1">Start Location</label>
-                <Autocomplete
-                  onLoad={onStartLocationLoad}
-                  onPlaceChanged={onStartLocationPlaceChanged}
-                  options={{
-                    componentRestrictions: { country: ['in'] }, // Restrict to India, modify as needed
-                    fields: ['name', 'formatted_address', 'geometry', 'address_components'],
-                    types: ['establishment', 'geocode']
+                <LazyAutocomplete
+                  onPlaceSelect={(place) => {
+                    if (place.geometry) {
+                      setForm({
+                        ...form,
+                        startLocation: place.name || place.formatted_address,
+                        address: form.address || place.formatted_address || form.address,
+                        city: form.city || (place.address_components?.find(comp => 
+                          comp.types.includes('locality'))?.long_name) || form.city
+                      });
+                      
+                      // Update map center to the selected place
+                      const location = {
+                        lat: place.geometry.location.lat(),
+                        lng: place.geometry.location.lng()
+                      };
+                      setMapCenter(location);
+                      setMapZoom(15);
+                    }
                   }}
-                >
-                  <input
-                    type="text"
-                    name="startLocation"
-                    placeholder="Search for start location..."
-                    value={form.startLocation}
-                    onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
-                    required
-                  />
-                </Autocomplete>
+                  placeholder="Search for start location..."
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
+                  types={['establishment', 'geocode']}
+                  componentRestrictions={{ country: 'in' }}
+                  fields={['name', 'formatted_address', 'geometry', 'address_components']}
+                  required
+                />
                 <div className="text-slate-400 text-xs mt-1">Where does the quest begin? (Start typing to search places)</div>
               </div>
               <div className="sm:w-1/2">
                 <label className="block font-medium mb-1">End Location</label>
-                <Autocomplete
-                  onLoad={onEndLocationLoad}
-                  onPlaceChanged={onEndLocationPlaceChanged}
-                  options={{
-                    componentRestrictions: { country: ['in'] }, // Restrict to India, modify as needed
-                    fields: ['name', 'formatted_address', 'geometry', 'address_components'],
-                    types: ['establishment', 'geocode']
+                <LazyAutocomplete
+                  onPlaceSelect={(place) => {
+                    if (place.geometry) {
+                      setForm({
+                        ...form,
+                        endLocation: place.name || place.formatted_address,
+                        address: form.address || place.formatted_address || form.address,
+                        city: form.city || (place.address_components?.find(comp => 
+                          comp.types.includes('locality'))?.long_name) || form.city
+                      });
+                      
+                      // Update map center to the selected place
+                      const location = {
+                        lat: place.geometry.location.lat(),
+                        lng: place.geometry.location.lng()
+                      };
+                      setMapCenter(location);
+                      setMapZoom(15);
+                    }
                   }}
-                >
-                  <input
-                    type="text"
-                    name="endLocation"
-                    placeholder="Search for end location..."
-                    value={form.endLocation}
-                    onChange={handleChange}
-                    className="w-full border border-slate-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
-                    required
-                  />
-                </Autocomplete>
+                  placeholder="Search for end location..."
+                  className="w-full border border-slate-200 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
+                  types={['establishment', 'geocode']}
+                  componentRestrictions={{ country: 'in' }}
+                  fields={['name', 'formatted_address', 'geometry', 'address_components']}
+                  required
+                />
                 <div className="text-slate-400 text-xs mt-1">Where does the quest end? (Start typing to search places)</div>
               </div>
             </div>
 
-            {/* Address Field */}
             <div className="mb-4">
               <label className="block font-medium mb-1">Address</label>
               <input
@@ -873,7 +764,6 @@ function CreateQuestPageContent() {
               <div className="text-slate-400 text-xs mt-1">Full address or specific location of the quest</div>
             </div>
 
-            {/* City and Pincode */}
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <div className="sm:w-2/3">
                 <label className="block font-medium mb-1">City</label>
@@ -904,8 +794,7 @@ function CreateQuestPageContent() {
                 <div className="text-slate-400 text-xs mt-1">Area pincode (max 10 digits)</div>
               </div>
             </div>
-            
-            {/* Center Map on Current Location Button */}
+
             <div className="mb-4">
               <button
                 type="button"
@@ -930,41 +819,50 @@ function CreateQuestPageContent() {
               </div>
             </div>
 
-            {/* Waypoint Search Section */}
             <div className="mb-6 bg-slate-50 rounded-lg p-4 border border-slate-200">
               <h3 className="font-medium text-slate-700 mb-3">Add Waypoints</h3>
               <p className="text-slate-600 text-sm mb-4">
                 Add places that questers should visit. You can search for places, add coordinates manually, or click on the map.
               </p>
               
-              {/* Google Places Search for Waypoints */}
               <div className="mb-4">
                 <label className="block font-medium mb-2 text-sm">Search Places</label>
                 <div className="flex gap-2">
-                  <Autocomplete
-                    onLoad={onWaypointSearchLoad}
-                    onPlaceChanged={onWaypointPlaceChanged}
-                    options={{
-                      componentRestrictions: { country: ['in'] }, // Modify as needed
-                      fields: ['name', 'formatted_address', 'geometry', 'address_components', 'types'],
-                      types: ['establishment', 'tourist_attraction', 'point_of_interest', 'geocode']
+                  <EstablishmentAutocomplete
+                    onPlaceSelect={(place) => {
+                      if (place.geometry) {
+                        const newWaypoint = {
+                          lat: place.geometry.location.lat(),
+                          lng: place.geometry.location.lng(),
+                          id: Date.now(),
+                          name: place.name || place.formatted_address,
+                          address: place.formatted_address
+                        };
+                        
+                        const updatedWaypoints = [...waypoints, newWaypoint];
+                        setWaypoints(updatedWaypoints);
+                        setForm({ ...form, waypoints: updatedWaypoints });
+                        
+                        // Update map center and zoom to show the new waypoint
+                        setMapCenter(newWaypoint);
+                        setMapZoom(16);
+                        setSelectedPlace(place);
+                        setGeoMessage(`Added waypoint: ${place.name || place.formatted_address}`);
+                        setTimeout(() => setGeoMessage(""), 3000);
+                      }
                     }}
-                  >
-                    <input
-                      type="text"
-                      placeholder="Search for places, landmarks, attractions..."
-                      value={placeSearchQuery}
-                      onChange={(e) => setPlaceSearchQuery(e.target.value)}
-                      className="flex-1 border border-slate-200 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
-                    />
-                  </Autocomplete>
+                    placeholder="Search for places, landmarks, attractions..."
+                    className="flex-1 border border-slate-200 rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-teal-100"
+                    types={['establishment', 'tourist_attraction', 'point_of_interest', 'geocode']}
+                    componentRestrictions={{ country: 'in' }}
+                    fields={['name', 'formatted_address', 'geometry', 'address_components', 'types']}
+                  />
                 </div>
                 <div className="text-slate-400 text-xs mt-1">
                   Start typing to search for places, landmarks, or attractions to add as waypoints.
                 </div>
               </div>
 
-              {/* Manual Coordinate Entry */}
               <div className="mb-4">
                 <button
                   type="button"
@@ -1032,7 +930,6 @@ function CreateQuestPageContent() {
               </div>
             </div>
             
-            {/* Waypoints List */}
             {waypoints.length > 0 && (
               <div className="mb-4">
                 <h3 className="font-medium text-slate-700 mb-2">Added Waypoints ({waypoints.length})</h3>
@@ -1107,14 +1004,12 @@ function CreateQuestPageContent() {
               </div>
             </div>
 
-            {/* Location status message */}
             {geoMessage && (
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">{geoMessage}</p>
               </div>
             )}
 
-            {/* Interactive Map for Waypoints */}
             <div className="quest-map-container bg-slate-100 rounded-lg h-80 border border-slate-200 overflow-hidden">
               <GoogleMap
                 mapContainerStyle={{ height: "100%", width: "100%" }}
@@ -1133,7 +1028,6 @@ function CreateQuestPageContent() {
                       keyboardShortcuts: true
                     }}
                   >
-                    {/* Render waypoint markers */}
                     {waypoints.map((waypoint, idx) => (
                       <AdvancedMarker
                         key={waypoint.id || idx}
@@ -1145,7 +1039,6 @@ function CreateQuestPageContent() {
                       />
                     ))}
                     
-                    {/* Route visualization between waypoints */}
                     {showRoutes && waypoints.length > 1 && (
                       <MapRoutingControl waypoints={waypoints} />
                     )}
@@ -1164,7 +1057,6 @@ function CreateQuestPageContent() {
             </div>
           </section>
 
-          {/* Quest Objectives / Tasks */}
           <section className="mb-8">
             <h2 className="font-semibold text-lg text-slate-800 mb-3">Quest Objectives / Tasks</h2>
             <div className="space-y-4">
@@ -1191,7 +1083,6 @@ function CreateQuestPageContent() {
             </button>
           </section>
 
-          {/* Quest Tips Section */}
           <section className="mb-8">
             <h2 className="font-semibold text-lg text-slate-800 mb-3">Quest Tips</h2>
             <div className="space-y-4">
@@ -1221,7 +1112,6 @@ function CreateQuestPageContent() {
             </div>
           </section>
 
-          {/* Reward & Verification */}
           <section className="mb-8">
             <h2 className="font-semibold text-lg text-slate-800 mb-3">Reward & Verification</h2>
             <div className="flex flex-col sm:flex-row gap-4 mb-4">
@@ -1267,7 +1157,6 @@ function CreateQuestPageContent() {
             </div>
           </section>
 
-          {/* Actions */}
           <div className="flex flex-col sm:flex-row justify-end gap-4 mt-8">
             <button
               type="button"
@@ -1287,7 +1176,6 @@ function CreateQuestPageContent() {
           </div>
         </form>
 
-        {/* Error Display */}
         {error && (
           <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[9998] w-full max-w-md px-4">
             <div className="bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3">
@@ -1299,7 +1187,6 @@ function CreateQuestPageContent() {
           </div>
         )}
 
-        {/* Preview Modal */}
         {showPreview && <PreviewModal />}
       </main>
     </div>

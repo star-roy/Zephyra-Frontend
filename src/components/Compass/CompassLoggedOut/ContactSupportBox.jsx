@@ -7,7 +7,7 @@ function ContactSupportBox() {
     <section className="w-full px-4 py-14 bg-[#EBF2FF]">
       <div className="max-w-5xl mx-auto">
         <div className="bg-gradient-to-r from-[#CADCFC] via-[#EBF2FF] to-[#CADCFC] border border-[#CADCFC] rounded-2xl px-6 sm:px-10 py-8 shadow-md flex flex-col sm:flex-row items-center justify-between gap-6">
-          {/* Text Content */}
+
           <div className="text-center sm:text-left">
             <h2 className="text-xl sm:text-2xl font-bold text-[#0D1B2A] mb-1">
               Need help? Contact us Directly
@@ -17,9 +17,7 @@ function ContactSupportBox() {
             </p>
           </div>
 
-          {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
-            {/* Glass Button */}
             <Link
               to="/contact-us"
               className="inline-flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md text-[#2C3E50] font-semibold px-5 py-3 rounded-lg transition-all shadow border border-white/30 hover:bg-white/30 hover:text-[#4A90E2]"
@@ -28,7 +26,6 @@ function ContactSupportBox() {
               Contact Support
             </Link>
 
-            {/* Normal Button */}
             <a
               href="/report-bug"
               className="shine-sweep inline-flex items-center justify-center gap-2 bg-[#EBF2FF] border border-[#4A90E2]/50 text-[#4A90E2] hover:bg-[#4A90E2] hover:text-white font-semibold px-5 py-3 rounded-lg transition-all shadow"

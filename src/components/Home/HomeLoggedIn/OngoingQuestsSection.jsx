@@ -4,14 +4,12 @@ import OngoingQuestCard from "../../Cards/OngoingQuestCard";
 
 function OngoingQuestsSection({ quests }) {
   const hasQuests = Array.isArray(quests) && quests.length > 0;
-  // Only show one ongoing quest card, if available
   const displayQuests = hasQuests ? quests.slice(0, 1) : [];
   const questsInProgress = hasQuests ? quests.length : 0;
 
   return (
     <section className="w-full px-4 sm:px-6 md:px-10 xl:px-14 py-8">
       <div className="max-w-[1400px] mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-midnightIndigo">
             Ongoing Quests
@@ -28,7 +26,6 @@ function OngoingQuestsSection({ quests }) {
             </Link>
           </div>
         </div>
-        {/* Cards if there are quests */}
         {hasQuests ? (
           <div className="grid gap-16 md:gap-12 grid-cols-1">
             {displayQuests.map((quest) => (
@@ -36,7 +33,7 @@ function OngoingQuestsSection({ quests }) {
             ))}
           </div>
         ) : (
-          <div className="w-full mx-auto bg-gradient-to-r from-indigo-100 to-purple-100 rounded-2xl shadow-lg flex flex-col items-center py-6 px-4 sm:px-8 mb-8">
+          <div className="w-full mx-auto bg-gradient-to-r from-indigo-100 to-white rounded-2xl shadow-lg flex flex-col items-center py-6 px-4 sm:px-8 mb-8 border border-indigo-200">
             <div className="max-w-xl w-full flex flex-col items-center">
               <div className="text-xl sm:text-2xl font-bold text-midnightIndigo mb-2 text-center">
                 You have no ongoing quests.
@@ -46,7 +43,7 @@ function OngoingQuestsSection({ quests }) {
               </div>
               <Link
                 to="/explore"
-                className="shine-sweep inline-flex items-center bg-gradient-to-r from-purple-600 to-indigo-300 text-white font-bold text-base px-6 py-3 rounded-full shadow-xl hover:scale-105 hover:shadow-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
+                className="shine-sweep inline-flex items-center bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold text-base px-6 py-3 rounded-full shadow-xl hover:scale-105 hover:shadow-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
               >
                 <span className="mr-2 text-xl">✨</span>
                 Explore Now
@@ -54,7 +51,6 @@ function OngoingQuestsSection({ quests }) {
             </div>
           </div>
         )}
-        {/* Mobile View All */}
         <div className="mt-6 sm:hidden text-center">
           <Link
             to="/my-quest"

@@ -1,49 +1,120 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useJsApiLoader, GoogleMap } from '@react-google-maps/api';
+import { GoogleMap } from '@react-google-maps/api';
 import MapRoutingControl from '../../components/MapRoutingControl';
 import AdvancedMarker from '../../components/AdvancedMarker';
 import { watchLiveLocation, stopLocationWatch, calculateDistance } from '../../utils/locationUtils';
 import { fetchQuestById, fetchQuestProgress } from '../../features/questSlice';
+import { useGoogleMaps } from '../../hooks/useGoogleMaps';
+import { Skeleton } from '../../components/index.js';
+import { 
+  FaCheckCircle, 
+  FaMapMarkerAlt, 
+  FaBullseye,
+  FaLightbulb, 
+  FaShieldAlt, 
+  FaTrophy, 
+  FaCamera, 
+  FaEye,
+  FaClock,
+  FaRoute,
+  FaPlay,
+  FaPause
+} from 'react-icons/fa';
+import { 
+  MdLocationOn, 
+  MdTipsAndUpdates, 
+  MdSecurity 
+} from 'react-icons/md';
+import { 
+  HiOutlineArrowNarrowRight 
+} from 'react-icons/hi';
+import { 
+  BiCurrentLocation, 
+  BiTime, 
+  BiTrendingUp 
+} from 'react-icons/bi';
 
-const zephyraBlue = "#7F56D9";
-const zephyraGold = "#FDB022";
 
-// Google Maps configuration
-const GOOGLE_MAPS_LIBRARIES = ['places'];
 const MAP_CONTAINER_STYLE = {
   width: '100%',
-  height: '300px'
+  height: '100%'
 };
 
-// Default map center
 const DEFAULT_CENTER = {
   lat: 34.6290,
   lng: -78.6050
 };
 
-// --- Quest Tips & Safety Card ---
 function QuestTipsCard({ tips = [] }) {
+  const [showAllTips, setShowAllTips] = useState(false);
+  const displayedTips = showAllTips ? tips : tips.slice(0, 2);
+  
   return (
-    <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-7 w-full max-w-[340px] flex flex-col gap-2 self-start">
-      <div className="font-bold text-[#22223B] text-lg mb-2">Quest Tips & Safety</div>
-      <ul className="list-disc ml-4 text-[#667085] text-base mb-2">
-        {tips.length > 0 ? (
-          tips.map((tip, index) => (
-            <li key={index}>{tip.tip_text}</li>
-          ))
-        ) : (
-          <>
-            <li>Stay hydrated and wear comfortable shoes.</li>
-            <li>Be mindful of traffic when exploring urban areas.</li>
-            <li>Ask locals for recommendations—they know the hidden gems!</li>
-            <li>Respect public spaces and preserve the environment.</li>
-          </>
-        )}
-      </ul>
-      <div className="mt-3 text-sm text-[#7F56D9] font-semibold">
-        Need help? <a href="/support" className="underline hover:text-[#5d3bb2]">Contact support</a>
+    <div className="bg-gradient-to-br from-white to-amber-50 border border-[#F2F4F7] rounded-2xl shadow-sm p-6 w-full max-w-[340px] flex flex-col gap-4 self-start">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="p-2 bg-amber-100 rounded-full">
+          <MdSecurity className="text-amber-600 text-lg" />
+        </div>
+        <div>
+          <h3 className="font-bold text-[#22223B] text-lg">Quest Tips & Safety</h3>
+          <p className="text-xs text-gray-600">Stay safe and informed</p>
+        </div>
+      </div>
+      
+      {tips.length > 0 ? (
+        <div className="space-y-3">
+          {displayedTips.map((tip, index) => (
+            <div key={index} className="flex items-start gap-3 p-3 bg-white rounded-xl border border-amber-200">
+              <div className="flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+                  <MdTipsAndUpdates className="text-amber-600 text-xs" />
+                </div>
+              </div>
+              <span className="text-sm text-gray-700 leading-relaxed">
+                {typeof tip === 'string' ? tip : tip.tip_text}
+              </span>
+            </div>
+          ))}
+          
+          {tips.length > 2 && (
+            <button 
+              className="w-full text-center py-2 text-sm text-amber-600 hover:text-amber-700 font-medium transition-colors"
+              onClick={() => setShowAllTips(!showAllTips)}
+            >
+              {showAllTips ? `Show Less` : `View ${tips.length - 2} more tips`}
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {[
+            "Stay hydrated and wear comfortable shoes.",
+            "Be mindful of traffic when exploring urban areas.",
+            "Ask locals for recommendations—they know the hidden gems!",
+            "Respect public spaces and preserve the environment."
+          ].map((tip, index) => (
+            <div key={index} className="flex items-start gap-3 p-3 bg-white rounded-xl border border-amber-200">
+              <div className="flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+                  <MdTipsAndUpdates className="text-amber-600 text-xs" />
+                </div>
+              </div>
+              <span className="text-sm text-gray-700 leading-relaxed">{tip}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      
+      <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+        <div className="text-sm text-blue-800 font-semibold mb-1">Need help?</div>
+        <a 
+          href="/support" 
+          className="text-sm text-blue-600 hover:text-blue-700 underline hover:no-underline transition-colors"
+        >
+          Contact support team
+        </a>
       </div>
     </div>
   );
@@ -53,8 +124,7 @@ export default function QuestInProgressPage() {
   const { questId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
-  // Redux state
+
   const { currentQuest, questProgress, loading, error } = useSelector((state) => state.quest);
   
   const [hintRevealed, setHintRevealed] = useState(false);
@@ -63,17 +133,8 @@ export default function QuestInProgressPage() {
   const [watchId, setWatchId] = useState(null);
   const [locationAccuracy, setLocationAccuracy] = useState(null);
 
-  // Google Maps API loading
-  const { isLoaded: mapLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries: GOOGLE_MAPS_LIBRARIES,
-  });
+  const { isLoaded: mapLoaded } = useGoogleMaps();
 
-  // Google Maps API key
-  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-  // Fetch quest data and progress on component mount
   useEffect(() => {
     if (questId) {
       dispatch(fetchQuestById(questId));
@@ -81,53 +142,45 @@ export default function QuestInProgressPage() {
     }
   }, [dispatch, questId]);
 
-  // Get quest route data from currentQuest
   const questRoute = currentQuest?.routes?.[0];
-  
-  // Get waypoints from quest route or use default center location
+
   const waypoints = questRoute?.waypoints || [];
   const hasValidWaypoints = waypoints.length > 0;
-  
-  // Calculate map center from waypoints or use quest location
+
   const getMapCenter = () => {
     if (hasValidWaypoints) {
       const latSum = waypoints.reduce((sum, wp) => sum + (wp.lat || 0), 0);
       const lngSum = waypoints.reduce((sum, wp) => sum + (wp.lng || 0), 0);
       return { lat: latSum / waypoints.length, lng: lngSum / waypoints.length };
     }
-    // Fallback to default center if no waypoints
     return { lat: 39.9612, lng: -82.9988 };
   };
 
   const mapCenter = getMapCenter();
 
-  // Get objectives from quest tasks and progress
   const objectives = currentQuest?.tasks?.map((task) => ({
-    label: task.description, // Backend returns 'description', not 'task_description'
+    label: task.description,
     completed: questProgress?.completed_tasks?.includes(task._id) || false
   })) || [];
 
-  // Live location tracking functions
   const startLocationTracking = () => {
-    if (watchId) return; // Already tracking
-    
+    if (watchId) return; 
+
     setLocationTracking(true);
     const id = watchLiveLocation(
       (location) => {
         setUserLocation(location);
         setLocationAccuracy(location.accuracy);
-        
-        // Optional: Check if user is near next objective
-        const nextWaypoint = questRoute.waypoints[1]; // Next destination
+
+        const nextWaypoint = questRoute.waypoints[1];
         if (nextWaypoint) {
           const distance = calculateDistance(
             location.lat, location.lng,
             nextWaypoint.lat, nextWaypoint.lng
           );
-          
-          // If within 10 meters of waypoint, could trigger completion
+
           if (distance < 10) {
-            console.log("Near objective!");
+            // TODO: Near objective - could trigger completion logic here
           }
         }
       },
@@ -149,27 +202,8 @@ export default function QuestInProgressPage() {
     }
   };
 
-  // Height sync refs
-  const proofRef = useRef(null);
-  const rewardsRef = useRef(null);
-  const [proofHeight, setProofHeight] = useState();
-
   useEffect(() => {
-    // Sync heights after mount and on window resize
-    function syncHeights() {
-      if (proofRef.current && rewardsRef.current) {
-        const proofBoxHeight = proofRef.current.offsetHeight;
-        const rewardsBoxHeight = rewardsRef.current.offsetHeight;
-        const maxHeight = Math.max(proofBoxHeight, rewardsBoxHeight);
-        setProofHeight(maxHeight);
-      }
-    }
-    syncHeights();
-    window.addEventListener("resize", syncHeights);
-    
-    // Cleanup location tracking on unmount
     return () => {
-      window.removeEventListener("resize", syncHeights);
       if (watchId) {
         stopLocationWatch(watchId);
       }
@@ -180,19 +214,65 @@ export default function QuestInProgressPage() {
     (objectives.filter((o) => o.completed).length / objectives.length) * 100
   ) : 0;
 
-  // Show loading state
   if (loading) {
     return (
-      <div className="bg-[#F8FAFC] min-h-screen pb-12 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#7F56D9] mx-auto"></div>
-          <p className="mt-4 text-[#667085]">Loading quest...</p>
+      <div className="bg-[#F8FAFC] min-h-screen pb-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          
+          <div className="bg-white border rounded-2xl shadow-lg border-[#F2F4F7] p-8 mb-8">
+            <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+              <div className="flex-1 space-y-4">
+                <Skeleton height="32px" width="70%" />
+                <Skeleton height="20px" width="50%" />
+                <Skeleton height="16px" width="80%" />
+              </div>
+              <div className="bg-white rounded-xl p-4 sm:p-6 border border-[#F2F4F7] shadow-sm w-full lg:min-w-[300px]">
+                <Skeleton height="24px" width="60%" className="mb-4" />
+                <Skeleton height="12px" width="100%" className="mb-3" />
+                <Skeleton height="16px" width="80%" />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+            <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-6">
+              <Skeleton height="24px" width="60%" className="mb-6" />
+              <div className="space-y-4">
+                <Skeleton height="48px" width="100%" />
+                <Skeleton height="48px" width="100%" />
+              </div>
+            </div>
+          
+            <div className="xl:col-span-2 bg-gray-200 rounded-2xl animate-pulse" style={{ minHeight: '500px' }}>
+              <div className="flex items-center justify-center h-full">
+                <Skeleton height="24px" width="120px" />
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-6">
+                <Skeleton height="24px" width="70%" className="mb-4" />
+                <div className="space-y-3">
+                  <Skeleton height="16px" width="100%" />
+                  <Skeleton height="16px" width="90%" />
+                  <Skeleton height="16px" width="80%" />
+                </div>
+              </div>
+              
+              <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-6">
+                <Skeleton height="24px" width="60%" className="mb-4" />
+                <div className="space-y-3">
+                  <Skeleton height="16px" width="100%" />
+                  <Skeleton height="16px" width="85%" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <div className="bg-[#F8FAFC] min-h-screen pb-12 flex items-center justify-center">
@@ -228,88 +308,175 @@ export default function QuestInProgressPage() {
 
   return (
     <div className="bg-[#F8FAFC] min-h-screen pb-12">
-      <div className="mx-auto max-w-6xl px-2 sm:px-4 py-8 flex flex-col gap-8">
-        {/* Quest Title + Progress */}
-        <div className="bg-white border rounded-2xl shadow-sm border-[#F2F4F7] px-7 py-8 flex flex-wrap gap-8 items-center justify-between">
-          <div className="flex-1 min-w-[260px]">
-            <div className="text-base font-medium text-[#667085] mb-2">
-              Quest in Progress
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    
+        <div className="bg-gradient-to-br from-white via-blue-50 to-white border rounded-2xl shadow-lg border-[#F2F4F7] p-8 mb-8">
+          <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-[#7F56D9]/10 rounded-full">
+                  <BiCurrentLocation className="text-[#7F56D9] text-lg" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold text-[#7F56D9]">Quest in Progress</span>
+                  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
+                    Active
+                  </span>
+                </div>
+              </div>
+              
+              <h1 className="text-2xl lg:text-3xl font-bold text-[#22223B] mb-3 leading-tight">
+                {currentQuest.title}
+              </h1>
+              
+              <p className="text-[#667085] text-base leading-relaxed mb-4 max-w-2xl">
+                {currentQuest.description}
+              </p>
+              
+              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <BiTime className="text-[#7F56D9]" />
+                  <span>Started today</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaRoute className="text-green-600" />
+                  <span>{waypoints.length} waypoints</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaTrophy className="text-[#FDB022]" />
+                  <span>{currentQuest?.quest?.xp || currentQuest?.xp || 'Loading...'} XP reward</span>
+                </div>
+              </div>
             </div>
-            <div className="text-[2rem] font-bold text-[#22223B] mb-2 leading-tight">
-              {currentQuest.title}
+            
+            <div className="bg-white rounded-xl p-4 sm:p-6 border border-[#F2F4F7] shadow-sm w-full lg:min-w-[300px]">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[#667085] font-semibold text-sm sm:text-base">Quest Progress</span>
+                <span className="text-2xl sm:text-3xl font-bold text-[#7F56D9]">{progressPercent}%</span>
+              </div>
+              
+              <div className="w-full h-3 bg-[#F2F4F7] rounded-full relative overflow-hidden mb-3">
+                <div
+                  className="h-full rounded-full absolute top-0 left-0 bg-gradient-to-r from-[#7F56D9] to-[#6842c2] transition-all duration-500 ease-out"
+                  style={{ width: `${progressPercent}%` }}
+                >
+                  <div className="h-full w-full bg-white/20 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-xs sm:text-sm text-gray-500">
+                <span>{objectives.filter((o) => o.completed).length} of {objectives.length} completed</span>
+                <span className={`font-medium ${progressPercent === 100 ? 'text-green-600' : 'text-blue-600'}`}>
+                  {progressPercent === 100 ? 'Complete!' : 'In Progress'}
+                </span>
+              </div>
             </div>
-            <div className="text-[#667085] text-[1.08rem]">
-              {currentQuest.description}
-            </div>
-          </div>
-          <div className="flex items-center gap-4 min-w-[220px] justify-end flex-none">
-            <span className="text-[#667085] font-semibold text-[1rem]">Progress</span>
-            <div className="w-[110px] h-[7px] bg-[#F2F4F7] rounded-lg relative overflow-hidden">
-              <div
-                className="h-full rounded-lg absolute top-0 left-0"
-                style={{
-                  width: `${progressPercent}%`,
-                  background: zephyraBlue,
-                  transition: "width 0.4s"
-                }}
-              ></div>
-            </div>
-            <span className="text-[#667085] font-medium text-[1rem] min-w-[34px] text-right">
-              {progressPercent}%
-            </span>
           </div>
         </div>
 
-        {/* Directions/Map */}
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Tools box */}
-          <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-6 flex-1 min-w-[260px] max-w-md">
-            <div className="font-semibold text-[#22223B] text-lg mb-4">Tools</div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <div className="lg:col-span-1 bg-gradient-to-br from-white to-blue-50 border border-[#F2F4F7] rounded-2xl shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-100 rounded-full">
+                <FaMapMarkerAlt className="text-blue-600 text-lg" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-[#22223B] text-lg">Navigation</h3>
+                <p className="text-sm text-gray-600">Real-time tracking</p>
+              </div>
+            </div>
             
-            {/* Live Location Tracking */}
-            <div className="mb-4">
-              <div className="text-[#667085] font-medium mb-2">Live Location:</div>
+            <div className="mb-6 p-4 bg-white rounded-xl border border-blue-200">
+              <div className="flex items-center gap-2 mb-3">
+                <BiCurrentLocation className="text-blue-600" />
+                <span className="text-gray-700 font-medium text-sm">Live Location</span>
+              </div>
+              
               <button
                 onClick={locationTracking ? stopLocationTracking : startLocationTracking}
-                className={`px-4 py-2 rounded-lg font-medium text-sm w-full ${
+                className={`px-4 py-3 rounded-xl font-medium text-sm w-full flex items-center justify-center gap-2 transition-all ${
                   locationTracking 
-                    ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                    : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    ? 'bg-red-500 text-white hover:bg-red-600' 
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
                 }`}
               >
-                {locationTracking ? '🔴 Stop Tracking' : '📍 Start Live Tracking'}
+                {locationTracking ? (
+                  <>
+                    <FaPause className="text-sm" />
+                    Stop Tracking
+                  </>
+                ) : (
+                  <>
+                    <FaPlay className="text-sm" />
+                    Start Tracking
+                  </>
+                )}
               </button>
+              
               {locationAccuracy && (
-                <div className="text-xs text-gray-500 mt-1">
-                  Accuracy: ±{Math.round(locationAccuracy)}m
+                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-xs text-green-800">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span>±{Math.round(locationAccuracy)}m accuracy</span>
+                  </div>
                 </div>
               )}
             </div>
             
-            <div className="text-[#667085] font-medium mb-2">Directions:</div>
-            {hasValidWaypoints ? (
-              <ol className="list-decimal text-[#667085] text-base ml-5 mb-0">
-                {questRoute?.start_location && (
-                  <li>Start at: {typeof questRoute.start_location === 'string' ? questRoute.start_location : 'Starting location'}</li>
-                )}
-                {waypoints.map((waypoint, idx) => (
-                  <li key={idx}>
-                    {waypoint.name || waypoint.address || `Visit waypoint ${idx + 1}`}
-                    {waypoint.address && waypoint.name && ` (${waypoint.address})`}
-                  </li>
-                ))}
-                {questRoute?.end_location && (
-                  <li>End at: {typeof questRoute.end_location === 'string' ? questRoute.end_location : 'Final destination'}</li>
-                )}
-              </ol>
-            ) : (
-              <p className="text-[#667085] text-base ml-5">No route directions available for this quest.</p>
-            )}
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <FaRoute className="text-[#7F56D9]" />
+                <span className="text-gray-700 font-medium text-sm">Directions</span>
+              </div>
+              
+              {hasValidWaypoints ? (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {questRoute?.start_location && (
+                    <div className="flex items-start gap-2 p-2 bg-green-50 rounded-lg">
+                      <div className="w-3 h-3 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                      <div className="min-w-0">
+                        <div className="text-xs text-green-600 font-medium">START</div>
+                        <div className="text-sm text-gray-700 break-words">{questRoute.start_location}</div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {waypoints.map((waypoint, idx) => (
+                    <div key={idx} className="flex items-start gap-2 p-2 bg-blue-50 rounded-lg">
+                      <div className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">
+                        {idx + 1}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs text-blue-600 font-medium">STOP {idx + 1}</div>
+                        <div className="text-sm text-gray-700 break-words">
+                          {waypoint.name || waypoint.address || `Checkpoint ${idx + 1}`}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {questRoute?.end_location && (
+                    <div className="flex items-start gap-2 p-2 bg-red-50 rounded-lg">
+                      <div className="w-3 h-3 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                      <div className="min-w-0">
+                        <div className="text-xs text-red-600 font-medium">FINISH</div>
+                        <div className="text-sm text-gray-700 break-words">{questRoute.end_location}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-gray-500">
+                  <FaRoute className="text-2xl text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm">No route available</p>
+                </div>
+              )}
+            </div>
           </div>
-          {/* Google Maps */}
-          <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-4 flex-2 flex items-center justify-center min-w-0 w-full">
-            <div className="w-full h-[300px] rounded-xl overflow-hidden">
-              {mapLoaded && googleMapsApiKey ? (
+
+          <div className="lg:col-span-2 bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-4">
+            <div className="w-full h-96 lg:h-[500px] rounded-xl overflow-hidden relative">
+              {mapLoaded ? (
                 <GoogleMap
                   mapContainerStyle={MAP_CONTAINER_STYLE}
                   center={mapCenter}
@@ -318,17 +485,22 @@ export default function QuestInProgressPage() {
                     zoomControl: true,
                     streetViewControl: false,
                     mapTypeControl: false,
-                    fullscreenControl: false,
+                    fullscreenControl: true,
                     gestureHandling: 'greedy',
                     clickableIcons: false,
                     disableDoubleClickZoom: false,
-                    keyboardShortcuts: true
+                    keyboardShortcuts: true,
+                    styles: [
+                      {
+                        featureType: 'poi',
+                        elementType: 'labels',
+                        stylers: [{ visibility: 'simplified' }]
+                      }
+                    ]
                   }}
                 >
-                  {/* Route visualization - only show if we have valid waypoints */}
                   {hasValidWaypoints && <MapRoutingControl waypoints={waypoints} />}
                   
-                  {/* Waypoint markers - only show if we have valid waypoints */}
                   {hasValidWaypoints && waypoints.map((waypoint, idx) => (
                     <AdvancedMarker 
                       key={idx} 
@@ -337,8 +509,7 @@ export default function QuestInProgressPage() {
                       label={`${idx + 1}`}
                     />
                   ))}
-                  
-                  {/* User's live location marker */}
+
                   {userLocation && (
                     <AdvancedMarker 
                       position={{ lat: userLocation.lat, lng: userLocation.lng }}
@@ -349,137 +520,290 @@ export default function QuestInProgressPage() {
                       }}
                     />
                   )}
-                  
-                  {/* Show message if no waypoints available */}
-                  {!hasValidWaypoints && (
-                    <div className="absolute top-4 left-4 bg-white p-2 rounded shadow">
-                      <p className="text-sm text-gray-600">No route data available for this quest</p>
-                    </div>
-                  )}
                 </GoogleMap>
               ) : (
-                <div className="flex items-center justify-center h-full text-slate-500">
+                <div className="flex items-center justify-center h-full bg-gray-50 rounded-xl">
                   <div className="text-center">
-                    <svg className="w-12 h-12 mx-auto mb-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
                     </svg>
-                    <p className="text-sm">{!mapLoaded ? 'Loading map...' : 'Google Maps API key required'}</p>
+                    <p className="text-sm text-gray-500">Loading map...</p>
                   </div>
+                </div>
+              )}
+  
+              {mapLoaded && !hasValidWaypoints && (
+                <div className="absolute top-4 left-4 bg-blue-50 border border-blue-200 text-blue-800 px-3 py-2 rounded-lg shadow-sm">
+                  <p className="text-sm font-medium">⚠️ No route data available</p>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Objectives and Hints */}
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Objectives */}
-          <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-6 flex-1 min-w-[220px] max-w-[340px]">
-            <div className="font-semibold text-[#22223B] text-lg mb-4">Objectives</div>
-            <ol className="pl-0 flex flex-col gap-4 mb-0">
-              {objectives.map((obj, idx) => (
-                <li key={idx} className="flex items-start gap-3 list-none">
-                  <span
-                    className={`inline-block w-5 h-5 rounded-md border-[1.5px] border-[#F2F4F7] mt-1 transition`}
-                    style={{ background: obj.completed ? zephyraBlue : "#fff" }}
-                  >
-                    {obj.completed && (
-                      <svg width={16} height={16} className="block mx-auto my-[2px]" fill="none">
-                        <polyline
-                          points="3,8 7,12 13,5"
-                          stroke="#fff"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </span>
-                  <span className={`text-[#22223B] font-medium text-base ${obj.completed ? "opacity-100" : "opacity-85"}`}>
-                    {obj.label}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </div>
-          {/* Hints */}
-          <div className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-6 flex-1 min-w-[180px]">
-            <div className="font-semibold text-[#22223B] text-lg mb-4">Hints</div>
-            <div className="text-[#667085] text-base mb-4">
-              Need a little help? Click below to reveal a hint for your current objective.
-            </div>
-            <button
-              className="border-none bg-[#F2F4F7] text-[#667085] font-semibold px-5 py-2 rounded-lg text-base cursor-pointer hover:bg-[#e0e6ee] transition"
-              onClick={() => setHintRevealed(!hintRevealed)}
-            >
-              {hintRevealed ? "Clock Tower is near the Town Square!" : "Reveal Hint"}
-            </button>
-          </div>
-        </div>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
 
-        {/* Main bottom section */}
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Proof of Completion */}
-          <div
-            ref={proofRef}
-            className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-7 flex-3 min-w-0 flex flex-col justify-between"
-            style={proofHeight ? { height: proofHeight } : {}}
-          >
-            <div>
-              <div className="font-bold text-[#22223B] text-lg mb-1">Proof of Completion</div>
-              <div className="text-[#667085] text-base mb-8">
-                Submit your proof of completion for this quest.
+          <div className="xl:col-span-2">
+            <div className="bg-gradient-to-br from-white to-green-50 border border-[#F2F4F7] rounded-2xl shadow-sm p-6 h-fit">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-green-100 rounded-full">
+                  <FaBullseye className="text-green-600 text-lg" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#22223B] text-lg">Quest Objectives</h3>
+                  <p className="text-sm text-gray-600">Track your progress through each checkpoint</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                {objectives.map((obj, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`flex items-start gap-4 p-4 rounded-xl border transition-all ${
+                      obj.completed 
+                        ? 'bg-green-50 border-green-200 shadow-sm' 
+                        : 'bg-white border-gray-200 hover:border-green-200 hover:shadow-sm'
+                    }`}
+                  >
+                    <div className="relative flex-shrink-0">
+                      <div
+                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+                          obj.completed 
+                            ? 'bg-green-500 border-green-500 shadow-md' 
+                            : 'bg-white border-gray-300'
+                        }`}
+                      >
+                        {obj.completed ? (
+                          <FaCheckCircle className="text-white text-sm" />
+                        ) : (
+                          <span className="text-gray-400 text-sm font-bold">{idx + 1}</span>
+                        )}
+                      </div>
+                      {idx < objectives.length - 1 && (
+                        <div className={`absolute top-8 left-1/2 transform -translate-x-1/2 w-0.5 h-8 ${
+                          obj.completed ? 'bg-green-300' : 'bg-gray-200'
+                        }`}></div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`font-semibold ${obj.completed ? 'text-green-700' : 'text-gray-700'}`}>
+                          Objective {idx + 1}
+                        </span>
+                        {obj.completed && (
+                          <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                            Completed
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-sm leading-relaxed ${obj.completed ? 'text-green-600' : 'text-gray-600'}`}>
+                        {obj.label}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                
+                {objectives.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <FaBullseye className="text-4xl text-gray-300 mx-auto mb-3" />
+                    <p>No specific objectives for this quest.</p>
+                    <p className="text-sm">Follow the route and enjoy your adventure!</p>
+                  </div>
+                )}
               </div>
             </div>
-            {/* Upload File button only */}
-            <div className="flex justify-center mb-8">
+          </div>
+
+          <div className="xl:col-span-1 space-y-6">
+
+            <div className="bg-gradient-to-br from-white to-indigo-50 border border-[#F2F4F7] rounded-2xl shadow-sm p-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-indigo-100 rounded-full">
+                  <FaLightbulb className="text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[#22223B]">Quest Hints</h3>
+                  <p className="text-xs text-gray-600">Need help?</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <button
+                  className={`w-full p-3 rounded-lg font-medium text-sm transition-all ${
+                    hintRevealed 
+                      ? 'bg-indigo-100 border-2 border-indigo-300 text-indigo-800' 
+                      : 'bg-gradient-to-r from-indigo-500 to-blue-600 text-white hover:from-indigo-600 hover:to-blue-700 shadow-md'
+                  }`}
+                  onClick={() => setHintRevealed(!hintRevealed)}
+                >
+                  {hintRevealed ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <FaEye className="text-sm" />
+                      Hint Revealed!
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <FaLightbulb className="text-sm" />
+                      Reveal Hint
+                    </div>
+                  )}
+                </button>
+                
+                {hintRevealed && (
+                  <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <FaLightbulb className="text-indigo-600 mt-0.5 flex-shrink-0 text-sm" />
+                      <div>
+                        <div className="font-medium text-indigo-800 mb-1 text-sm">Helpful Hint:</div>
+                        <p className="text-xs text-indigo-700 leading-relaxed">
+                          {currentQuest?.tasks?.[0]?.hint || 
+                           currentQuest?.tips?.[0]?.tip_text || 
+                           'Follow the map markers and complete each objective in order.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-xs text-blue-800">
+                    <MdTipsAndUpdates className="flex-shrink-0" />
+                    <span>
+                      <strong>Pro tip:</strong> Use map markers to navigate efficiently.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-white via-purple-50 to-white border border-[#F2F4F7] rounded-2xl shadow-sm p-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-purple-100 rounded-full">
+                  <FaCamera className="text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#22223B]">Proof of Completion</h3>
+                  <p className="text-xs text-gray-600">Document your journey</p>
+                </div>
+              </div>
+              
+              <div className="text-gray-600 text-sm mb-4 leading-relaxed">
+                Ready to submit? Upload photos or documents that prove you've completed all objectives.
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className={`p-2 rounded-lg border transition-colors text-center ${
+                  progressPercent > 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                }`}>
+                  <div className="flex items-center justify-center mb-1">
+                    {progressPercent > 0 ? (
+                      <FaCheckCircle className="text-green-600 text-sm" />
+                    ) : (
+                      <div className="w-3 h-3 rounded-full border-2 border-gray-400"></div>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium">Started</span>
+                </div>
+                
+                <div className={`p-2 rounded-lg border transition-colors text-center ${
+                  progressPercent > 50 ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'
+                }`}>
+                  <div className="flex items-center justify-center mb-1">
+                    {progressPercent > 50 ? (
+                      <FaCheckCircle className="text-blue-600 text-sm" />
+                    ) : (
+                      <div className="w-3 h-3 rounded-full border-2 border-gray-400"></div>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium">Progress</span>
+                </div>
+                
+                <div className={`p-2 rounded-lg border transition-colors text-center ${
+                  progressPercent === 100 ? 'bg-purple-50 border-purple-200' : 'bg-gray-50 border-gray-200'
+                }`}>
+                  <div className="flex items-center justify-center mb-1">
+                    {progressPercent === 100 ? (
+                      <FaCheckCircle className="text-purple-600 text-sm" />
+                    ) : (
+                      <div className="w-3 h-3 rounded-full border-2 border-gray-400"></div>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium">Submit</span>
+                </div>
+              </div>
               <button
-                className="px-7 py-3 bg-[#7F56D9] text-white font-semibold rounded-xl text-base border-none cursor-pointer hover:bg-[#632bb5] shadow transition"
+                className="w-full px-4 py-3 bg-gradient-to-r from-[#7F56D9] to-[#6842c2] text-white font-semibold rounded-lg text-sm hover:from-[#6842c2] hover:to-[#7F56D9] shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
                 onClick={() => navigate(`/quest-proof-upload/${questId}`)}
               >
-                Upload File
+                <FaCamera className="text-sm" />
+                Upload Proof
+                <HiOutlineArrowNarrowRight className="text-sm" />
               </button>
             </div>
           </div>
 
-          {/* Rewards + Tips - X axis alignment */}
-          <div className="flex gap-8 flex-2 min-w-[220px]">
-            {/* Rewards Upon Completion */}
-            <div
-              ref={rewardsRef}
-              className="bg-white border border-[#F2F4F7] rounded-2xl shadow-sm p-7 flex flex-col gap-2 self-start w-full max-w-[340px]"
-              style={proofHeight ? { height: proofHeight } : {}}
-            >
-              <div className="font-bold text-[#22223B] text-lg mb-2">Rewards Upon Completion</div>
-              <ul className="list-none p-0 m-0 mb-2 text-[#22223B] text-base">
-                <li className="flex items-center gap-2 mb-2">
-                  <span className="w-6 h-6 rounded-full bg-[#F2F4F7] flex items-center justify-center">
-                    <span style={{ color: zephyraGold, fontWeight: 700, fontSize: "1.12rem" }}>✪</span>
-                  </span>
-                  {currentQuest?.xp || 0} Points
-                </li>
-                {currentQuest?.achievements?.map((achievement, index) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-[#F2F4F7] flex items-center justify-center">
-                      <span style={{ color: zephyraBlue, fontWeight: 700, fontSize: "1.12rem" }}>🏅</span>
-                    </span>
-                    {achievement.title || achievement.name || "Achievement Badge"}
-                  </li>
-                )) || (
-                  <li className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-[#F2F4F7] flex items-center justify-center">
-                      <span style={{ color: zephyraBlue, fontWeight: 700, fontSize: "1.12rem" }}>🏅</span>
-                    </span>
-                    Explorer Badge
-                  </li>
-                )}
-              </ul>
-              <div className="text-[#667085] text-sm mt-2">
-                Complete all objectives to claim your rewards and boost your standing on the leaderboard!
+          <div className="xl:col-span-1">
+            <div className="bg-gradient-to-br from-white to-blue-50 border border-[#F2F4F7] rounded-2xl shadow-sm p-6 sticky top-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-blue-100 rounded-full">
+                  <FaTrophy className="text-blue-600 text-lg" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#22223B] text-lg">Quest Rewards</h3>
+                  <p className="text-xs text-gray-600">What you'll earn upon completion</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="bg-white rounded-xl p-4 border border-blue-200">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#FDB022] to-[#F59E0B] rounded-xl flex items-center justify-center shadow-md">
+                      <span className="text-white font-bold text-sm">XP</span>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-[#22223B]">{currentQuest?.quest?.xp || currentQuest?.xp || 'Loading...'} Points</div>
+                      <div className="text-xs text-gray-600">Experience Points</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-xl p-4 border border-blue-200">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-xl flex items-center justify-center shadow-md">
+                      <BiTrendingUp className="text-white text-lg" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-semibold text-[#22223B] text-sm">Achievement Badge</div>
+                      <div className="text-xs text-gray-600">Quest completion certificate</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-xl p-4 border border-blue-200">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#7F56D9] to-[#6842c2] rounded-xl flex items-center justify-center shadow-md">
+                      <FaCheckCircle className="text-white text-lg" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-semibold text-[#22223B] text-sm">Leaderboard Points</div>
+                      <div className="text-xs text-gray-600">Boost your ranking</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="text-gray-600 text-sm text-center">
+                  Complete all objectives to claim your rewards and advance your explorer status!
+                </div>
               </div>
             </div>
-            {/* Quest Tips & Safety Card */}
-            <QuestTipsCard tips={currentQuest?.tips || []} />
+
+            <div className="mt-6">
+              <QuestTipsCard tips={currentQuest?.tips || []} />
+            </div>
           </div>
         </div>
       </div>

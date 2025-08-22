@@ -1,9 +1,3 @@
-/**
- * High-accuracy location utilities for Zephyra
- * Simple and relia        (_error) => {le geolocation functions
- */
-
-// Get user's precise current location
 export const getPreciseLocation = (onSuccess, onError, onProgress) => {
   if (!navigator.geolocation) {
     onError("Geolocation is not supported by this browser.");
@@ -12,7 +6,6 @@ export const getPreciseLocation = (onSuccess, onError, onProgress) => {
 
   onProgress?.("Getting your precise location...");
 
-  // First try: High accuracy with long timeout
   navigator.geolocation.getCurrentPosition(
     (position) => {
       const accuracy = position.coords.accuracy;
@@ -23,13 +16,12 @@ export const getPreciseLocation = (onSuccess, onError, onProgress) => {
         timestamp: Date.now()
       };
 
-      // If accuracy is good (< 20m), use it immediately
       if (accuracy <= 20) {
         onSuccess(location, `High accuracy: ±${Math.round(accuracy)}m`);
         return;
       }
 
-      // If accuracy is poor, try one more time
+
       onProgress?.("Improving accuracy...");
       navigator.geolocation.getCurrentPosition(
         (position2) => {
@@ -58,8 +50,7 @@ export const getPreciseLocation = (onSuccess, onError, onProgress) => {
         }
       );
     },
-    (error) => {
-      // High accuracy failed, try normal accuracy
+    () => {
       onProgress?.("Trying normal accuracy...");
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -117,8 +108,8 @@ export const watchLiveLocation = (onLocationUpdate, onError) => {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
         accuracy: position.coords.accuracy,
-        heading: position.coords.heading, // Direction user is facing
-        speed: position.coords.speed, // Speed in m/s
+        heading: position.coords.heading,
+        speed: position.coords.speed,
         timestamp: Date.now()
       };
       onLocationUpdate(location);
@@ -129,23 +120,21 @@ export const watchLiveLocation = (onLocationUpdate, onError) => {
     {
       enableHighAccuracy: true,
       timeout: 10000,
-      maximumAge: 5000 // Update every 5 seconds max
+      maximumAge: 5000
     }
   );
 
-  return watchId; // Return watch ID to stop tracking later
+  return watchId;
 };
 
-// Stop live location tracking
 export const stopLocationWatch = (watchId) => {
   if (watchId && navigator.geolocation) {
     navigator.geolocation.clearWatch(watchId);
   }
 };
 
-// Calculate distance between two points (in meters)
 export const calculateDistance = (lat1, lng1, lat2, lng2) => {
-  const R = 6371e3; // Earth's radius in meters
+  const R = 6371e3; 
   const φ1 = lat1 * Math.PI/180;
   const φ2 = lat2 * Math.PI/180;
   const Δφ = (lat2-lat1) * Math.PI/180;
@@ -156,5 +145,5 @@ export const calculateDistance = (lat1, lng1, lat2, lng2) => {
           Math.sin(Δλ/2) * Math.sin(Δλ/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-  return R * c; // Distance in meters
+  return R * c; 
 };

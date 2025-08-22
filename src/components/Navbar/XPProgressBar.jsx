@@ -5,12 +5,10 @@ function XPProgressBar({ currentXP, levelXP, level }) {
 
   return (
     <div className="flex items-center space-x-3">
-      {/* Level Indicator */}
       <div className="text-sm font-bold text-blue-500 bg-blue-200/70 px-2 py-1 rounded-md shadow-sm whitespace-nowrap">
         Lv. {level}
       </div>
 
-      {/* XP Bar + Label */}
       <div className="flex flex-col justify-center">
         <span className="text-xs font-semibold text-[#2C3E50] leading-none mb-1 ">
           XP: {currentXP} / {levelXP}

@@ -12,14 +12,12 @@ function JustForYou({ quests = [] }) {
           Just for You
         </h2>
 
-        {/* 1→2→3 column layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {quests.map((quest) => (
             <div
               key={quest._id}
               className="flex bg-white border border-zephyralite rounded-2xl overflow-hidden hover:shadow-lg hover:scale-[1.01] transition"
             >
-              {/* Image Container */}
               <div className="p-3">
                 <div className="w-[90px] h-[90px] sm:w-[100px] sm:h-[100px] rounded-xl overflow-hidden">
                   <img
@@ -30,24 +28,18 @@ function JustForYou({ quests = [] }) {
                 </div>
               </div>
 
-              {/* Content */}
               <div className="flex-1 py-4 pr-4 pl-2 flex flex-col justify-between relative">
-                {/* XP Badge */}
                 <span className="absolute top-4 right-4 text-xs font-semibold text-[#00C48C] bg-[#E6FAF5] px-3 py-1 rounded-full">
                   +{quest.xp || quest.xp_reward || 100} XP
                 </span>
 
-                {/* Title */}
                 <h3 className="text-sm sm:text-base font-semibold text-midnightIndigo line-clamp-1 pr-16">
                   {quest.title}
                 </h3>
-
-                {/* Subtitle */}
                 <p className="text-sm text-stormyGrey mt-1 line-clamp-2 leading-snug">
                   {quest.description || quest.subtitle}
                 </p>
 
-                {/* Explore Now link */}
                 <div className="flex justify-end mt-4">
                   <Link
                     to={`/quest-overview/${quest._id}`}

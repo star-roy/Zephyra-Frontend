@@ -17,7 +17,6 @@ const SuperAdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API calls
     setTimeout(() => {
       setAdminRequests([
         {
@@ -71,15 +70,13 @@ const SuperAdminDashboard = () => {
   const handleRoleAction = async (requestId, action) => {
     try {
       console.log(`${action} role request ${requestId}`);
-      
-      // Add visual feedback
+
       const requestElement = document.querySelector(`[data-request-id="${requestId}"]`);
       if (requestElement) {
         requestElement.style.opacity = '0.5';
         requestElement.style.transition = 'opacity 0.3s ease';
       }
       
-      // Simulate API delay
       setTimeout(() => {
         setAdminRequests(prev => prev.filter(req => req.id !== requestId));
         
@@ -97,7 +94,6 @@ const SuperAdminDashboard = () => {
   };
 
   const dismissAlert = (alertId) => {
-    // Add fade out animation before removing
     const alertElement = document.querySelector(`[data-alert-id="${alertId}"]`);
     if (alertElement) {
       alertElement.style.transform = 'translateX(100%)';
@@ -115,7 +111,6 @@ const SuperAdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Crown className="w-8 h-8 text-purple-600" />
@@ -124,7 +119,6 @@ const SuperAdminDashboard = () => {
           <p className="text-gray-600">Complete system administration and user management</p>
         </div>
 
-        {/* System Health Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex items-center justify-between">
@@ -175,9 +169,7 @@ const SuperAdminDashboard = () => {
           </div>
         </div>
 
-        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Admin Role Requests */}
           <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100">
             <div className="p-6 border-b border-gray-100">
               <h2 className="text-xl font-semibold text-gray-900">Admin Role Requests</h2>
@@ -249,9 +241,7 @@ const SuperAdminDashboard = () => {
             </div>
           </div>
 
-          {/* System Alerts & Actions */}
           <div className="space-y-6">
-            {/* System Alerts */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
               <div className="p-6 border-b border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-900">System Alerts</h3>
@@ -300,7 +290,6 @@ const SuperAdminDashboard = () => {
               </div>
             </div>
 
-            {/* Super Admin Actions */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
               <div className="p-6 border-b border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-900">Super Admin Actions</h3>
@@ -352,7 +341,6 @@ const SuperAdminDashboard = () => {
               </div>
             </div>
 
-            {/* System Status */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
               <div className="p-6 border-b border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-900">System Status</h3>

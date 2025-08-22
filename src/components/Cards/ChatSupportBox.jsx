@@ -4,14 +4,13 @@ export default function ChatSupportBox() {
   const [messages, setMessages] = useState([
     {
       sender: "Support Team",
-      avatar: "/path/to/support-avatar.png", // Use your actual avatar path
+      avatar: "/assets/support.webp",
       message: "Hi there! How can we assist you today?",
     },
   ]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
-  // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -22,7 +21,7 @@ export default function ChatSupportBox() {
       ...messages,
       {
         sender: "You",
-        avatar: "/path/to/user-avatar.png", // Use your actual avatar path
+        avatar: "/path/to/user-avatar.png",
         message: input,
       },
     ]);
@@ -33,7 +32,6 @@ export default function ChatSupportBox() {
     <div className="flex items-center justify-center min-h-[90vh] w-full bg-white">
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-sm border border-gray-200 p-0 overflow-hidden flex flex-col"
         style={{ minHeight: "70vh" }}>
-        {/* Chat Header */}
         <div className="px-6 pt-8 pb-2">
           <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-2">Chat with Us</h1>
           <p className="text-gray-700 text-base">
@@ -41,7 +39,6 @@ export default function ChatSupportBox() {
           </p>
         </div>
         <div className="border-t border-gray-200 mb-0"/>
-        {/* Messages */}
         <div className="flex-1 px-2 sm:px-6 py-6 overflow-y-auto" style={{ minHeight: "350px" }}>
           {messages.map((msg, i) => (
             <div key={i} className="flex items-start mb-6">
@@ -58,7 +55,7 @@ export default function ChatSupportBox() {
           ))}
           <div ref={messagesEndRef} />
         </div>
-        {/* Chat Input */}
+        
         <div className="border-t border-gray-200 px-2 sm:px-6 py-6 bg-white">
           <form
             className="flex items-center"
@@ -72,12 +69,12 @@ export default function ChatSupportBox() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
-              className="flex-1 px-4 py-3 rounded-full border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-300 transition text-base"
+              className="flex-1 px-4 py-3 rounded-full border border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-300 transition text-base"
             />
             <button
               type="button"
               onClick={handleSend}
-              className="ml-2 sm:ml-4 bg-teal-400 hover:bg-teal-500 text-white font-semibold px-5 sm:px-6 py-2 rounded-full text-base transition"
+              className="shine-sweep ml-2 sm:ml-4 bg-blue-400 hover:bg-blue-600 text-white font-semibold px-5 sm:px-6 py-2 rounded-full text-base transition"
             >
               Send
             </button>

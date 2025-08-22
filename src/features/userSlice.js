@@ -10,7 +10,6 @@ const initialState = {
         language: 'en',
         theme: 'light'
     },
-    achievements: [],
     badges: [],
     friends: [],
     notifications: [],
@@ -36,12 +35,11 @@ const initialState = {
     }
 };
 
-// Async thunks
 export const fetchUserProfile = createAsyncThunk(
     'user/fetchUserProfile',
     async (userId, { rejectWithValue }) => {
         try {
-            const response = await api.get(`/api/v1/users/profile/${userId}`);
+            const response = await api.get(`/users/profile/${userId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch user profile');
@@ -49,16 +47,26 @@ export const fetchUserProfile = createAsyncThunk(
     }
 );
 
-export const updateUserProfile = createAsyncThunk(
-    'user/updateUserProfile',
-    async (profileData, { rejectWithValue }) => {
+export const fetchCurrentUserProfile = createAsyncThunk(
+    'user/fetchCurrentUserProfile',
+    async (_, { rejectWithValue }) => {
         try {
-            const response = await api.patch('/api/v1/users/update-profile', profileData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            const response = await api.get('/users/my-profile');
             return response.data.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to update profile');
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch current user profile');
+        }
+    }
+);
+
+export const getUserSettings = createAsyncThunk(
+    'user/getUserSettings',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get('/users/settings');
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch settings');
         }
     }
 );
@@ -67,31 +75,79 @@ export const updateUserSettings = createAsyncThunk(
     'user/updateUserSettings',
     async (settings, { rejectWithValue }) => {
         try {
-            const response = await api.patch('/api/v1/users/settings', { settings });
-            return response.data.data.settings;
+            const response = await api.post('/users/settings', settings);
+            return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to update settings');
         }
     }
 );
 
-export const fetchUserAchievements = createAsyncThunk(
-    'user/fetchUserAchievements',
-    async (_, { rejectWithValue }) => {
+export const updateAccountDetails = createAsyncThunk(
+    'user/updateAccountDetails',
+    async ({ fullName, bio }, { rejectWithValue }) => {
         try {
-            const response = await api.get('/api/v1/users/achievements');
+            const response = await api.post('/users/update-account-details', { fullName, bio });
             return response.data.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to fetch achievements');
+            return rejectWithValue(error.response?.data?.message || 'Failed to update account details');
+        }
+    }
+);
+
+export const updateUserAvatar = createAsyncThunk(
+    'user/updateUserAvatar',
+    async (avatarFile, { rejectWithValue }) => {
+        try {
+            const formData = new FormData();
+            formData.append('avatar', avatarFile);
+            
+            const response = await api.post('/users/update-user-avatar', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to update avatar');
+        }
+    }
+);
+
+export const updateUserCoverImage = createAsyncThunk(
+    'user/updateUserCoverImage',
+    async (coverImageFile, { rejectWithValue }) => {
+        try {
+            const formData = new FormData();
+            formData.append('coverImage', coverImageFile);
+            
+            const response = await api.post('/users/update-user-cover-image', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to update cover image');
+        }
+    }
+);
+
+export const deleteUserAccount = createAsyncThunk(
+    'user/deleteUserAccount',
+    async ({ password, confirmDeletion }, { rejectWithValue }) => {
+        try {
+            const response = await api.delete('/users/delete-account', {
+                data: { password, confirmDeletion }
+            });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to delete account');
         }
     }
 );
 
 export const fetchUserBadges = createAsyncThunk(
     'user/fetchUserBadges',
-    async (_, { rejectWithValue }) => {
+    async (userId, { rejectWithValue }) => {
         try {
-            const response = await api.get('/api/v1/users/badges');
+            const response = await api.get(`/badges/earned/${userId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch badges');
@@ -103,7 +159,7 @@ export const fetchUserFriends = createAsyncThunk(
     'user/fetchUserFriends',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get('/api/v1/friends');
+            const response = await api.get('/friends');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch friends');
@@ -115,7 +171,7 @@ export const fetchUserNotifications = createAsyncThunk(
     'user/fetchUserNotifications',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get('/api/v1/users/notifications');
+            const response = await api.get('/users/notifications');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch notifications');
@@ -127,7 +183,7 @@ export const fetchCompletedQuests = createAsyncThunk(
     'user/fetchCompletedQuests',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get('/api/v1/users/completed-quests');
+            const response = await api.get('/users/completed-quests');
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch completed quests');
@@ -139,7 +195,7 @@ export const sendFriendRequest = createAsyncThunk(
     'user/sendFriendRequest',
     async (userId, { rejectWithValue }) => {
         try {
-            const response = await api.post('/api/v1/friends/request', { userId });
+            const response = await api.post('/friends/request', { userId });
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to send friend request');
@@ -151,7 +207,7 @@ export const acceptFriendRequest = createAsyncThunk(
     'user/acceptFriendRequest',
     async (requestId, { rejectWithValue }) => {
         try {
-            const response = await api.patch(`/api/v1/friends/accept/${requestId}`);
+            const response = await api.patch(`/friends/accept/${requestId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to accept friend request');
@@ -163,7 +219,7 @@ export const markNotificationAsRead = createAsyncThunk(
     'user/markNotificationAsRead',
     async (notificationId, { rejectWithValue }) => {
         try {
-            await api.patch(`/api/v1/users/notifications/${notificationId}/read`);
+            await api.patch(`/users/notifications/${notificationId}/read`);
             return notificationId;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to mark notification as read');
@@ -208,7 +264,7 @@ const userSlice = createSlice({
         updateStreak: (state, action) => {
             state.stats.currentStreak = action.payload;
         },
-        clearUserData: (state) => {
+        clearUserData: () => {
             return initialState;
         },
     },
@@ -222,58 +278,119 @@ const userSlice = createSlice({
             .addCase(fetchUserProfile.fulfilled, (state, action) => {
                 state.loading = false;
                 state.userProfile = action.payload.user;
+
+                const backendStats = action.payload.stats;
+                const user = action.payload.user;
+                const currentLevel = backendStats?.level || user.level || 1;
+                const totalXP = backendStats?.totalXP || user.xp || 0;
+                const nextLevelXP = currentLevel * 100;
+                const currentXP = totalXP % 100;
+                
                 state.stats = {
                     ...state.stats,
-                    totalXP: action.payload.user.xp || 0,
-                    level: action.payload.user.level || 1,
-                    rank: action.payload.user.rank || 'Novice Explorer',
-                    categoryXP: action.payload.user.categoryXP || state.stats.categoryXP
+                    totalXP: totalXP,
+                    currentXP: currentXP,
+                    nextLevelXP: nextLevelXP,
+                    level: currentLevel,
+                    rank: backendStats?.rank || user.rank || 'Novice Explorer',
+                    questsCompleted: backendStats?.questsCompleted || 0,
+                    badgesEarned: action.payload.badges?.length || 0,
+                    categoryXP: user.categoryXP || state.stats.categoryXP
                 };
-                state.profileCompleteness = action.payload.user.profileCompleteness || 0;
-                state.preferences = action.payload.user.settings || state.preferences;
+                state.profileCompleteness = user.profileCompleteness || 0;
+                state.preferences = user.settings || state.preferences;
+                state.badges = action.payload.badges || [];
                 state.error = null;
             })
             .addCase(fetchUserProfile.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
-            
-            // Update user profile
-            .addCase(updateUserProfile.pending, (state) => {
+            .addCase(fetchCurrentUserProfile.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(updateUserProfile.fulfilled, (state, action) => {
+            .addCase(fetchCurrentUserProfile.fulfilled, (state, action) => {
                 state.loading = false;
-                state.userProfile = { ...state.userProfile, ...action.payload };
+                state.userProfile = action.payload.user;
+                
+                const backendStats = action.payload.stats;
+                const currentLevel = backendStats?.level || 1;
+                const totalXP = backendStats?.totalXP || action.payload.user.xp || 0;
+                const nextLevelXP = currentLevel * 100;
+                const currentXP = totalXP % 100;
+                
+                state.stats = {
+                    ...state.stats,
+                    totalXP: totalXP,
+                    currentXP: currentXP,
+                    nextLevelXP: nextLevelXP,
+                    level: currentLevel,
+                    rank: backendStats?.rank || 'Novice Explorer',
+                    questsCompleted: backendStats?.questsCompleted || 0,
+                    badgesEarned: action.payload.badges?.length || 0,
+                    categoryXP: action.payload.user.categoryXP || state.stats.categoryXP
+                };
+                state.profileCompleteness = action.payload.user.profileCompleteness || 0;
+                state.preferences = action.payload.user.settings || state.preferences;
+                state.badges = action.payload.badges || [];
                 state.error = null;
             })
-            .addCase(updateUserProfile.rejected, (state, action) => {
+            .addCase(fetchCurrentUserProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            
+            // Get user settings
+            .addCase(getUserSettings.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getUserSettings.fulfilled, (state, action) => {
+                state.loading = false;
+            
+                const settings = action.payload || {};
+                state.preferences = {
+                    notifications: state.preferences?.notifications || true,
+                    privacy: settings.privacy?.profileVisibility || 'public',
+                    language: settings.appPreferences?.language || 'en',
+                    theme: settings.appPreferences?.theme || 'light',
+                    dataSharing: settings.privacy?.dataSharing || false,
+                    twoFactorAuth: settings.security?.twoFactorAuth || false
+                };
+            })
+            .addCase(getUserSettings.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
             
             // Update user settings
             .addCase(updateUserSettings.fulfilled, (state, action) => {
-                state.preferences = action.payload;
+                const settings = action.payload || {};
+                state.preferences = {
+                    notifications: state.preferences?.notifications || true,
+                    privacy: settings.privacy?.profileVisibility || 'public',
+                    language: settings.appPreferences?.language || 'en',
+                    theme: settings.appPreferences?.theme || 'light',
+                    dataSharing: settings.privacy?.dataSharing || false,
+                    twoFactorAuth: settings.security?.twoFactorAuth || false
+                };
             })
             .addCase(updateUserSettings.rejected, (state, action) => {
                 state.error = action.payload;
             })
             
-            // Fetch achievements
-            .addCase(fetchUserAchievements.fulfilled, (state, action) => {
-                state.achievements = action.payload;
-            })
-            .addCase(fetchUserAchievements.rejected, (state, action) => {
-                state.error = action.payload;
-            })
-            
             // Fetch badges
+            .addCase(fetchUserBadges.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
             .addCase(fetchUserBadges.fulfilled, (state, action) => {
+                state.loading = false;
                 state.badges = action.payload;
             })
             .addCase(fetchUserBadges.rejected, (state, action) => {
+                state.loading = false;
                 state.error = action.payload;
             })
             
@@ -303,8 +420,7 @@ const userSlice = createSlice({
             })
             
             // Send friend request
-            .addCase(sendFriendRequest.fulfilled, (state, action) => {
-                // Handle friend request sent (maybe add to pending requests)
+            .addCase(sendFriendRequest.fulfilled, (state) => {
                 state.error = null;
             })
             .addCase(sendFriendRequest.rejected, (state, action) => {
@@ -328,6 +444,71 @@ const userSlice = createSlice({
                 }
             })
             .addCase(markNotificationAsRead.rejected, (state, action) => {
+                state.error = action.payload;
+            })
+            
+            // Update account details
+            .addCase(updateAccountDetails.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateAccountDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.userProfile = action.payload;
+                state.error = null;
+            })
+            .addCase(updateAccountDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            
+            // Update user avatar
+            .addCase(updateUserAvatar.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateUserAvatar.fulfilled, (state, action) => {
+                state.loading = false;
+                state.userProfile = action.payload;
+                state.error = null;
+            })
+            .addCase(updateUserAvatar.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            
+            // Update user cover image
+            .addCase(updateUserCoverImage.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateUserCoverImage.fulfilled, (state, action) => {
+                state.loading = false;
+                state.userProfile = action.payload;
+                state.error = null;
+            })
+            .addCase(updateUserCoverImage.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            
+            // Delete user account
+            .addCase(deleteUserAccount.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteUserAccount.fulfilled, (state) => {
+                // Account deleted successfully - clear all user data
+                state.loading = false;
+                state.userProfile = null;
+                state.badges = [];
+                state.friends = [];
+                state.notifications = [];
+                state.stats = { questsCompleted: 0, totalXP: 0, currentStreak: 0 };
+                state.error = null;
+            })
+            .addCase(deleteUserAccount.rejected, (state, action) => {
+                state.loading = false;
                 state.error = action.payload;
             });
     },

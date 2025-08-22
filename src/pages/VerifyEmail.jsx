@@ -14,24 +14,23 @@ export default function VerifyEmail({ onVerify }) {
   const { loading, error, registrationEmail } = useSelector((state) => state.auth);
   const [isResending, setIsResending] = useState(false);
 
-  // Handle input change
+
   const handleChange = (value, idx) => {
-    if (!/^\d*$/.test(value)) return; // Only numbers
+    if (!/^\d*$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[idx] = value;
     setOtp(newOtp);
 
-    // Move focus to next input if a digit is entered
+
     if (value && idx < 3) {
       inputsRef.current[idx + 1].focus();
     }
-    // If input is cleared, move focus to previous
+
     if (!value && idx > 0) {
       inputsRef.current[idx - 1].focus();
     }
   };
 
-  // Handle keyboard navigation
   const handleKeyDown = (e, idx) => {
     if (e.key === "Backspace" && !otp[idx] && idx > 0) {
       inputsRef.current[idx - 1].focus();
@@ -44,7 +43,6 @@ export default function VerifyEmail({ onVerify }) {
     }
   };
 
-  // Handle paste event
   const handlePaste = (e) => {
     const paste = e.clipboardData.getData("text").replace(/\D/g, "");
     if (paste.length === 4) {
@@ -53,7 +51,7 @@ export default function VerifyEmail({ onVerify }) {
     }
   };
 
-  // Submit OTP
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (otp.join("").length !== 4) {
@@ -91,7 +89,6 @@ export default function VerifyEmail({ onVerify }) {
       console.error("Verification error:", error);
     }
 
-    // Fallback: call onVerify prop if provided
     if (onVerify) onVerify(otp.join(""));
   };
 
@@ -112,8 +109,7 @@ export default function VerifyEmail({ onVerify }) {
 
       if (resendVerificationCode.fulfilled.match(result)) {
         setResendSuccess("Verification code sent successfully to your email!");
-        
-        // Clear success message after 3 seconds
+    
         setTimeout(() => {
           setResendSuccess("");
         }, 3000);
@@ -127,7 +123,7 @@ export default function VerifyEmail({ onVerify }) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      {/* Success Message */}
+
       {successMessage && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[9998] w-full max-w-md px-4">
           <div className="bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-in slide-in-from-top duration-300">
@@ -139,7 +135,6 @@ export default function VerifyEmail({ onVerify }) {
         </div>
       )}
 
-      {/* Resend Success Message */}
       {resendSuccess && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[9998] w-full max-w-md px-4">
           <div className="bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-in slide-in-from-top duration-300">

@@ -6,19 +6,19 @@ const features = [
     title: "Historical Quests",
     description:
       "Uncover the rich history of your city through guided tours and local challenges.",
-    image: "/assets/historical-quest2.jpg",
+    image: "/assets/historical-quest2.webp",
   },
   {
     title: "Food Trails",
     description:
       "Taste the authentic flavors of your city through curated culinary adventures.",
-    image: "/assets/food-trail2.jpg",
+    image: "/assets/food-trail2.webp",
   },
   {
     title: "Nature Escapes",
     description:
       "Discover scenic trails and outdoor activities to reconnect with nature.",
-    image: "/assets/nature-escape.jpg",
+    image: "/assets/nature-escape.webp",
   },
   {
     title: "Arts & Culture",

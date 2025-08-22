@@ -6,33 +6,24 @@ function AboutPage() {
   return (
     <section className="w-full px-4 sm:px-6 lg:px-8 py-14 bg-gradient-to-br from-[#CADCFC] via-white to-[#CADCFC]">
       <div className="max-w-5xl mx-auto">
-        {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-3xl sm:text-5xl font-bold text-[#0D1B2A] mb-4">
-            Unlock the magic of your City – Adventures begin just outside your
+            Unlock the magic of your City - Adventures begin just outside your
             door
           </h1>
           <p className="text-blue-500 text-base sm:text-lg max-w-2xl mx-auto">
-            Zephyra isn’t just an app - it’s your local adventure buddy. From
-            hidden hangouts to cultural gems, we help you explore your city like
-            never before. Because the best stories start right where you are.
+            Zephyra isn't just an app - it's a storyteller by your side. From hidden hangouts to cultural gems, it helps you discover experiences like never before. Because the best stories start right where <b>You</b> are.
           </p>
         </div>
 
-        {/* Mission + Team + Offer Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          {/* Left Side: Our Mission and Team */}
           <div>
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-[#0D1B2A] mb-2">
                 Our Mission
               </h2>
-              <p className="text-[#2C3E50] text-sm">
-                Our mission is to empower individuals to explore and engage with
-                their local areas, fostering a sense of community and discovery.
-                We aim to provide a comprehensive resource for finding local
-                events, hidden gems, and unique activities that cater to a wide
-                range of interests.
+              <p className="text-[#2C3E50] text-base">
+                Our mission is to empower individuals to explore and engage with their surroundings, fostering a sense of community and discovery. We strive to be a trusted guide for uncovering hidden gems, events, and unique activities that spark curiosity and connection.
               </p>
             </div>
 
@@ -40,35 +31,60 @@ function AboutPage() {
               <h2 className="text-xl font-semibold text-[#0D1B2A] mb-2">
                 Our Team
               </h2>
-              <p className="text-[#2C3E50] text-sm mb-4">
-                We are a passionate team of local enthusiasts dedicated to
-                making exploration accessible and enjoyable for everyone. Our
-                diverse backgrounds and shared love for community drive us to
-                continuously improve and expand the Zephyra platform.
+              <p className="text-[#2C3E50] text-base mb-4">
+                We're a passionate team dedicated to making exploration accessible and enjoyable for everyone. Guided by diverse perspectives and a shared love for discovery, we continuously enhance and expand the Zephyra platform.
               </p>
-              <div className="flex -space-x-2">
-                {["/team1.jpg"].map((src, i) => (
-                  <img
-                    key={i}
-                    src={src}
-                    alt={`Team member ${i + 1}`}
-                    className="w-16 h-16 rounded-full border-4 border-[#CADCFC] object-cover"
-                  />
+              <div className="flex -space-x-2 relative">
+                {["/team1.webp"].map((src, i) => (
+                  <div key={i} className="relative group">
+                    <img
+                      src={src}
+                      alt={`Team member ${i + 1}`}
+                      className="w-16 h-16 rounded-full border-4 border-[#CADCFC] object-cover cursor-pointer transition-transform duration-300 group-hover:scale-110"
+                    />
+                    
+                    {/* Hover Card - appears on hover */}
+                    <div className="absolute left-20 top-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-20 pointer-events-none">
+                      <div className="bg-white rounded-2xl p-6 shadow-2xl border-2 border-blue-200 backdrop-blur-lg w-80 transform -translate-y-1/4">
+                        <div className="absolute left-0 top-1/2 transform -translate-x-2 -translate-y-1/2">
+                          <div className="w-4 h-4 bg-white border-l-2 border-b-2 border-blue-200 rotate-45"></div>
+                        </div>
+                        
+                        <div className="text-center">
+                          <img 
+                            src={src}
+                            alt="Team member enlarged" 
+                            className="w-48 h-48 rounded-full object-cover mx-auto border-4 border-blue-200 shadow-sm"
+                          />
+                          <h3 className="text-xl font-bold text-[#0D1B2A] mt-4">Dibyaranjan Nayak</h3>
+                          <p className="text-blue-500 font-medium text-sm leading-relaxed">
+                            Founder & Developer
+                          </p>
+                          <p className="text-[#2C3E50] mt-2 text-sm leading-relaxed">
+                            - Building Zephyra at the intersection of design and technology.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 bg-black bg-opacity-30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <span className="text-white text-xs font-semibold"></span>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Right Side: What We Offer */}
+
           <div>
             <h2 className="text-xl font-semibold text-[#0D1B2A] mb-4">
               What Zephyra Offers
             </h2>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
-                <MapPin className="text-[#4A90E2] w-5 h-5 mt-2 shrink-0" />
+                <MapPin className="text-blue-500 w-5 h-5 mt-2 shrink-0" />
                 <div>
-                  <h3 className="font-semibold text-[#0D1B2A] text-sm">
+                  <h3 className="font-semibold text-[#0D1B2A] text-base">
                     Local Events
                   </h3>
                   <p className="text-[#2C3E50] text-sm">
@@ -78,21 +94,21 @@ function AboutPage() {
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <Users className="text-[#4A90E2] w-5 h-5 mt-2 shrink-0" />
+                <Users className="text-blue-500 w-5 h-5 mt-2 shrink-0" />
                 <div>
-                  <h3 className="font-semibold text-[#0D1B2A] text-sm">
+                  <h3 className="font-semibold text-[#0D1B2A] text-base">
                     Community Activities
                   </h3>
                   <p className="text-[#2C3E50] text-sm">
-                    Join local groups, workshops, and adventures to connect with
+                    Join groups, workshops, and adventures to connect with
                     like-minded explorers near you.
                   </p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <MessageSquare className="text-[#4A90E2] w-5 h-5 mt-2 shrink-0" />
+                <MessageSquare className="text-blue-500 w-5 h-5 mt-2 shrink-0" />
                 <div>
-                  <h3 className="font-semibold text-[#0D1B2A] text-sm">
+                  <h3 className="font-semibold text-[#0D1B2A] text-base">
                     User-Generated Contents
                   </h3>
                   <p className="text-[#2C3E50] text-sm">
@@ -102,9 +118,9 @@ function AboutPage() {
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <Camera className="text-[#4A90E2] w-5 h-5 mt-2 shrink-0" />
+                <Camera className="text-blue-500 w-5 h-5 mt-2 shrink-0" />
                 <div>
-                  <h3 className="font-semibold text-[#0D1B2A] text-sm">
+                  <h3 className="font-semibold text-[#0D1B2A] text-base">
                     Photo Galleries
                   </h3>
                   <p className="text-[#2C3E50] text-sm">
@@ -117,7 +133,6 @@ function AboutPage() {
           </div>
         </div>
 
-        {/* Contact CTA */}
         <div className="mt-14 bg-gradient-to-r from-[#CADCFC] to-[#EBF2FF] border-2 border-[#CADCFC] rounded-xl py-10 px-6 sm:px-10 text-center">
           <h2 className="text-xl sm:text-2xl font-bold text-[#0D1B2A] mb-2">
             We'd love to hear from you!

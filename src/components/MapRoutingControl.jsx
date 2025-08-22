@@ -17,7 +17,6 @@ function MapRoutingControl({ waypoints }) {
     }
   };
 
-  // Don't render if we don't have enough waypoints
   if (!waypoints || waypoints.length < 2) {
     return null;
   }
@@ -47,7 +46,7 @@ function MapRoutingControl({ waypoints }) {
               strokeWeight: 4,
               strokeOpacity: 0.8
             },
-            preserveViewport: true // Prevent route from overriding zoom controls
+            preserveViewport: true
           }}
         />
       )}

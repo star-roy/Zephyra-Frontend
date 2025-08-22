@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { FiMenu, FiX } from "react-icons/fi";
-import logo from "/logo1.png"; // Adjust the path as necessary
+import logo from "/logo1.png";
 
 function NavbarLoggedOut() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +18,6 @@ function NavbarLoggedOut() {
     <header className="sticky top-0 z-50 w-full bg-[#F8F9FA] border-b border-[#869AB8]">
       <nav className="px-4 sm:px-6 md:px-10 xl:px-10 py-3 max-w-screen-2xl mx-auto">
         <div className="flex justify-between items-center">
-          {/* Logo */}
           <Link to="/" className="flex items-center">
             <img
               src={logo}
@@ -27,7 +26,6 @@ function NavbarLoggedOut() {
             />
           </Link>
 
-          {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map(({ name, to }) => (
               <NavLink
@@ -46,7 +44,6 @@ function NavbarLoggedOut() {
             ))}
           </div>
 
-          {/* Right Buttons (Desktop only) */}
           <div className="hidden md:flex items-center space-x-3">
             <NavLink
               to="/login"
@@ -68,7 +65,6 @@ function NavbarLoggedOut() {
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
             className="md:hidden text-[#2C3E50] text-2xl"
@@ -77,7 +73,6 @@ function NavbarLoggedOut() {
           </button>
         </div>
 
-        {/* Mobile Dropdown */}
         {isOpen && (
           <div className="md:hidden mt-4 flex flex-col space-y-4">
             {navItems.map(({ name, to }) => (

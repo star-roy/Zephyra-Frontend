@@ -31,7 +31,6 @@ export default function OngoingQuestsSection({ ongoingQuests = [] }) {
             );
           })}
           
-          {/* Show available slots hint if less than max */}
           {ongoingQuests.length < maxOngoingQuests && (
             <div className="text-center py-4">
               <p className="text-sm text-gray-500">

@@ -39,19 +39,16 @@ function PopularTopics() {
   return (
     <section className="w-full px-4 py-12 bg-[#EBF2FF]">
       <div className="max-w-6xl mx-auto">
-        {/* Title aligned left */}
         <h2 className="text-2xl sm:text-3xl font-bold text-[#0D1B2A] mb-8">
           Getting Started & Popular Topics
         </h2>
 
-        {/* Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {topics.map((topic, index) => (
             <div
               key={index}
               className="relative group bg-white/80 backdrop-blur-lg border border-white/30 rounded-xl p-6 sm:p-6 shadow-md transition-all duration-300 hover:shadow-xl hover:scale-[1.02] min-h-[140px] overflow-hidden"
             >
-              {/* Default view (icon + title) */}
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center transition-all duration-300 group-hover:opacity-0 group-hover:translate-y-[-12px]">
                 <span className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 shadow text-2xl mb-2">
                   {topic.icon}
@@ -61,7 +58,6 @@ function PopularTopics() {
                 </h3>
               </div>
 
-              {/* Detail view on hover */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 flex items-center justify-center px-5 text-center transition-all duration-300">
                 <p className="text-[#2C3E50] text-sm font-medium">
                   {topic.detail}

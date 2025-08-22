@@ -1,8 +1,8 @@
 import React from 'react';
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import { GoogleMap } from '@react-google-maps/api';
+import { useGoogleMaps } from '../hooks/useGoogleMaps';
 import AdvancedMarker from './AdvancedMarker';
 
-const GOOGLE_MAPS_LIBRARIES = ['places'];
 const MAP_CONTAINER_STYLE = {
   width: '100%',
   height: '400px'
@@ -14,19 +14,18 @@ const DEFAULT_CENTER = {
 };
 
 function SimpleMap({ waypoints = [] }) {
-  const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const { isLoaded } = useGoogleMaps();
 
-  if (!googleMapsApiKey) {
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center h-96 bg-gray-100 rounded-lg">
-        <p className="text-gray-500">Google Maps API key required</p>
+        <p className="text-gray-500">Loading map...</p>
       </div>
     );
   }
 
   return (
     <div className="w-full h-96 rounded-lg overflow-hidden border">
-      <LoadScript googleMapsApiKey={googleMapsApiKey} libraries={GOOGLE_MAPS_LIBRARIES}>
         <GoogleMap
           mapContainerStyle={MAP_CONTAINER_STYLE}
           center={DEFAULT_CENTER}
@@ -41,7 +40,6 @@ function SimpleMap({ waypoints = [] }) {
             disableDoubleClickZoom: false
           }}
         >
-          {/* Render waypoint markers */}
           {waypoints.map((waypoint, idx) => (
             <AdvancedMarker
               key={idx}
@@ -50,7 +48,6 @@ function SimpleMap({ waypoints = [] }) {
             />
           ))}
         </GoogleMap>
-      </LoadScript>
     </div>
   );
 }

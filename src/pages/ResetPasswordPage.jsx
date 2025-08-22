@@ -35,7 +35,7 @@ function ResetPasswordPage() {
   const [message, setMessage] = useState("");
   const { loading, error } = useSelector((state) => state.auth);
 
-  // Eye icon states
+
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -112,7 +112,6 @@ function ResetPasswordPage() {
                 )}
               </button>
             </div>
-            {/* Fix: Move the helper text below the input, not absolute */}
             <div className="mt-1 text-xs text-gray-400 px-1">
               Must be at least 8 characters long.
             </div>

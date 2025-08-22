@@ -1,6 +1,5 @@
 import React from "react";
 
-// --- Reusable Quote Icon ---
 const QuoteIcon = () => (
   <svg
     className="w-6 h-6 text-[#2C3E50] opacity-20 mb-2"
@@ -14,7 +13,7 @@ const QuoteIcon = () => (
   </svg>
 );
 
-// --- Column Data with Local Images ---
+
 const column1Items = [
   {
     type: "quote",
@@ -101,7 +100,6 @@ const column4Items = [
   },
 ];
 
-// --- Reusable Card Component ---
 function Card({ item }) {
   const baseStyle =
     "rounded-xl overflow-hidden transition-all duration-300 transform hover:scale-[1.03] shadow hover:shadow-xl";
@@ -167,7 +165,7 @@ function Card({ item }) {
   }
 }
 
-// --- Main Component ---
+
 function CommunityHighlights() {
   return (
     <section className="py-20 px-2 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-blue-50 to-white pt-5 mt-10">

@@ -6,6 +6,7 @@ import {
   CTASection,
   ContactSupportBox,
 } from "../../components/index.js";
+import ChatBot from "../../components/Support/ChatBot.jsx";
 
 function CompassLoggedOut() {
   return (
@@ -15,6 +16,7 @@ function CompassLoggedOut() {
       <AccordionHelp />
       <CTASection />
       <ContactSupportBox />
+      <ChatBot />
     </main>
   );
 }

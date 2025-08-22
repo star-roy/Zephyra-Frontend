@@ -5,7 +5,7 @@ import LoadingSpinner from "../components/LoadingSpinner.jsx";
 export default function ReportBug() {
   const fileInputRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', null
+  const [submitStatus, setSubmitStatus] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [formData, setFormData] = useState({
     email: '',
@@ -140,7 +140,6 @@ export default function ReportBug() {
         </p>
         
         <form onSubmit={handleSubmit}>
-          {/* Status Messages */}
           <div className="mb-6">
             {submitStatus === "success" && (
               <div className="p-4 bg-blue-100 border border-blue-300 text-blue-700 rounded-lg">
@@ -154,7 +153,6 @@ export default function ReportBug() {
             )}
           </div>
 
-          {/* Email */}
           <div className="mb-6">
             <label className="block font-medium text-gray-700 mb-2">Your Email Address *</label>
             <input
@@ -169,7 +167,6 @@ export default function ReportBug() {
             <p className="text-sm text-gray-500 mt-1">We'll use this email to send you updates about your bug report</p>
           </div>
 
-          {/* Subject */}
           <div className="mb-6">
             <label className="block font-medium text-gray-700 mb-2">Subject *</label>
             <input
@@ -183,7 +180,6 @@ export default function ReportBug() {
             />
           </div>
 
-          {/* Description */}
           <div className="mb-6">
             <label className="block font-medium text-gray-700 mb-2">Description *</label>
             <textarea
@@ -197,7 +193,6 @@ export default function ReportBug() {
             />
           </div>
 
-          {/* Steps to Reproduce */}
           <div className="mb-6">
             <label className="block font-medium text-gray-700 mb-2">Steps to Reproduce *</label>
             <textarea
@@ -211,7 +206,6 @@ export default function ReportBug() {
             />
           </div>
 
-          {/* Expected vs Actual */}
           <div className="flex gap-4 mb-6">
             <div className="flex-1">
               <label className="block font-medium text-gray-700 mb-2">Expected Behavior</label>
@@ -237,7 +231,6 @@ export default function ReportBug() {
             </div>
           </div>
 
-          {/* Attachment Upload */}
           <div className="mb-6">
             <label className="block font-medium text-gray-700 mb-2">Attachments (Optional)</label>
             <div
@@ -261,8 +254,7 @@ export default function ReportBug() {
                 accept="image/png, image/jpeg, image/gif"
               />
             </div>
-            
-            {/* Display uploaded files */}
+
             {formData.attachments.length > 0 && (
               <div className="mt-4">
                 <p className="text-sm text-gray-600 mb-2">Uploaded files:</p>
@@ -282,7 +274,6 @@ export default function ReportBug() {
             )}
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}

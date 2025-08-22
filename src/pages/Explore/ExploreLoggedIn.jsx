@@ -27,8 +27,8 @@ function ExploreLoggedIn() {
 
   // Use real backend data
   const featured = quests.slice(0, 3);
-  const popular = quests.slice(3, 7); // Next 4 quests
-  const questsForYou = quests.slice(7, 10); // Next 3 quests
+  const popular = quests.slice(3, 7);
+  const questsForYou = quests.slice(7, 10); 
 
   if (loading) {
     return (

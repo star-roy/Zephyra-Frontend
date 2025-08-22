@@ -5,17 +5,17 @@ function PersonalizedGuidance() {
     {
       title: "Recommended for You",
       description: "AI-powered articles and tips based on your activity and level.",
-      image: "/images/ai-recommend.jpg",
+      image: "/assets/support1.webp",
     },
     {
       title: "Your Account & Profile",
       description: "Direct links to manage your account, password, and connected services.",
-      image: "/images/account.jpg",
+      image: "/assets/support2.webp",
     },
     {
       title: "Active Quest Support",
       description: "Trouble with a quest? Get contextual help here.",
-      image: "/assets/user-avatar.jpeg"
+      image: "/assets/support3.webp"
     },
   ];
 
@@ -30,7 +30,7 @@ function PersonalizedGuidance() {
           {cards.map((card, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl shadow-sm hover:shadow-md transition p-4 text-center"
+              className="bg-gray-100 rounded-xl shadow-sm hover:shadow-md transition p-4 text-center"
             >
               <img
                 src={card.image}

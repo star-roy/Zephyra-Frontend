@@ -4,6 +4,7 @@ import {
   KnowledgeSupportSection,
   PersonalizedGuidance,
 } from "../../components/index.js";
+import ChatBot from "../../components/Support/ChatBot.jsx";
 
 function CompassLoggedIn() {
   return (
@@ -11,6 +12,7 @@ function CompassLoggedIn() {
       <CompassHero />
       <PersonalizedGuidance />
       <KnowledgeSupportSection />
+      <ChatBot />
     </>
   );
 }

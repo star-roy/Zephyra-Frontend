@@ -18,20 +18,21 @@ function HomeLoggedIn() {
 
   // Fetch data on component mount
   useEffect(() => {
-    dispatch(fetchQuests({ page: 1, limit: 4 })); // Get 4 quests from database
+    dispatch(fetchQuests({ page: 1, limit: 4 }));
     dispatch(fetchOngoingQuests());
   }, [dispatch]);
 
-  // Convert ongoing quest data for OngoingQuestsSection
-  const formattedOngoingQuests = ongoingQuests.map(progressData => ({
-    id: progressData._id,
-    title: progressData.quest_id?.title,
-    description: progressData.quest_id?.description,
-    currentStep: progressData.completed_tasks?.length || 0,
-    totalSteps: progressData.total_tasks || 5,
-    progressText: `${progressData.completed_tasks?.length || 0} of ${progressData.total_tasks || 5} Steps`,
-    stepLabel: "steps",
-  }));
+
+  const formattedOngoingQuests = ongoingQuests.map(progressData => {
+    const completedTasks = progressData.completed_tasks?.length || 0;
+    const totalTasks = progressData.total_tasks || 1;
+    const progressPercentage = Math.round((completedTasks / totalTasks) * 100);
+    
+    return {
+      ...progressData, 
+      progress: progressPercentage
+    };
+  });
 
   const events = [
     {

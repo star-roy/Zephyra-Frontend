@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchQuestById, submitQuestProof } from "../../features/questSlice";
+import { optimizedGeocode } from "../../utils/mapsOptimization";
 
 export default function QuestProofUpload() {
   const { questId } = useParams();
@@ -15,18 +16,101 @@ export default function QuestProofUpload() {
   const [photoFile, setPhotoFile] = useState(null);
   const [adventure, setAdventure] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userLocation, setUserLocation] = useState("Getting location...");
+  const [coordinates, setCoordinates] = useState(null); 
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleString());
   const fileInputRef = useRef();
 
-  // Fetch quest data on component mount
   useEffect(() => {
     if (questId) {
       dispatch(fetchQuestById(questId));
     }
   }, [dispatch, questId]);
 
-  // Dummy location and time, replace with your actual logic
-  const location = "Bhubaneswar, Odisha, India (Automatically attached)";
-  const time = new Date().toLocaleString() + " (Automatically attached)";
+
+  useEffect(() => {
+ 
+    const cachedLocation = sessionStorage.getItem('userLocationData');
+    const cacheTimestamp = sessionStorage.getItem('userLocationTimestamp');
+    const CACHE_DURATION = 60 * 60 * 1000;
+    
+    if (cachedLocation && cacheTimestamp) {
+      const age = Date.now() - parseInt(cacheTimestamp);
+      if (age < CACHE_DURATION) {
+        const cached = JSON.parse(cachedLocation);
+        setUserLocation(cached.address);
+        setCoordinates({ lat: cached.lat, lng: cached.lng });
+        return;
+      }
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          setCoordinates({ lat: latitude, lng: longitude });
+
+          try {
+            const result = await optimizedGeocode(latitude, longitude);
+            
+            let finalLocation;
+            if (result.source === 'nominatim-free') {
+              finalLocation = result.formatted_address;
+            } else if (result.source === 'google-paid') {
+              finalLocation = result.formatted_address;
+            } else {
+              finalLocation = result.formatted_address;
+            }
+            
+            setUserLocation(finalLocation);
+  
+            const locationData = {
+              address: finalLocation,
+              lat: latitude,
+              lng: longitude,
+              source: result.source
+            };
+            sessionStorage.setItem('userLocationData', JSON.stringify(locationData));
+            sessionStorage.setItem('userLocationTimestamp', Date.now().toString());
+          } catch (error) {
+            console.warn('Optimized geocoding failed:', error);
+            const coordLocation = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+            setUserLocation(coordLocation);
+            
+            const locationData = {
+              address: coordLocation,
+              lat: latitude,
+              lng: longitude,
+              source: 'coordinates-only'
+            };
+            sessionStorage.setItem('userLocationData', JSON.stringify(locationData));
+            sessionStorage.setItem('userLocationTimestamp', Date.now().toString());
+          }
+        },
+        (error) => {
+          console.warn('Geolocation failed:', error);
+          setUserLocation("Location unavailable");
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 15000,
+          maximumAge: 3600000
+        }
+      );
+    } else {
+      setUserLocation("Location not supported");
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleString());
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const location = userLocation + " (Automatically detected)";
+  const time = currentTime + " (Automatically attached)";
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -61,7 +145,7 @@ export default function QuestProofUpload() {
       
       await dispatch(submitQuestProof(proofData)).unwrap();
       alert('Quest proof submitted successfully!');
-      navigate(`/quest-in-progress/${questId}`); // Navigate back to quest progress
+      navigate(`/quest-in-progress/${questId}`);
     } catch (error) {
       console.error('Error submitting proof:', error);
       alert('Failed to submit quest proof. Please try again.');
@@ -70,7 +154,6 @@ export default function QuestProofUpload() {
     }
   };
 
-  // Show loading state
   if (loading) {
     return (
       <div className="bg-slate-50 min-h-screen py-14 px-4 flex flex-col items-center justify-center">
@@ -131,7 +214,6 @@ export default function QuestProofUpload() {
           Upload a photo demonstrating you completed this quest.
         </p>
 
-        {/* Upload Box */}
         <div
           className="border-2 border-dashed border-slate-200 rounded-xl py-12 px-4 mb-5 flex flex-col items-center justify-center cursor-pointer transition hover:border-teal-400 bg-white"
           onClick={() => fileInputRef.current && fileInputRef.current.click()}
@@ -171,7 +253,6 @@ export default function QuestProofUpload() {
           )}
         </div>
 
-        {/* Take Photo */}
         <div className="flex justify-center mb-6">
           <button
             type="button"
@@ -181,7 +262,6 @@ export default function QuestProofUpload() {
           </button>
         </div>
 
-        {/* Adventure Textarea */}
         <textarea
           className="w-full rounded-xl border border-slate-200 bg-white p-4 text-slate-700 mb-5 resize-none shadow focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition"
           rows={4}
@@ -190,19 +270,25 @@ export default function QuestProofUpload() {
           onChange={e => setAdventure(e.target.value)}
         />
 
-        {/* Location & Time */}
         <div className="w-full mb-6">
           <div className="flex items-center py-2 text-slate-500 border-b border-slate-100">
             <span className="w-24 font-semibold text-slate-700">Location</span>
             <span className="ml-3">{location}</span>
           </div>
+          {coordinates && (
+            <div className="flex items-center py-2 text-slate-500 border-b border-slate-100">
+              <span className="w-24 font-semibold text-slate-700">Coordinates</span>
+              <span className="ml-3 text-blue-600 font-mono text-sm">
+                {coordinates.lat.toFixed(6)}, {coordinates.lng.toFixed(6)}
+              </span>
+            </div>
+          )}
           <div className="flex items-center py-2 text-slate-500">
             <span className="w-24 font-semibold text-slate-700">Time</span>
             <span className="ml-3">{time}</span>
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="flex gap-5 justify-center mt-6">
           <button
             type="button"

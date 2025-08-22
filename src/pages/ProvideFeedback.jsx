@@ -15,7 +15,6 @@ export default function ProvideFeedback() {
   const [hover, setHover] = useState(0);
   const [comments, setComments] = useState("");
 
-  // SVG Star for rating
   const Star = ({ filled, onClick, onMouseEnter, onMouseLeave }) => (
     <svg
       onClick={onClick}
@@ -24,7 +23,7 @@ export default function ProvideFeedback() {
       width="36"
       height="36"
       viewBox="0 0 36 36"
-      fill={filled ? "#14B8A6" : "none"}
+      fill={filled ? "#fbe600" : "none"}
       stroke="#111"
       strokeWidth="2"
       style={{ cursor: "pointer", transition: "fill 0.2s" }}
@@ -43,7 +42,6 @@ export default function ProvideFeedback() {
           We'd love to hear from you! Please share your thoughts, suggestions, or any issues you've encountered.
         </p>
         <hr className="mb-6" />
-        {/* Feedback Category */}
         <div className="mb-6">
           <label className="block font-medium text-gray-700 mb-2">Feedback Category</label>
           <select
@@ -56,7 +54,6 @@ export default function ProvideFeedback() {
             ))}
           </select>
         </div>
-        {/* Star Rating */}
         <div className="mb-6">
           <label className="block font-medium text-gray-700 mb-2">How would you rate your experience?</label>
           <div className="flex gap-3 mt-2">
@@ -71,7 +68,6 @@ export default function ProvideFeedback() {
             ))}
           </div>
         </div>
-        {/* Comments */}
         <div className="mb-8">
           <label className="block font-medium text-gray-700 mb-2">Comments or Suggestions</label>
           <textarea
@@ -82,11 +78,10 @@ export default function ProvideFeedback() {
             className="w-full rounded-lg px-4 py-3 bg-[#F5FAF8] text-gray-800 border border-gray-300 focus:border-teal-400 focus:ring-2 focus:ring-teal-100 resize-none"
           />
         </div>
-        {/* Submit Button */}
         <div className="flex justify-end">
           <button
             type="submit"
-            className="px-8 py-3 rounded-full bg-teal-400 text-white font-bold text-lg shadow hover:bg-teal-500 transition"
+            className="shine-sweep px-8 py-3 rounded-full bg-blue-500 text-white font-bold text-lg shadow hover:bg-blue-600 transition"
           >
             Submit Feedback
           </button>

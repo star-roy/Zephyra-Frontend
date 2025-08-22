@@ -22,7 +22,6 @@ const getInitialAuthState = () => {
 
 const initialState = getInitialAuthState();
 
-// Async thunks
 export const loginUser = createAsyncThunk(
     'auth/loginUser',
     async (loginData, { rejectWithValue }) => {
@@ -132,7 +131,6 @@ export const logoutUser = createAsyncThunk(
             localStorage.removeItem('refreshToken');
             return {};
         } catch {
-            // Even if logout fails on server, clear local storage
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             return {};
@@ -148,6 +146,22 @@ export const getCurrentUser = createAsyncThunk(
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to get current user');
+        }
+    }
+);
+
+export const changeCurrentPassword = createAsyncThunk(
+    'auth/changeCurrentPassword',
+    async ({ currentPassword, newPassword, confirmNewPassword }, { rejectWithValue }) => {
+        try {
+            const response = await api.post('/users/change-password', { 
+                currentPassword, 
+                newPassword, 
+                confirmNewPassword 
+            });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to change password');
         }
     }
 );
@@ -187,7 +201,6 @@ const authSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Login
             .addCase(loginUser.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -318,7 +331,6 @@ const authSlice = createSlice({
                 state.isEmailVerified = action.payload.accountVerified;
             })
             .addCase(getCurrentUser.rejected, (state) => {
-                // If getting current user fails, logout
                 state.isAuthenticated = false;
                 state.userData = null;
                 state.accessToken = null;
@@ -326,6 +338,20 @@ const authSlice = createSlice({
                 state.role = null;
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
+            })
+
+            // Change current password
+            .addCase(changeCurrentPassword.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(changeCurrentPassword.fulfilled, (state) => {
+                state.loading = false;
+                state.error = null;
+            })
+            .addCase(changeCurrentPassword.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
     },
 });

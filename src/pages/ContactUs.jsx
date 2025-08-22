@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   FaEnvelope,
   FaPhoneAlt,
@@ -20,10 +20,31 @@ const Contact = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', null
+  const [submitStatus, setSubmitStatus] = useState(null);
   const [submitMessage, setSubmitMessage] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
-  // Handle input changes
+  const subjectOptions = [
+    { value: "General Inquiry", label: "General Inquiry" },
+    { value: "Support", label: "Support" },
+    { value: "Partnership", label: "Partnership" },
+    { value: "Feedback", label: "Feedback" }
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -32,14 +53,12 @@ const Contact = () => {
     }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus(null);
     setSubmitMessage("");
 
-    // Basic validation
     if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
       setSubmitStatus("error");
       setSubmitMessage("Please fill in all required fields.");
@@ -60,7 +79,6 @@ const Contact = () => {
       if (response.data.success) {
         setSubmitStatus("success");
         setSubmitMessage(response.data.message);
-        // Reset form
         setFormData({
           name: "",
           email: "",
@@ -103,22 +121,17 @@ const Contact = () => {
   return (
     <div>
       <div className="relative min-h-screen px-4 sm:px-6 lg:px-16 py-16 flex items-center justify-center">
-        {/* Foreground Content */}
         <div className="relative w-full z-10">
-          {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl sm:text-4xl font-bold text-[#0D1B2A] drop-shadow">Get in Touch</h1>
-            <p className="text-[#4A90E2] font-medium mt-2 max-w-2xl mx-auto text-base sm:text-lg">
+            <p className="text-blue-500 font-medium mt-2 max-w-2xl mx-auto text-base sm:text-lg">
               We’re here to help! Whether you have a question, feedback, or need assistance, our team is ready to answer all your questions.
             </p>
           </div>
-          {/* Form + Contact Info */}
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
-            {/* Form */}
             <div className="md:col-span-2 bg-white/90 p-8 rounded-2xl border-2 border-[#CADCFC]/60 shadow-2xl shadow-[#CADCFC]/30 backdrop-blur-lg flex flex-col justify-center min-h-[520px]">
               <h2 className="text-3xl font-bold text-[#0D1B2A] mb-6">Send us a Message</h2>
               
-              {/* Status Messages */}
               {submitStatus === "success" && (
                 <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                   {submitMessage}
@@ -149,17 +162,61 @@ const Contact = () => {
                   className="w-full border border-[#CADCFC] rounded-lg px-4 py-3 text-base outline-[#4A90E2] focus:ring-2 focus:ring-[#4A90E2]/30 focus:border-[#4A90E2] transition"
                   required
                 />
-                <select
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  className="w-full border border-[#CADCFC] rounded-lg px-4 py-3 text-base outline-[#4A90E2] focus:ring-2 focus:ring-[#4A90E2]/30 focus:border-[#4A90E2] transition"
-                >
-                  <option value="General Inquiry">General Inquiry</option>
-                  <option value="Support">Support</option>
-                  <option value="Partnership">Partnership</option>
-                  <option value="Feedback">Feedback</option>
-                </select>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-full border border-[#CADCFC] rounded-lg px-4 py-3 pr-10 text-base outline-[#4A90E2] focus:ring-2 focus:ring-[#4A90E2]/30 focus:border-[#4A90E2] transition bg-white text-left cursor-pointer"
+                  >
+                    {formData.subject}
+                  </button>
+
+                  <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                    <FaChevronDown 
+                      className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                        isDropdownOpen ? 'rotate-180' : ''
+                      }`} 
+                    />
+                  </div>
+
+                  {isDropdownOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#CADCFC] rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                      {subjectOptions.map((option, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, subject: option.value }));
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-3 text-base hover:bg-blue-50 transition-colors ${
+                            formData.subject === option.value 
+                              ? 'bg-blue-50 text-blue-600 font-medium' 
+                              : 'text-gray-900'
+                          } ${index === 0 ? 'rounded-t-lg' : ''} ${
+                            index === subjectOptions.length - 1 ? 'rounded-b-lg' : 'border-b border-gray-100'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <select
+                    name="subject"
+                    value={formData.subject}
+                    onChange={() => {}}
+                    className="sr-only"
+                    tabIndex={-1}
+                  >
+                    {subjectOptions.map((option, index) => (
+                      <option key={index} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <textarea
                   name="message"
                   value={formData.message}
@@ -182,64 +239,61 @@ const Contact = () => {
                 </button>
               </form>
             </div>
-            {/* Contact Info + Socials */}
             <div className="space-y-6">
               <div className="bg-white/90 p-6 rounded-2xl border-2 border-[#CADCFC]/60 shadow-2xl shadow-[#CADCFC]/30 backdrop-blur-lg"> 
                 <h3 className="text-lg font-bold text-[#0D1B2A] mb-4">Other Ways to Reach Us</h3>
                 <div className="space-y-4 text-base text-[#2C3E50]">
                   <p className="flex items-center gap-2">
-                    <FaEnvelope className="text-[#4A90E2]" /> zephyra.usercontact@gmail.com
+                    <FaEnvelope className="text-blue-500" /> zephyra.usercontact@gmail.com
                   </p>
                   <p className="flex items-center gap-2">
-                    <FaPhoneAlt className="text-[#4A90E2]" /> +91 99999 99999<br />
-                    <span className="ml-6 text-xs text-[#4A90E2]">Mon - Fri, 10am - 5pm</span>
+                    <FaPhoneAlt className="text-blue-500" /> +91 99999 99999<br />
+                    <span className="ml-6 text-xs text-blue-500">Mon - Fri, 10am - 5pm</span>
                   </p>
                   <p className="flex items-center gap-2">
-                    <FaMapMarkerAlt className="text-[#4A90E2]" />
+                    <FaMapMarkerAlt className="text-blue-500" />
                      ITER College, Jagamohan Nagar, Bhubaneswar, IN 751030
                   </p>
                 </div>
               </div>
-              {/* Social Links */}
+
               <div className="bg-white/90 p-6 rounded-2xl shadow-2xl border-2 border-[#CADCFC]/60 shadow-[#CADCFC]/30 backdrop-blur-lg">
-                <h3 className="text-lg font-bold text-[#0D1B2A] mb-6">Follow Us</h3>
+                <h3 className="text-lg font-bold text-[#0D1B2A] mb-6">Connect With Us</h3>
                 <div className="flex gap-4">
                   <a
                     href="https://github.com/star-roy"
                     target="_blank" rel="noopener noreferrer"
-                    className="w-10 h-10 flex items-center justify-center rounded-full text-[#4A90E2] bg-[#EAF2FF] hover:bg-[#4A90E2] hover:text-white transition-all duration-150 shadow"
+                    className="w-10 h-10 flex items-center justify-center rounded-full text-blue-500 bg-[#EAF2FF] hover:bg-blue-500 hover:text-white transition-all duration-150 shadow"
                   >
                     <FaGithub />
                   </a>
                   <a
                     href="https://x.com/dibyar4j?t=BLzRJmCVaW-Xfi2dY27W9A&s=09"
                     target="_blank" rel="noopener noreferrer"
-                    className="w-10 h-10 flex items-center justify-center rounded-full text-[#4A90E2] bg-[#EAF2FF] hover:bg-[#4A90E2] hover:text-white transition-all duration-150 shadow"
+                    className="w-10 h-10 flex items-center justify-center rounded-full text-blue-500 bg-[#EAF2FF] hover:bg-blue-500 hover:text-white transition-all duration-150 shadow"
                   >
                     <FaTwitter />
                   </a>
                   <a
                     href="https://instagram.com"
                     target="_blank" rel="noopener noreferrer"
-                    className="w-10 h-10 flex items-center justify-center rounded-full text-[#4A90E2] bg-[#EAF2FF] hover:bg-[#4A90E2] hover:text-white transition-all duration-150 shadow"
+                    className="w-10 h-10 flex items-center justify-center rounded-full text-blue-500 bg-[#EAF2FF] hover:bg-blue-500 hover:text-white transition-all duration-150 shadow"
                   >
                     <FaInstagram />
                   </a>
                 </div>
               </div>
 
-              {/* Image Section */}
               <div className="bg-white/90 p-6 rounded-2xl shadow-2xl border-2 border-[#CADCFC]/60 shadow-[#CADCFC]/30 backdrop-blur-lg mt-6 flex flex-col items-center">
-                <img src="/team1.webp" alt="Zephyra Team" className="w-32 h-32 rounded-full object-cover border-4 border-[#CADCFC] mb-4" />
+                <img src="/team1.webp" alt="Zephyra Team" className="w-40 h-40 rounded-full object-cover border-4 border-blue-200 mb-4" />
                 <h4 className="text-[#0D1B2A] font-semibold text-base mb-2">Meet Our Team</h4>
-                <p className="text-[#2C3E50] text-sm text-center">We're a group of passionate explorers and creators. Reach out and connect with us!</p>
+                <p className="text-[#2C3E50] text-sm text-center">We’re a team of passionate creators, driven to build meaningful experiences. Let’s connect and create something extraordinary together!</p>
               </div>
             </div>
           </div>
-          {/* FAQ Section */}
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl font-bold text-[#0D1B2A] mb-2 drop-shadow">Frequently Asked Questions</h2>
-            <p className="text-[#4A90E2] mb-6 text-base">
+            <h2 className="text-3xl font-bold text-[#0D1B2A] mb-2 drop-shadow">Frequently Asked Questions</h2>
+            <p className="text-blue-500 mb-6 text-lg">
               Find quick answers to common questions about Zephyra.
             </p>
             <div className="space-y-3 text-left">

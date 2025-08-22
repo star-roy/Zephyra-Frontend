@@ -10,6 +10,7 @@ const initialState = {
     recommendedQuests: [],
     featuredQuests: [],
     popularQuests: [],
+    categoryQuests: {},
     dashboardStats: {
         totalOngoing: 0,
         totalCompleted: 0,
@@ -17,12 +18,14 @@ const initialState = {
     },
     currentQuest: null,
     questProgress: {},
+    taskProofs: {},
     questTasks: [],
     questTips: [],
     questFiles: [],
     questRoutes: [],
     questReviews: [],
     loading: false,
+    categoryLoading: false,
     dashboardLoading: false,
     error: null,
     pagination: {
@@ -41,7 +44,6 @@ const initialState = {
     }
 };
 
-// Async thunks
 export const fetchQuests = createAsyncThunk(
     'quest/fetchQuests',
     async ({ page = 1, limit = 10, filters = {} }, { rejectWithValue }) => {
@@ -89,7 +91,7 @@ export const updateQuest = createAsyncThunk(
     'quest/updateQuest',
     async ({ questId, questData }, { rejectWithValue }) => {
         try {
-            const response = await api.patch(`/quests/${questId}`, questData);
+            const response = await api.put(`/quests/${questId}`, questData);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to update quest');
@@ -205,7 +207,7 @@ export const fetchQuestTasks = createAsyncThunk(
     'quest/fetchQuestTasks',
     async (questId, { rejectWithValue }) => {
         try {
-            const response = await api.get(`/api/v1/quest-tasks/${questId}`);
+            const response = await api.get(`/quest-tasks/${questId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch quest tasks');
@@ -217,7 +219,7 @@ export const fetchQuestReviews = createAsyncThunk(
     'quest/fetchQuestReviews',
     async (questId, { rejectWithValue }) => {
         try {
-            const response = await api.get(`/api/v1/quest-reviews/${questId}`);
+            const response = await api.get(`/quest-reviews/${questId}`);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch quest reviews');
@@ -229,7 +231,7 @@ export const submitQuestReview = createAsyncThunk(
     'quest/submitQuestReview',
     async ({ questId, reviewData }, { rejectWithValue }) => {
         try {
-            const response = await api.post(`/api/v1/quest-reviews/${questId}`, reviewData);
+            const response = await api.post(`/quest-reviews/${questId}`, reviewData);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to submit review');
@@ -273,6 +275,47 @@ export const fetchPopularQuests = createAsyncThunk(
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch popular quests');
+        }
+    }
+);
+
+export const fetchQuestsByCategory = createAsyncThunk(
+    'quest/fetchQuestsByCategory',
+    async ({ category, page = 1, limit = 10 }, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/quests/category/${category}?page=${page}&limit=${limit}`);
+            return { 
+                ...response.data.data, 
+                category 
+            };
+        } catch (error) {
+            console.error('Error fetching category quests:', error);
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch category quests');
+        }
+    }
+);
+
+export const getTaskProof = createAsyncThunk(
+    'quest/getTaskProof',
+    async ({ questId, taskOrder }, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/quest-progress/task-proof/${questId}/${taskOrder}`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch task proof');
+        }
+    }
+);
+
+// Update quest progress
+export const updateQuestProgress = createAsyncThunk(
+    'quest/updateQuestProgress',
+    async ({ questId, notes }, { rejectWithValue }) => {
+        try {
+            const response = await api.put(`/quest-progress/${questId}`, { notes });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to update quest progress');
         }
     }
 );
@@ -326,9 +369,7 @@ const questSlice = createSlice({
             })
             .addCase(fetchQuests.fulfilled, (state, action) => {
                 state.loading = false;
-                // Handle different response structures from backend
                 if (action.payload.docs) {
-                    // Paginated response from aggregatePaginate
                     state.quests = action.payload.docs;
                     state.pagination = {
                         currentPage: action.payload.page,
@@ -338,11 +379,9 @@ const questSlice = createSlice({
                         hasPreviousPage: action.payload.hasPrevPage
                     };
                 } else if (action.payload.quests) {
-                    // Nested quests response
                     state.quests = action.payload.quests;
                     state.pagination = action.payload.pagination;
                 } else {
-                    // Direct array response
                     state.quests = action.payload;
                 }
                 state.error = null;
@@ -351,20 +390,15 @@ const questSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            
-            // Fetch quest by ID
             .addCase(fetchQuestById.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(fetchQuestById.fulfilled, (state, action) => {
                 state.loading = false;
-                // Handle both nested and direct quest data structures
                 if (action.payload.quest) {
-                    // If data comes in nested format from comprehensive endpoint
                     state.currentQuest = action.payload;
                 } else {
-                    // If data comes directly as quest object
                     state.currentQuest = action.payload;
                 }
                 state.error = null;
@@ -449,8 +483,6 @@ const questSlice = createSlice({
             .addCase(fetchQuestProgress.rejected, (state, action) => {
                 state.error = action.payload;
             })
-            
-            // Fetch my quest dashboard (comprehensive data)
             .addCase(fetchMyQuestDashboard.pending, (state) => {
                 state.dashboardLoading = true;
                 state.error = null;
@@ -468,8 +500,6 @@ const questSlice = createSlice({
                 state.dashboardLoading = false;
                 state.error = action.payload;
             })
-            
-            // Fetch ongoing quests (separate endpoint)
             .addCase(fetchOngoingQuests.fulfilled, (state, action) => {
                 state.ongoingQuests = action.payload;
                 action.payload.forEach(quest => {
@@ -542,6 +572,57 @@ const questSlice = createSlice({
             })
             .addCase(fetchPopularQuests.rejected, (state, action) => {
                 state.error = action.payload;
+            })
+
+            // Fetch quests by category
+            .addCase(fetchQuestsByCategory.pending, (state) => {
+                state.categoryLoading = true;
+                state.error = null;
+            })
+            .addCase(fetchQuestsByCategory.fulfilled, (state, action) => {
+                state.categoryLoading = false;
+                const { category, quests } = action.payload;
+                state.categoryQuests[category] = quests || [];
+                state.error = null;
+            })
+            .addCase(fetchQuestsByCategory.rejected, (state, action) => {
+                state.categoryLoading = false;
+                state.error = action.payload;
+            })
+            
+            // Get task proof
+            .addCase(getTaskProof.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getTaskProof.fulfilled, (state, action) => {
+                state.loading = false;
+                // Store task proof data in state if needed
+                const { taskOrder, proof } = action.payload;
+                if (!state.taskProofs) {
+                    state.taskProofs = {};
+                }
+                state.taskProofs[taskOrder] = proof;
+            })
+            .addCase(getTaskProof.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            
+            // Update quest progress
+            .addCase(updateQuestProgress.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateQuestProgress.fulfilled, (state, action) => {
+                state.loading = false;
+                if (state.currentQuest && action.payload) {
+                    state.currentQuest.progress = action.payload;
+                }
+            })
+            .addCase(updateQuestProgress.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
     },
 });
@@ -552,7 +633,7 @@ export const {
     clearCurrentQuest,
     updateFilters,
     clearFilters,
-    updateQuestProgress,
+    updateQuestProgress: updateQuestProgressAction,
     markTaskComplete,
     clearQuestData
 } = questSlice.actions;

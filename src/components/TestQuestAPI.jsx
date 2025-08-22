@@ -7,7 +7,6 @@ function TestQuestAPI() {
   const dispatch = useDispatch();
   const { currentQuest, quests, loading, error } = useSelector(state => state.quest);
 
-  // Fetch all quests on component mount
   useEffect(() => {
     dispatch(fetchQuests({ page: 1, limit: 5 }));
   }, [dispatch]);

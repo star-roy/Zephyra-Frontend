@@ -91,7 +91,6 @@ function SignUpPage() {
     e.preventDefault();
     const newErrors = {};
 
-    // Validation
     if (!username.trim()) newErrors.username = "Username is required";
     if (!fullName.trim()) newErrors.fullName = "Full name is required";
     if (!email.trim()) {
@@ -131,10 +130,8 @@ function SignUpPage() {
           navigate("/verify-email");
         }, 2000);
       } else if (registerUser.rejected.match(result)) {
-        // Get error message from the result
         const errorMsg = result.payload || result.error?.message || "";
         
-        // Check if it's a duplicate user error (409 Conflict)
         if (
           errorMsg.toLowerCase().includes("already exists") ||
           errorMsg.toLowerCase().includes("already registered") ||
@@ -150,7 +147,6 @@ function SignUpPage() {
           setShowAlreadyRegistered(true);
           // Remove auto-redirect - let user choose
         } else {
-          // Handle other registration errors
           setErrors({ general: errorMsg || "Registration failed. Please try again." });
         }
       }
@@ -162,7 +158,6 @@ function SignUpPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
-      {/* Already Registered Modal */}
       {showAlreadyRegistered && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center px-4">
           <div className="bg-white rounded-xl shadow-2xl p-6 sm:p-8 max-w-md w-full mx-4 text-center transform animate-in fade-in duration-300">
@@ -195,7 +190,6 @@ function SignUpPage() {
         </div>
       )}
 
-      {/* Success Message */}
       {successMessage && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[9998] w-full max-w-md px-4">
           <div className="bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-in slide-in-from-top duration-300">
@@ -384,14 +378,27 @@ function SignUpPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 w-full">
-          <button className="shine-sweep flex-1 flex items-center justify-center bg-white border border-gray-300 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-50 transition shadow-sm">
+          <button 
+            disabled
+            className="flex-1 flex items-center justify-center bg-gray-100 border border-gray-200 text-gray-400 font-medium py-3 rounded-lg cursor-not-allowed shadow-sm"
+            title="OAuth not configured"
+          >
             <GoogleIcon />
             Google
           </button>
-          <button className="shine-sweep flex-1 flex items-center justify-center bg-white border border-gray-300 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-50 transition shadow-sm">
+          <button 
+            disabled
+            className="flex-1 flex items-center justify-center bg-gray-100 border border-gray-200 text-gray-400 font-medium py-3 rounded-lg cursor-not-allowed shadow-sm"
+            title="OAuth not configured"
+          >
             <FacebookIcon />
             Facebook
           </button>
+        </div>
+
+        {/* OAuth Notice */}
+        <div className="mt-2 text-xs text-gray-500 text-center">
+          <span>OAuth registration is currently unavailable. Please use manual registration.</span>
         </div>
 
         <div className="mt-6 text-sm text-gray-500 text-center">

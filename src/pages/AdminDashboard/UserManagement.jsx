@@ -4,23 +4,26 @@ import {
   fetchUsersForManagement,
   promoteUserToAdmin,
   demoteAdminToUser,
+  promoteToSuperAdmin,
   suspendUser,
   reactivateUser,
-  clearError
+  getUserDetails,
+  getUserRoleInfo,
+  clearError,
+  clearUserDetails
 } from '../../features/adminSlice';
-import { Search, Filter, MoreVertical, Shield, ShieldCheck, User, Mail, Calendar, MapPin, Eye, Ban, UserMinus } from 'lucide-react';
+import { Search, Filter, MoreVertical, Shield, ShieldCheck, User, Mail, Calendar, MapPin, Eye, Ban, UserMinus, Crown } from 'lucide-react';
 
 const UserManagement = () => {
   const dispatch = useDispatch();
   const { 
     userManagement: { users = [] }, 
+    selectedUserDetails,
+    selectedUserRole,
     loading, 
-    actionLoading, 
     error,
-    pagination 
   } = useSelector(state => state.admin);
-  
-  // Get current user's role from auth state
+
   const currentUserRole = useSelector(state => state.auth.role);
   const isSuperAdmin = currentUserRole === 'super_admin';
   
@@ -30,7 +33,6 @@ const UserManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
 
-  // Fetch users when component mounts or filters change
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       dispatch(fetchUsersForManagement({
@@ -40,12 +42,11 @@ const UserManagement = () => {
         role: filterRole,
         status: filterStatus
       }));
-    }, 300); // Debounce search
+    }, 300);
 
     return () => clearTimeout(timeoutId);
   }, [dispatch, searchTerm, filterRole, filterStatus]);
 
-  // Clear error when component unmounts
   useEffect(() => {
     return () => {
       if (error) {
@@ -54,29 +55,24 @@ const UserManagement = () => {
     };
   }, [dispatch, error]);
 
-  // Helper function to check if current user can perform actions on target user
   const canDemoteUser = (targetUser) => {
     // Only super admins can demote other admins
     return isSuperAdmin && targetUser.role === 'admin';
   };
 
   const canSuspendUser = (targetUser) => {
-    // Regular admins can suspend regular users, super admins can suspend anyone
     if (targetUser.role === 'user') return true;
-    return isSuperAdmin; // Only super admins can suspend admins/super admins
+    return isSuperAdmin;
   };
 
   const canPromoteUser = (targetUser) => {
-    // Only promote regular users to admin (super admin promotion is separate)
     return targetUser.role === 'user';
   };
 
-  // Helper function to get user status based on accountVerified field
   const getUserStatus = (user) => {
     return user.accountVerified ? 'active' : 'suspended';
   };
 
-  // Helper function to format quest stats (mock data for now)
   const getQuestStats = (user) => {
     return {
       questsCompleted: user.questsCompleted || 0,
@@ -88,6 +84,9 @@ const UserManagement = () => {
       switch (action) {
         case 'promote':
           await dispatch(promoteUserToAdmin(userId)).unwrap();
+          break;
+        case 'promote-super':
+          await dispatch(promoteToSuperAdmin(userId)).unwrap();
           break;
         case 'demote':
           await dispatch(demoteAdminToUser(userId)).unwrap();
@@ -101,22 +100,28 @@ const UserManagement = () => {
         case 'activate':
           await dispatch(reactivateUser(userId)).unwrap();
           break;
+        case 'view-details':
+          await dispatch(getUserDetails(userId));
+          break;
+        case 'view-role':
+          await dispatch(getUserRoleInfo(userId));
+          break;
         default:
           console.warn(`Unknown action: ${action}`);
       }
-      
-      // Refresh user list after action
-      dispatch(fetchUsersForManagement({
-        page: 1,
-        limit: 20,
-        search: searchTerm,
-        role: filterRole,
-        status: filterStatus
-      }));
+
+      if (!action.startsWith('view')) {
+        dispatch(fetchUsersForManagement({
+          page: 1,
+          limit: 20,
+          search: searchTerm,
+          role: filterRole,
+          status: filterStatus
+        }));
+      }
       
     } catch (error) {
       console.error(`Error ${action}ing user:`, error);
-      // Error is handled by Redux slice
     }
   };
 
@@ -228,15 +233,30 @@ const UserManagement = () => {
 
             <div className="flex gap-3 mt-6 pt-6 border-t border-gray-200">
               {canPromoteUser(user) && (
-                <button
-                  onClick={() => {
-                    handleUserAction(user._id, 'promote');
-                    onClose();
-                  }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  Promote to Admin
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      handleUserAction(user._id, 'promote');
+                      onClose();
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    Promote to Admin
+                  </button>
+                  
+                  {isSuperAdmin && (
+                    <button
+                      onClick={() => {
+                        handleUserAction(user._id, 'promote-super');
+                        onClose();
+                      }}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors flex items-center gap-2"
+                    >
+                      <Crown className="w-4 h-4" />
+                      Promote to Super Admin
+                    </button>
+                  )}
+                </>
               )}
               
               {canDemoteUser(user) && (
@@ -276,6 +296,20 @@ const UserManagement = () => {
                   )}
                 </>
               )}
+
+              <button
+                onClick={() => handleUserAction(user._id, 'view-details')}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Load Detailed Info
+              </button>
+
+              <button
+                onClick={() => handleUserAction(user._id, 'view-role')}
+                className="px-4 py-2 border border-blue-300 text-blue-700 rounded-md hover:bg-blue-50 transition-colors"
+              >
+                Load Role Info
+              </button>
               
               {!canPromoteUser(user) && !canDemoteUser(user) && !canSuspendUser(user) && (
                 <div className="px-4 py-2 text-gray-500 text-sm">
@@ -286,6 +320,72 @@ const UserManagement = () => {
                 </div>
               )}
             </div>
+
+            {selectedUserDetails && selectedUserDetails._id === user._id && (
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Detailed User Information</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="font-medium text-blue-800">Profile Completeness:</span>
+                    <span className="ml-2 text-blue-700">{selectedUserDetails.stats?.profileCompleteness || 0}%</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-blue-800">Quests Completed:</span>
+                    <span className="ml-2 text-blue-700">{selectedUserDetails.stats?.questsCompleted || 0}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-blue-800">Quests Created:</span>
+                    <span className="ml-2 text-blue-700">{selectedUserDetails.stats?.questsCreated || 0}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-blue-800">Account Status:</span>
+                    <span className={`ml-2 px-2 py-1 rounded-full text-xs ${getStatusColor(getUserStatus(selectedUserDetails))}`}>
+                      {getUserStatus(selectedUserDetails).toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedUserRole && selectedUserRole.userId === user._id && (
+              <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <h4 className="font-medium text-purple-900 mb-2">Role & Permissions</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-purple-800">Current Role:</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(selectedUserRole.role)}`}>
+                      {selectedUserRole.role.replace('_', ' ').toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center">
+                      <span className="text-purple-700">Can Moderate Quests:</span>
+                      <span className="ml-2">
+                        {selectedUserRole.permissions?.canModerateQuests ? '✅' : '❌'}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-purple-700">Can Manage Users:</span>
+                      <span className="ml-2">
+                        {selectedUserRole.permissions?.canManageUsers ? '✅' : '❌'}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-purple-700">Is Admin:</span>
+                      <span className="ml-2">
+                        {selectedUserRole.permissions?.isAdmin ? '✅' : '❌'}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-purple-700">Is Super Admin:</span>
+                      <span className="ml-2">
+                        {selectedUserRole.permissions?.isSuperAdmin ? '✅' : '❌'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -322,7 +422,6 @@ const UserManagement = () => {
           )}
         </div>
 
-        {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
@@ -364,7 +463,6 @@ const UserManagement = () => {
           </div>
         </div>
 
-        {/* Users Table */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {loading ? (
             <div className="p-8 text-center">
@@ -459,6 +557,7 @@ const UserManagement = () => {
           onClose={() => {
             setShowUserModal(false);
             setSelectedUser(null);
+            dispatch(clearUserDetails());
           }}
         />
       )}

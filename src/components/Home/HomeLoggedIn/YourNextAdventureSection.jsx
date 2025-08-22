@@ -1,10 +1,8 @@
 import React from "react";
 import ForYouCard from "../../Cards/QuestCard.jsx";
 
-// Simple: show 4 quest cards
 function YourNextAdventureSection({ quests }) {
-  console.log('Quests received:', quests); // Debug log
-  
+
   return (
     <section
       id="your-next-adventure"
@@ -23,9 +21,6 @@ function YourNextAdventureSection({ quests }) {
             <div className="col-span-full py-16 flex flex-col items-center">
               <div className="text-3xl font-bold text-duskHaze mb-3">
                 {quests ? `Found ${quests.length} quests` : 'Loading quests...'}
-              </div>
-              <div className="text-lg text-stormyGrey mb-4 text-center max-w-md">
-                Check console for debug info
               </div>
             </div>
           )}

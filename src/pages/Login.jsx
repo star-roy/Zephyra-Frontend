@@ -54,7 +54,6 @@ function LoginPage() {
     e.preventDefault();
     const newErrors = {};
 
-    // Validation
     if (!emailOrUsername.trim()) {
       newErrors.emailOrUsername = "Email or username is required";
     }
@@ -80,18 +79,14 @@ function LoginPage() {
       const result = await dispatch(loginUser(loginData));
       
       if (loginUser.fulfilled.match(result)) {
-        // Check if account is verified
         if (result.payload.user.accountVerified) {
-          // Successful login - redirect to home (which will show logged-in version)
           navigate("/");
         } else {
-          // Account not verified - show modal
           setShowUnverifiedAccount(true);
         }
       } else if (loginUser.rejected.match(result)) {
         const errorMsg = result.payload || result.error?.message || "";
-        
-        // Check if it's invalid credentials
+
         if (
           errorMsg.toLowerCase().includes("invalid credentials") ||
           errorMsg.toLowerCase().includes("invalid email or password") ||
@@ -109,7 +104,6 @@ function LoginPage() {
           dispatch(clearError());
           setShowUnverifiedAccount(true);
         } else {
-          // Handle other login errors
           setErrors({ general: errorMsg || "Login failed. Please try again." });
         }
       }
@@ -122,7 +116,7 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      {/* Invalid Credentials Modal */}
+
       {showInvalidCredentials && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center px-4">
           <div className="bg-white rounded-xl shadow-2xl p-6 sm:p-8 max-w-md w-full mx-4 text-center transform animate-in fade-in duration-300">
@@ -155,7 +149,6 @@ function LoginPage() {
         </div>
       )}
 
-      {/* Unverified Account Modal */}
       {showUnverifiedAccount && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center px-4">
           <div className="bg-white rounded-xl shadow-2xl p-6 sm:p-8 max-w-md w-full mx-4 text-center transform animate-in fade-in duration-300">
@@ -203,7 +196,6 @@ function LoginPage() {
         )}
         
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
-          {/* Email or Username */}
           <div>
             <input
               type="text"
@@ -216,8 +208,7 @@ function LoginPage() {
             />
             {errors.emailOrUsername && <p className="text-red-500 text-xs mt-1">{errors.emailOrUsername}</p>}
           </div>
-          
-          {/* Password */}
+
           <div>
             <div className="relative">
               <input
@@ -248,8 +239,7 @@ function LoginPage() {
             </div>
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>
-          
-          {/* Remember Me & Forgot Password */}
+
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center text-gray-600">
               <input
@@ -262,8 +252,7 @@ function LoginPage() {
               Forgot password?
             </Link>
           </div>
-          
-          {/* Submit */}
+
           <button
             type="submit"
             disabled={loading}
@@ -272,27 +261,36 @@ function LoginPage() {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-        
-        {/* Divider */}
+
         <div className="flex items-center my-6 w-full">
           <div className="flex-grow border-t border-gray-300" />
           <span className="mx-4 text-sm text-gray-500">Or continue with</span>
           <div className="flex-grow border-t border-gray-300" />
         </div>
-        
-        {/* Social Buttons */}
+
         <div className="flex flex-col sm:flex-row gap-3 w-full">
-          <button className="shine-sweep flex-1 flex items-center justify-center bg-white border border-gray-300 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-50 transition shadow-sm">
+          <button 
+            disabled
+            className="flex-1 flex items-center justify-center bg-gray-100 border border-gray-200 text-gray-400 font-medium py-3 rounded-lg cursor-not-allowed shadow-sm"
+            title="OAuth not configured"
+          >
             <GoogleIcon />
             Google
           </button>
-          <button className="shine-sweep flex-1 flex items-center justify-center bg-white border border-gray-300 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-50 transition shadow-sm">
+          <button 
+            disabled
+            className="flex-1 flex items-center justify-center bg-gray-100 border border-gray-200 text-gray-400 font-medium py-3 rounded-lg cursor-not-allowed shadow-sm"
+            title="OAuth not configured"
+          >
             <FacebookIcon />
             Facebook
           </button>
         </div>
-        
-        {/* Sign Up Link */}
+
+        <div className="mt-2 text-xs text-gray-500 text-center">
+          <span>OAuth login is currently unavailable. Please use email/username login.</span>
+        </div>
+
         <div className="mt-6 text-sm text-gray-500 text-center">
           <span>Don't have an account?</span>{" "}
           <button

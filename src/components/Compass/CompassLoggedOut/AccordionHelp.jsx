@@ -98,7 +98,6 @@ function AccordionHelp() {
         </div>
       </div>
 
-      {/* Bottom Fade Effect */}
       <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-b from-transparent to-[#ffffff] pointer-events-none z-0" />
     </section>
   );

@@ -20,7 +20,7 @@ function NavbarLoggedIn() {
   const toggleMenu = () => setIsOpen(!isOpen);
   const toggleAvatarMenu = () => setAvatarOpen(!avatarOpen);
 
-  // Handle logout
+
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
@@ -28,19 +28,23 @@ function NavbarLoggedIn() {
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
-      // Still navigate to login even if logout fails
       setShowLogoutModal(false);
       navigate('/login');
     }
   };
 
-  // Get user data with defaults
+  // Check if user is admin or superadmin
+  const isAdmin = userData?.role === 'admin' || 
+                  userData?.role === 'superadmin' || 
+                  userData?.role === 'super_admin' ||
+                  userData?.role === 'Admin' || 
+                  userData?.role === 'SuperAdmin' ||
+                  userData?.role === 'Super_Admin';
+  
   const userXP = userData?.xp || 0;
   const userLevel = userData?.level || 1;
   const userAvatar = userData?.avatar || "/assets/user-avatar2.jpeg";
-  const username = userData?.username || "User";
-  
-  // Calculate level XP (simple formula: level * 100)
+
   const levelXP = userLevel * 100;
 
   const navItems = [
@@ -91,21 +95,53 @@ function NavbarLoggedIn() {
               </button>
               {avatarOpen && (
                 <div className="absolute right-0 mt-2 w-44 bg-white border border-[#CADCFC] rounded-md shadow-md z-50">
-                  <Link
+                  {isAdmin && (
+                    <NavLink
+                      to="/admin/dashboard"
+                      onClick={() => setAvatarOpen(false)}
+                      className={({ isActive }) =>
+                        `block px-4 py-2 text-sm transition duration-200 ${
+                          isActive
+                            ? "text-[#4A90E2] bg-[#F2F6FF]"
+                            : "text-[#2C3E50] hover:bg-[#F2F6FF]"
+                        }`
+                      }
+                    >
+                      Admin Dashboard
+                    </NavLink>
+                  )}
+                  <NavLink
                     to="/profile"
-                    className="block px-4 py-2 text-sm text-[#2C3E50] hover:bg-[#F2F6FF]"
+                    onClick={() => setAvatarOpen(false)}
+                    className={({ isActive }) =>
+                      `block px-4 py-2 text-sm transition duration-200 ${
+                        isActive
+                          ? "text-[#4A90E2] bg-[#F2F6FF]"
+                          : "text-[#2C3E50] hover:bg-[#F2F6FF]"
+                      }`
+                    }
                   >
                     View Profile
-                  </Link>
-                  <Link
+                  </NavLink>
+                  <NavLink
                     to="/settings"
-                    className="block px-4 py-2 text-sm text-[#2C3E50] hover:bg-[#F2F6FF]"
+                    onClick={() => setAvatarOpen(false)}
+                    className={({ isActive }) =>
+                      `block px-4 py-2 text-sm transition duration-200 ${
+                        isActive
+                          ? "text-[#4A90E2] bg-[#F2F6FF]"
+                          : "text-[#2C3E50] hover:bg-[#F2F6FF]"
+                      }`
+                    }
                   >
                     Settings
-                  </Link>
+                  </NavLink>
                   <button
-                    onClick={() => setShowLogoutModal(true)}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-[#F2F6FF]"
+                    onClick={() => {
+                      setAvatarOpen(false);
+                      setShowLogoutModal(true);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition duration-200"
                   >
                     Logout
                   </button>
@@ -139,6 +175,7 @@ function NavbarLoggedIn() {
               </NavLink>
             ))}
             <hr className="border-t border-[#CADCFC]" />
+            
             <div className="flex justify-between items-center">
               <span className="bg-[#D6E4FF] text-[#4A90E2] text-xs font-semibold px-3 py-1 rounded-full">
                 +{userXP} XP
@@ -151,10 +188,76 @@ function NavbarLoggedIn() {
                 />
               </Link>
             </div>
+            
+            <div className="pt-2 border-t border-[#CADCFC]">
+              {isAdmin && (
+                <NavLink
+                  to="/admin-dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center space-x-3 text-sm font-medium transition duration-200 py-3 px-2 rounded-md ${
+                      isActive
+                        ? "text-[#4A90E2] bg-[#F2F6FF]"
+                        : "text-[#2C3E50] hover:text-[#4A90E2] hover:bg-[#F2F6FF]"
+                    }`
+                  }
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <span className="truncate">Admin Dashboard</span>
+                </NavLink>
+              )}
+              <NavLink
+                to="/profile"
+                onClick={() => setIsOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 text-sm font-medium transition duration-200 py-3 px-2 rounded-md ${
+                    isActive
+                      ? "text-[#4A90E2] bg-[#F2F6FF]"
+                      : "text-[#2C3E50] hover:text-[#4A90E2] hover:bg-[#F2F6FF]"
+                  }`
+                }
+              >
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="truncate">View Profile</span>
+              </NavLink>
+              <NavLink
+                to="/settings"
+                onClick={() => setIsOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 text-sm font-medium transition duration-200 py-3 px-2 rounded-md ${
+                    isActive
+                      ? "text-[#4A90E2] bg-[#F2F6FF]"
+                      : "text-[#2C3E50] hover:text-[#4A90E2] hover:bg-[#F2F6FF]"
+                  }`
+                }
+              >
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span className="truncate">Settings</span>
+              </NavLink>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  setShowLogoutModal(true);
+                }}
+                className="flex items-center space-x-3 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition duration-200 py-3 px-2 rounded-md w-full text-left"
+              >
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span className="truncate">Logout</span>
+              </button>
+            </div>
           </div>
         )}
       </nav>
-      {/* Logout confirmation modal */}
+      
       {showLogoutModal && (
         <LogoutModal
           onCancel={() => setShowLogoutModal(false)}

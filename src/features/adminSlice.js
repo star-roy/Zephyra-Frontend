@@ -36,12 +36,19 @@ const initialState = {
         canManageBadges: false,
         canViewReports: false
     },
+
+    selectedUserDetails: null,
+    selectedUserRole: null,
+    adminsList: [],
+    pendingProofs: [],
+    proofsPagination: {},
+    actionLogs: [],
+    actionLogsPagination: {},
     loading: false,
     error: null,
     actionLoading: false
 };
 
-// Async thunks
 export const fetchAdminDashboard = createAsyncThunk(
     'admin/fetchAdminDashboard',
     async (_, { rejectWithValue }) => {
@@ -217,14 +224,92 @@ export const verifyQuestProof = createAsyncThunk(
 
 export const fetchAdminActions = createAsyncThunk(
     'admin/fetchAdminActions',
-    async ({ page = 1, limit = 10, actionType = '' }, { rejectWithValue }) => {
+    async ({ page = 1, limit = 10, action_type = 'all', admin_id = 'all' }, { rejectWithValue }) => {
         try {
             const params = new URLSearchParams({ page, limit });
-            if (actionType) params.append('actionType', actionType);
-            const response = await api.get(`/admin/actions?${params}`);
+            if (action_type !== 'all') params.append('action_type', action_type);
+            if (admin_id !== 'all') params.append('admin_id', admin_id);
+            const response = await api.get(`/admin/action-logs?${params}`);
             return response.data.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to fetch admin actions');
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch admin action logs');
+        }
+    }
+);
+
+export const getUserDetails = createAsyncThunk(
+    'admin/getUserDetails',
+    async (userId, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/admin/users/${userId}`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch user details');
+        }
+    }
+);
+
+export const getUserRoleInfo = createAsyncThunk(
+    'admin/getUserRoleInfo',
+    async (userId, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/admin/users/${userId}/role`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch user role info');
+        }
+    }
+);
+
+export const promoteToSuperAdmin = createAsyncThunk(
+    'admin/promoteToSuperAdmin',
+    async (userId, { rejectWithValue }) => {
+        try {
+            const response = await api.patch(`/admin/users/${userId}/promote-super-admin`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to promote to super admin');
+        }
+    }
+);
+
+export const getAllAdmins = createAsyncThunk(
+    'admin/getAllAdmins',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get('/admin/admins');
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch admins list');
+        }
+    }
+);
+
+export const getPendingProofs = createAsyncThunk(
+    'admin/getPendingProofs',
+    async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
+        try {
+            const params = new URLSearchParams({ page, limit });
+            const response = await api.get(`/admin/proofs/pending?${params}`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch pending proofs');
+        }
+    }
+);
+
+export const verifyTaskProof = createAsyncThunk(
+    'admin/verifyTaskProof',
+    async ({ questId, taskOrder, userId, approved, feedback }, { rejectWithValue }) => {
+        try {
+            const response = await api.post(`/admin/verify-task/${questId}/${taskOrder}`, {
+                userId,
+                approved,
+                feedback
+            });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to verify task proof');
         }
     }
 );
@@ -331,6 +416,14 @@ const adminSlice = createSlice({
         clearAdminData: () => {
             return initialState;
         },
+        clearUserDetails: (state) => {
+            state.selectedUserDetails = null;
+            state.selectedUserRole = null;
+        },
+        clearPendingProofs: (state) => {
+            state.pendingProofs = [];
+            state.proofsPagination = {};
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -342,7 +435,6 @@ const adminSlice = createSlice({
             .addCase(fetchAdminDashboard.fulfilled, (state, action) => {
                 state.loading = false;
                 
-                // Map backend response to frontend state structure
                 const data = action.payload;
                 
                 state.userManagement = {
@@ -374,14 +466,12 @@ const adminSlice = createSlice({
                 state.error = action.payload;
             })
             
-            // Fetch pending quests
             .addCase(fetchPendingQuests.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(fetchPendingQuests.fulfilled, (state, action) => {
                 state.loading = false;
-                // Backend returns { quests: [...], pagination: {...} }
                 state.pendingQuests = action.payload.quests || [];
                 state.pagination = action.payload.pagination || {};
                 state.error = null;
@@ -398,7 +488,6 @@ const adminSlice = createSlice({
             })
             .addCase(fetchAllQuestsForAdmin.fulfilled, (state, action) => {
                 state.loading = false;
-                // Backend returns { quests: [...], pagination: {...}, statusStats: {...} }
                 state.allQuests = action.payload.quests || [];
                 state.questPagination = action.payload.pagination || {};
                 if (action.payload.statusStats) {
@@ -416,21 +505,17 @@ const adminSlice = createSlice({
                 state.error = action.payload;
             })
             
-            // Approve quest
             .addCase(approveQuest.pending, (state) => {
                 state.actionLoading = true;
             })
             .addCase(approveQuest.fulfilled, (state, action) => {
                 state.actionLoading = false;
                 const questId = action.payload._id;
-                // Remove from pending quests
                 state.pendingQuests = state.pendingQuests.filter(q => q._id !== questId);
-                // Update in all quests
                 const questIndex = state.allQuests.findIndex(q => q._id === questId);
                 if (questIndex !== -1) {
                     state.allQuests[questIndex].status = 'approved';
                 }
-                // Update counts
                 state.questManagement.approvedQuests += 1;
                 state.questManagement.pendingQuests -= 1;
             })
@@ -438,22 +523,17 @@ const adminSlice = createSlice({
                 state.actionLoading = false;
                 state.error = action.payload;
             })
-            
-            // Reject quest
             .addCase(rejectQuest.pending, (state) => {
                 state.actionLoading = true;
             })
             .addCase(rejectQuest.fulfilled, (state, action) => {
                 state.actionLoading = false;
                 const questId = action.payload._id;
-                // Remove from pending quests
                 state.pendingQuests = state.pendingQuests.filter(q => q._id !== questId);
-                // Update in all quests
                 const questIndex = state.allQuests.findIndex(q => q._id === questId);
                 if (questIndex !== -1) {
                     state.allQuests[questIndex].status = 'rejected';
                 }
-                // Update counts
                 state.questManagement.rejectedQuests += 1;
                 state.questManagement.pendingQuests -= 1;
             })
@@ -461,38 +541,30 @@ const adminSlice = createSlice({
                 state.actionLoading = false;
                 state.error = action.payload;
             })
-            
-            // Delete quest by admin
             .addCase(deleteQuestByAdmin.pending, (state) => {
                 state.actionLoading = true;
             })
             .addCase(deleteQuestByAdmin.fulfilled, (state, action) => {
                 state.actionLoading = false;
                 const questId = action.payload.questId;
-                // Remove from all quest arrays
                 state.pendingQuests = state.pendingQuests.filter(q => q._id !== questId);
                 state.allQuests = state.allQuests.filter(q => q._id !== questId);
-                // Update counts
                 state.questManagement.totalQuests -= 1;
             })
             .addCase(deleteQuestByAdmin.rejected, (state, action) => {
                 state.actionLoading = false;
                 state.error = action.payload;
             })
-            
-            // Update quest by admin
             .addCase(updateQuestByAdmin.pending, (state) => {
                 state.actionLoading = true;
             })
             .addCase(updateQuestByAdmin.fulfilled, (state, action) => {
                 state.actionLoading = false;
                 const updatedQuest = action.payload;
-                // Update in all quests
                 const questIndex = state.allQuests.findIndex(q => q._id === updatedQuest._id);
                 if (questIndex !== -1) {
                     state.allQuests[questIndex] = updatedQuest;
                 }
-                // Update in pending quests if it exists there
                 const pendingIndex = state.pendingQuests.findIndex(q => q._id === updatedQuest._id);
                 if (pendingIndex !== -1) {
                     state.pendingQuests[pendingIndex] = updatedQuest;
@@ -502,15 +574,12 @@ const adminSlice = createSlice({
                 state.actionLoading = false;
                 state.error = action.payload;
             })
-            
-            // Fetch users for management
             .addCase(fetchUsersForManagement.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(fetchUsersForManagement.fulfilled, (state, action) => {
                 state.loading = false;
-                // Backend returns { users: [...], pagination: {...} }
                 state.userManagement.users = action.payload.users || [];
                 state.pagination = action.payload.pagination || {};
                 if (action.payload.pagination?.totalUsers) {
@@ -522,8 +591,6 @@ const adminSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            
-            // Promote user to admin
             .addCase(promoteUserToAdmin.fulfilled, (state, action) => {
                 const userId = action.payload._id;
                 const userIndex = state.userManagement.users.findIndex(u => u._id === userId);
@@ -534,8 +601,6 @@ const adminSlice = createSlice({
             .addCase(promoteUserToAdmin.rejected, (state, action) => {
                 state.error = action.payload;
             })
-            
-            // Demote admin to user
             .addCase(demoteAdminToUser.fulfilled, (state, action) => {
                 const userId = action.payload._id;
                 const userIndex = state.userManagement.users.findIndex(u => u._id === userId);
@@ -587,61 +652,165 @@ const adminSlice = createSlice({
                 state.error = action.payload;
             })
             
-            // Verify quest proof
             .addCase(verifyQuestProof.fulfilled, (state) => {
-                // Handle quest proof verification success
                 state.error = null;
             })
             .addCase(verifyQuestProof.rejected, (state, action) => {
                 state.error = action.payload;
             })
             
-            // Fetch admin actions
-            .addCase(fetchAdminActions.fulfilled, (state, action) => {
-                state.adminActions = action.payload.actions || action.payload;
-            })
-            .addCase(fetchAdminActions.rejected, (state, action) => {
-                state.error = action.payload;
-            })
-            
-            // Fetch analytics
             .addCase(fetchAnalytics.fulfilled, (state, action) => {
                 state.analytics = { ...state.analytics, ...action.payload };
             })
             .addCase(fetchAnalytics.rejected, (state, action) => {
                 state.error = action.payload;
             })
-            
-            // Award badge to user
+
             .addCase(awardBadgeToUser.fulfilled, (state) => {
                 state.error = null;
             })
             .addCase(awardBadgeToUser.rejected, (state, action) => {
                 state.error = action.payload;
             })
-            
-            // Create badge
             .addCase(createBadge.fulfilled, (state) => {
                 state.error = null;
             })
             .addCase(createBadge.rejected, (state, action) => {
                 state.error = action.payload;
             })
-            
-            // Fetch reported content
             .addCase(fetchReportedContent.fulfilled, (state, action) => {
                 state.reportedContent = action.payload.reports || action.payload;
             })
             .addCase(fetchReportedContent.rejected, (state, action) => {
                 state.error = action.payload;
             })
-            
-            // Resolve report
+
             .addCase(resolveReport.fulfilled, (state, action) => {
                 const reportId = action.payload._id;
                 state.reportedContent = state.reportedContent.filter(r => r._id !== reportId);
             })
             .addCase(resolveReport.rejected, (state, action) => {
+                state.error = action.payload;
+            })
+            
+            // Get user details
+            .addCase(getUserDetails.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getUserDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.selectedUserDetails = action.payload;
+                state.error = null;
+            })
+            .addCase(getUserDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            
+            // Get user role info
+            .addCase(getUserRoleInfo.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getUserRoleInfo.fulfilled, (state, action) => {
+                state.loading = false;
+                state.selectedUserRole = action.payload;
+                state.error = null;
+            })
+            .addCase(getUserRoleInfo.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            
+            // Promote to super admin
+            .addCase(promoteToSuperAdmin.pending, (state) => {
+                state.actionLoading = true;
+                state.error = null;
+            })
+            .addCase(promoteToSuperAdmin.fulfilled, (state, action) => {
+                state.actionLoading = false;
+                const userId = action.payload.userId;
+                const userIndex = state.userManagement.users.findIndex(u => u._id === userId);
+                if (userIndex !== -1) {
+                    state.userManagement.users[userIndex].role = 'super_admin';
+                }
+                // Update in admins list if present
+                const adminIndex = state.adminsList.findIndex(a => a._id === userId);
+                if (adminIndex !== -1) {
+                    state.adminsList[adminIndex].role = 'super_admin';
+                }
+                state.error = null;
+            })
+            .addCase(promoteToSuperAdmin.rejected, (state, action) => {
+                state.actionLoading = false;
+                state.error = action.payload;
+            })
+            
+            // Get all admins
+            .addCase(getAllAdmins.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getAllAdmins.fulfilled, (state, action) => {
+                state.loading = false;
+                state.adminsList = action.payload;
+                state.error = null;
+            })
+            .addCase(getAllAdmins.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            
+            // Get pending proofs
+            .addCase(getPendingProofs.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getPendingProofs.fulfilled, (state, action) => {
+                state.loading = false;
+                state.pendingProofs = action.payload.proofs || action.payload;
+                state.proofsPagination = action.payload.pagination || {};
+                state.error = null;
+            })
+            .addCase(getPendingProofs.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            
+            // Verify task proof
+            .addCase(verifyTaskProof.pending, (state) => {
+                state.actionLoading = true;
+                state.error = null;
+            })
+            .addCase(verifyTaskProof.fulfilled, (state, action) => {
+                state.actionLoading = false;
+                const questId = action.payload.questProgress?.quest_id?._id || action.payload.questId;
+                const taskOrder = action.payload.taskOrder;
+                state.pendingProofs = state.pendingProofs.filter(proof => {
+                    return !(proof.quest_id?._id === questId && 
+                           proof.taskProofs && 
+                           proof.taskProofs.has && 
+                           proof.taskProofs.has(taskOrder?.toString()));
+                });
+                state.error = null;
+            })
+            .addCase(verifyTaskProof.rejected, (state, action) => {
+                state.actionLoading = false;
+                state.error = action.payload;
+            })
+            .addCase(fetchAdminActions.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchAdminActions.fulfilled, (state, action) => {
+                state.loading = false;
+                state.actionLogs = action.payload.logs || action.payload;
+                state.actionLogsPagination = action.payload.pagination || {};
+                state.error = null;
+            })
+            .addCase(fetchAdminActions.rejected, (state, action) => {
+                state.loading = false;
                 state.error = action.payload;
             });
     },
@@ -654,7 +823,9 @@ export const {
     addAdminAction,
     updateQuestStatus,
     updateUserInList,
-    clearAdminData
+    clearAdminData,
+    clearUserDetails,
+    clearPendingProofs
 } = adminSlice.actions;
 
 export default adminSlice.reducer;

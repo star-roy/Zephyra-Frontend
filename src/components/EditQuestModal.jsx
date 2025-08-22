@@ -129,8 +129,7 @@ const EditQuestModal = ({ quest, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Filter out empty tasks and tips
+
     const cleanedData = {
       ...formData,
       tasks: formData.tasks.filter(task => task.trim() !== ''),
@@ -167,7 +166,6 @@ const EditQuestModal = ({ quest, onClose }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -197,7 +195,6 @@ const EditQuestModal = ({ quest, onClose }) => {
             </div>
           </div>
 
-          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Description *
@@ -212,7 +209,6 @@ const EditQuestModal = ({ quest, onClose }) => {
             />
           </div>
 
-          {/* Category and Difficulty */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -263,7 +259,6 @@ const EditQuestModal = ({ quest, onClose }) => {
             </div>
           </div>
 
-          {/* Location Information */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -305,7 +300,6 @@ const EditQuestModal = ({ quest, onClose }) => {
             </div>
           </div>
 
-          {/* XP and Tags */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -362,7 +356,6 @@ const EditQuestModal = ({ quest, onClose }) => {
             </div>
           </div>
 
-          {/* Tasks */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Quest Tasks *
@@ -398,7 +391,6 @@ const EditQuestModal = ({ quest, onClose }) => {
             </button>
           </div>
 
-          {/* Tips */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Quest Tips
@@ -433,7 +425,6 @@ const EditQuestModal = ({ quest, onClose }) => {
             </button>
           </div>
 
-          {/* Proof Instructions */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Proof Instructions
@@ -447,7 +438,6 @@ const EditQuestModal = ({ quest, onClose }) => {
             />
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-4 pt-6 border-t border-gray-200">
             <button
               type="submit"

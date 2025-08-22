@@ -8,7 +8,6 @@ import Compass from "./Compass/Compass.jsx"
 import Explore from "./Explore/Explore.jsx";
 import Home from "./Home/Home.jsx";
 import CreateQuestPage from "./MyQuest/CreateQuestPage.jsx";
-import CreateQuestSection from "./MyQuest/CreateQuestSection.jsx";
 import MyQuestsPage from "./MyQuest/MyQuest.jsx";
 import UserProfilePage from "./Profile/UserProfilePage.jsx";
 import QuestInProgressPage from "./Quest/QuestInProgressPage.jsx";
@@ -18,7 +17,7 @@ import SignUp from "./SignUp/SignUpPage.jsx";
 import Settings from "./UserSetting/Settings.jsx";
 
 // Admin Dashboard imports
-import { AdminDashboard, SuperAdminDashboard, UserManagement, QuestModeration } from "./AdminDashboard";
+import { AdminDashboard, SuperAdminDashboard, UserManagement, QuestModeration, AdminActionLogs, TaskProofVerification } from "./AdminDashboard";
 
 import AccessDenied from "./AccessDenied.jsx";
 import Contact from "./ContactUs.jsx";
@@ -33,6 +32,7 @@ import Terms from "./Terms.jsx";
 import VerifyEmail from "./VerifyEmail.jsx";
 import ForgotPasswordPage from "./ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./ResetPasswordPage.jsx";
+import ChangePasswordPage from "./ChangePassword/ChangePasswordPage.jsx";
 
 // 404 Page
 import NotFound from "./NotFound/NotFound.jsx";
@@ -46,7 +46,6 @@ export {
     Explore,
     Home,
     CreateQuestPage,
-    CreateQuestSection,
     MyQuestsPage,
     UserProfilePage,
     QuestInProgressPage,
@@ -58,6 +57,8 @@ export {
     SuperAdminDashboard,
     UserManagement,
     QuestModeration,
+    AdminActionLogs,
+    TaskProofVerification,
     AccessDenied,
     Contact,
     FeatureUnderDevelopment,
@@ -70,5 +71,6 @@ export {
     VerifyEmail,
     ForgotPasswordPage,
     ResetPasswordPage,
+    ChangePasswordPage,
     NotFound
 };

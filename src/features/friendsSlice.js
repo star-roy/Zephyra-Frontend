@@ -143,11 +143,9 @@ const friendsSlice = createSlice({
       })
       .addCase(respondToFriendRequest.fulfilled, (state, action) => {
         state.isLoading = false;
-        // Remove from pending requests
         state.pendingRequests = state.pendingRequests.filter(
           req => req._id !== action.payload._id
         );
-        // If accepted, add to friends
         if (action.payload.status === 'accepted') {
           state.friends.push(action.payload);
         }
@@ -208,7 +206,6 @@ const friendsSlice = createSlice({
       })
       .addCase(blockUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        // Remove from friends if they were friends
         state.friends = state.friends.filter(
           friend => friend._id !== action.payload.userId
         );

@@ -17,7 +17,7 @@ function PopularQuests({ quests = [] }) {
           </h2>
           <a
             href="/explore"
-            className="hidden sm:inline-block px-6 py-2 rounded-full font-semibold text-purple-700 bg-gradient-to-r from-amber-100 via-purple-50 to-purple-100 shadow hover:bg-amber-50 hover:text-purple-900 transition"
+            className="shine-sweep hidden sm:inline-block px-6 py-2 rounded-full font-semibold text-indigo-600 bg-gradient-to-r from-blue-300 to-blue-100 hover:bg-black hover:text-indigo-900 transition"
           >
             Explore All
           </a>

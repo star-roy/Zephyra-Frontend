@@ -4,6 +4,7 @@ import {
   FaInstagram,
   FaTwitter,
   FaGithub,
+  FaLinkedin,
 } from "react-icons/fa";
 import logo from "/logo.png"
 
@@ -11,7 +12,6 @@ function Footer() {
   return (
     <footer className="bg-[#0D1B2A] text-blue-100 text-sm w-full">
       <div className="max-w-7xl mx-auto px-6 py-14 flex flex-col md:flex-row justify-between items-start md:items-start gap-12 border-b border-[#33475b]">
-        {/* Left - Logo + Copyright */}
         <div className="md:w-1/4">
           <Link to="/" className="flex items-center mb-4">
             <img
@@ -46,8 +46,9 @@ function Footer() {
           <div>
             <h4 className="text-white text-base font-semibold mb-3 tracking-wide">Connect With Us</h4>
             <div className="flex justify-end space-x-3 text-lg">
-              <a href="https://instagram.com/yourpage" target="_blank" rel="noopener noreferrer" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="Instagram"><FaInstagram /></a>
+              <a href="https://www.instagram.com/roystar_ff?utm_source=qr&igsh=cmVzODl3bXRya3Ez" target="_blank" rel="noopener noreferrer" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="Instagram"><FaInstagram /></a>
               <a href="https://x.com/dibyar4j?t=BLzRJmCVaW-Xfi2dY27W9A&s=09" target="_blank" rel="noopener noreferrer" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="Twitter"><FaTwitter /></a>
+              <a href="https://www.linkedin.com/in/dibyaranjan-nayak-86a698325/" target="_blank" rel="noopener noreferrer" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="LinkedIn"><FaLinkedin /></a>
               <a href="https://github.com/star-roy" target="_blank" rel="noopener noreferrer" className="bg-blue-700 hover:bg-blue-500 text-white rounded-full p-2 transition shadow" aria-label="GitHub"><FaGithub /></a>
             </div>
           </div>

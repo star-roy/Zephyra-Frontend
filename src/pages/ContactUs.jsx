@@ -6,6 +6,7 @@ import {
   FaGithub,
   FaTwitter,
   FaInstagram,
+  FaLinkedin,
   FaChevronDown,
 } from "react-icons/fa";
 import api from "../utils/axiosConfig";
@@ -275,7 +276,14 @@ const Contact = () => {
                     <FaTwitter />
                   </a>
                   <a
-                    href="https://instagram.com"
+                    href="https://www.linkedin.com/in/dibyaranjan-nayak-86a698325/"
+                    target="_blank" rel="noopener noreferrer"
+                    className="w-10 h-10 flex items-center justify-center rounded-full text-blue-500 bg-[#EAF2FF] hover:bg-blue-500 hover:text-white transition-all duration-150 shadow"
+                  >
+                    <FaLinkedin />
+                  </a>
+                  <a
+                    href="https://www.instagram.com/roystar_ff?utm_source=qr&igsh=cmVzODl3bXRya3Ez"
                     target="_blank" rel="noopener noreferrer"
                     className="w-10 h-10 flex items-center justify-center rounded-full text-blue-500 bg-[#EAF2FF] hover:bg-blue-500 hover:text-white transition-all duration-150 shadow"
                   >

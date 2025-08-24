@@ -1,5 +1,5 @@
 import React from "react";
-import { OngoingQuestCard, EmptyOngoingQuests} from "../../components/index.js";
+import { OngoingQuestCard, EmptyOnGoingQuests} from "../../components/index.js";
 
 export default function OngoingQuestsSection({ ongoingQuests = [] }) {
   const maxOngoingQuests = 3;
@@ -40,7 +40,7 @@ export default function OngoingQuestsSection({ ongoingQuests = [] }) {
           )}
         </div>
       ) : (
-        <EmptyOngoingQuests />
+        <EmptyOnGoingQuests />
       )}
     </div>
   );

@@ -66,7 +66,7 @@ import AccountSection from "./SettingsPage/AccountSection.jsx";
 import AppPreferencesSection from "./SettingsPage/AppPreferencesSection.jsx";
 import PrivacySection from "./SettingsPage/PrivacySection.jsx";
 import SecuritySection from "./SettingsPage/SecuritySection.jsx";
-import SettingsSidebar from "./SettingsPage/SettingsSidebar.jsx";
+import SettingsSidebar from "./SettingsPage/SettingsSideBar.jsx";
 
 // Scroll to top
 import ScrollToTop from "./ScrollToTop.jsx"

@@ -1,14 +1,14 @@
 // cards
 import ChatSupportBox from "./Cards/ChatSupportBox.jsx";
 import CompletedQuestRow from "./Cards/CompletedQuestRow.jsx";
-import EmptyOngoingQuests from "./Cards/EmptyOngoingQuests.jsx";
+import EmptyOnGoingQuests from "./Cards/EmptyOnGoingQuests.jsx";
 import EventCard from "./Cards/EventCard.jsx";
 import InlineQuestScroller from "./Cards/InlineQuestScroller.jsx";
 import LogoutModal from "./Cards/LogoutModal.jsx";
 import OngoingQuestCard from "./Cards/OngoingQuestCard.jsx";
 import QuestCard from "./Cards/QuestCard.jsx";
 import QuestLimitModal from "./Modals/QuestLimitModal.jsx";
-
+ 
 // Navigation bar
 import Navbar from "./Navbar/Navbar.jsx";
 import NavbarLoggedIn from "./Navbar/NavbarLoggedIn.jsx";
@@ -79,7 +79,7 @@ export {
     // cards 
     ChatSupportBox,
     CompletedQuestRow,
-    EmptyOngoingQuests,
+    EmptyOnGoingQuests,
     EventCard,
     InlineQuestScroller,
     LogoutModal,

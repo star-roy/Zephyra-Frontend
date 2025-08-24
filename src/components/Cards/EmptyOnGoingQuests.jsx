@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function EmptyOngoingQuests() {
+export default function EmptyOnGoingQuests() {
   const navigate = useNavigate();
 
   const handleBrowseQuests = () => {

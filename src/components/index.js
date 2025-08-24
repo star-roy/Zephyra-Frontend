@@ -30,11 +30,11 @@ import UpcomingEventsSection from "./Home/HomeLoggedIn/UpcomingEventsSection.jsx
 import YourNextAdventureSection from "./Home/HomeLoggedIn/YourNextAdventureSection.jsx";
 
 // Home - logged out users
-import ActionSection from "./Home/HomeLoggedOut/ActionSection.jsx";
-import FeatureSection from "./Home/HomeLoggedOut/FeatureSection.jsx";
-import HomeHeroSection from "./Home/HomeLoggedOut/HomeHeroSection.jsx";
-import JoinCTA from "./Home/HomeLoggedOut/JoinCTA.jsx";
-import TestimonialSection from "./Home/HomeLoggedOut/TestimonialSection.jsx";
+import ActionSection from "./Home/HomeLoggedout/ActionSection.jsx";
+import FeatureSection from "./Home/HomeLoggedout/FeatureSection.jsx";
+import HomeHeroSection from "./Home/HomeLoggedout/HomeHeroSection.jsx";
+import JoinCTA from "./Home/HomeLoggedout/JoinCTA.jsx";
+import TestimonialSection from "./Home/HomeLoggedout/TestimonialSection.jsx";
 
 //Explore - logged in users
 import BrowseCategories from "./Explore/ExploreLoggedIn/BrowseCategories.jsx"

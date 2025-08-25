@@ -4,8 +4,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   server: {
     proxy:{
-      'https://zephyra-backend-1.onrender.com/api': {
-        target: 'https://zephyra-backend-1.onrender.com',
+      '/api': {
+        target: 'http://localhost:8000',
         changeOrigin: true,
       }
     }

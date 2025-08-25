@@ -134,17 +134,17 @@ const AdminActionLogs = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="w-8 h-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Admin Action Logs</h1>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Admin Action Logs</h1>
           </div>
-          <p className="text-gray-600">Track all administrative actions and system changes</p>
+          <p className="text-sm sm:text-base text-gray-600">Track all administrative actions and system changes</p>
           
           {error && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+            <div className="mt-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-md">
               <div className="flex">
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-red-800">Error</h3>
@@ -166,28 +166,30 @@ const AdminActionLogs = () => {
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col gap-4">
+            {/* Search bar - always full width on mobile */}
+            <div className="w-full">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                 <input
                   type="text"
                   placeholder="Search action logs..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-8 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 />
               </div>
             </div>
             
-            <div className="flex gap-3">
-              <div className="flex items-center gap-2">
-                <Filter className="w-5 h-5 text-gray-400" />
+            {/* Filters - stacked on mobile, horizontal on larger screens */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
                 <select
                   value={filters.action_type}
                   onChange={(e) => handleFilterChange('action_type', e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 sm:flex-none px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 >
                   <option value="all">All Actions</option>
                   <option value="user_promotion">User Promotions</option>
@@ -203,7 +205,7 @@ const AdminActionLogs = () => {
               <select
                 value={filters.admin_id}
                 onChange={(e) => handleFilterChange('admin_id', e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full sm:w-auto px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               >
                 <option value="all">All Admins</option>
                 {adminsList.map(admin => (
@@ -216,7 +218,7 @@ const AdminActionLogs = () => {
               <select
                 value={filters.limit}
                 onChange={(e) => handleFilterChange('limit', parseInt(e.target.value))}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full sm:w-auto px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               >
                 <option value={10}>10 per page</option>
                 <option value={20}>20 per page</option>
@@ -228,48 +230,48 @@ const AdminActionLogs = () => {
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="text-gray-500 mt-4">Loading action logs...</p>
+            <div className="p-6 sm:p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-500 mt-4 text-sm sm:text-base">Loading action logs...</p>
             </div>
           ) : (
             <>
-              <div className="p-6">
-                <div className="space-y-4">
+              <div className="p-3 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
                   {actionLogs.map((action) => (
-                    <div key={action._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-start gap-4">
-                        <div className="p-2 bg-gray-100 rounded-lg">
+                    <div key={action._id} className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                        <div className="p-2 bg-gray-100 rounded-lg w-fit">
                           {getActionIcon(action.action_type)}
                         </div>
                         
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getActionColor(action.action_type)}`}>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${getActionColor(action.action_type)}`}>
                               {formatActionType(action.action_type)}
                             </span>
-                            <span className="text-sm text-gray-500">
+                            <span className="text-xs sm:text-sm text-gray-500">
                               by @{action.admin_id?.username || 'Unknown Admin'}
                             </span>
                           </div>
                           
-                          <p className="text-gray-900 font-medium mb-1">
+                          <p className="text-gray-900 font-medium mb-1 text-sm sm:text-base leading-tight">
                             {getActionDescription(action)}
                           </p>
                           
                           {action.reason && (
-                            <p className="text-sm text-gray-600 mb-2">
+                            <p className="text-xs sm:text-sm text-gray-600 mb-2">
                               <span className="font-medium">Reason:</span> {action.reason}
                             </p>
                           )}
                           
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-gray-500">
                             <div className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              {new Date(action.createdAt).toLocaleString()}
+                              <span className="break-all">{new Date(action.createdAt).toLocaleString()}</span>
                             </div>
                             <span>Target: {action.target_type}</span>
-                            <span className={`px-2 py-1 rounded-full ${
+                            <span className={`px-2 py-1 rounded-full w-fit ${
                               action.result === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                             }`}>
                               {action.result}
@@ -281,40 +283,42 @@ const AdminActionLogs = () => {
                   ))}
                   
                   {actionLogs.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <Shield className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                      <p>No action logs found matching your criteria</p>
+                    <div className="text-center py-6 sm:py-8 text-gray-500">
+                      <Shield className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-gray-300" />
+                      <p className="text-sm sm:text-base">No action logs found matching your criteria</p>
                     </div>
                   )}
                 </div>
               </div>
 
               {actionLogsPagination && actionLogsPagination.totalPages > 1 && (
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-                  <div className="text-sm text-gray-700">
-                    Showing {((actionLogsPagination.currentPage - 1) * filters.limit) + 1} to {Math.min(actionLogsPagination.currentPage * filters.limit, actionLogsPagination.totalLogs)} of {actionLogsPagination.totalLogs} results
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handlePageChange(actionLogsPagination.currentPage - 1)}
-                      disabled={!actionLogsPagination.hasPreviousPage}
-                      className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
+                <div className="px-3 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
+                      Showing {((actionLogsPagination.currentPage - 1) * filters.limit) + 1} to {Math.min(actionLogsPagination.currentPage * filters.limit, actionLogsPagination.totalLogs)} of {actionLogsPagination.totalLogs} results
+                    </div>
                     
-                    <span className="px-3 py-2 text-sm font-medium text-gray-700">
-                      Page {actionLogsPagination.currentPage} of {actionLogsPagination.totalPages}
-                    </span>
-                    
-                    <button
-                      onClick={() => handlePageChange(actionLogsPagination.currentPage + 1)}
-                      disabled={!actionLogsPagination.hasNextPage}
-                      className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => handlePageChange(actionLogsPagination.currentPage - 1)}
+                        disabled={!actionLogsPagination.hasPreviousPage}
+                        className="px-2 sm:px-3 py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                      </button>
+                      
+                      <span className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-700">
+                        Page {actionLogsPagination.currentPage} of {actionLogsPagination.totalPages}
+                      </span>
+                      
+                      <button
+                        onClick={() => handlePageChange(actionLogsPagination.currentPage + 1)}
+                        disabled={!actionLogsPagination.hasNextPage}
+                        className="px-2 sm:px-3 py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

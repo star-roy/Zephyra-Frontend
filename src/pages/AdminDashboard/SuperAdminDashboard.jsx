@@ -109,74 +109,74 @@ const SuperAdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Crown className="w-8 h-8 text-purple-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
           </div>
-          <p className="text-gray-600">Complete system administration and user management</p>
+          <p className="text-sm sm:text-base text-gray-600">Complete system administration and user management</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">System Health</p>
-                <p className="text-2xl font-bold text-green-600">{stats.systemHealth}%</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">System Health</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">{stats.systemHealth}%</p>
               </div>
-              <div className="p-3 bg-green-100 rounded-lg">
-                <Activity className="w-6 h-6 text-green-600" />
+              <div className="p-2 sm:p-3 bg-green-100 rounded-lg">
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Admins</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.admins}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Admins</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600">{stats.admins}</p>
               </div>
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Shield className="w-6 h-6 text-blue-600" />
+              <div className="p-2 sm:p-3 bg-blue-100 rounded-lg">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-blue-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">API Calls (24h)</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.apiCalls.toLocaleString()}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">API Calls (24h)</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-600">{stats.apiCalls.toLocaleString()}</p>
               </div>
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <BarChart3 className="w-6 h-6 text-purple-600" />
+              <div className="p-2 sm:p-3 bg-purple-100 rounded-lg">
+                <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-purple-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Storage Used</p>
-                <p className="text-2xl font-bold text-orange-600">{stats.storageUsed}%</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Storage Used</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600">{stats.storageUsed}%</p>
               </div>
-              <div className="p-3 bg-orange-100 rounded-lg">
-                <Database className="w-6 h-6 text-orange-600" />
+              <div className="p-2 sm:p-3 bg-orange-100 rounded-lg">
+                <Database className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-orange-600" />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-xl font-semibold text-gray-900">Admin Role Requests</h2>
-              <p className="text-sm text-gray-600 mt-1">Review requests for administrative privileges</p>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="xl:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100">
+            <div className="p-4 sm:p-6 border-b border-gray-100">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Admin Role Requests</h2>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">Review requests for administrative privileges</p>
             </div>
             
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {loading ? (
                 <div className="space-y-4">
                   {[1, 2].map((i) => (
@@ -189,39 +189,39 @@ const SuperAdminDashboard = () => {
                     <div 
                       key={request.id} 
                       data-request-id={request.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                      className="border border-gray-200 rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors"
                     >
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-gray-900">@{request.username}</h3>
-                            <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-3 mb-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">@{request.username}</h3>
+                            <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium w-fit">
                               {request.requestedRole}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-600 mb-2">{request.email}</p>
+                          <p className="text-xs sm:text-sm text-gray-600 mb-2 break-all">{request.email}</p>
                           
-                          <div className="bg-gray-50 rounded-lg p-3 mb-2">
-                            <p className="text-sm text-gray-700 font-medium">Reason:</p>
-                            <p className="text-sm text-gray-600">{request.reason}</p>
+                          <div className="bg-gray-50 rounded-lg p-2 sm:p-3 mb-2">
+                            <p className="text-xs sm:text-sm text-gray-700 font-medium">Reason:</p>
+                            <p className="text-xs sm:text-sm text-gray-600">{request.reason}</p>
                           </div>
                           
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-gray-500">
                             <span>Requested by: {request.requestedBy}</span>
                             <span>Date: {new Date(request.requestedAt).toLocaleDateString()}</span>
                           </div>
                         </div>
                         
-                        <div className="flex gap-2 ml-4">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 w-full sm:w-auto lg:ml-4">
                           <button
                             onClick={() => handleRoleAction(request.id, 'approve')}
-                            className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                            className="px-3 sm:px-4 py-2 bg-green-600 text-white text-xs sm:text-sm rounded-md hover:bg-green-700 transition-colors w-full sm:w-auto"
                           >
                             Approve
                           </button>
                           <button
                             onClick={() => handleRoleAction(request.id, 'reject')}
-                            className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
+                            className="px-3 sm:px-4 py-2 bg-red-600 text-white text-xs sm:text-sm rounded-md hover:bg-red-700 transition-colors w-full sm:w-auto"
                           >
                             Reject
                           </button>
@@ -231,9 +231,9 @@ const SuperAdminDashboard = () => {
                   ))}
                   
                   {adminRequests.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      <Shield className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                      <p>No pending admin requests</p>
+                    <div className="text-center py-6 sm:py-8 text-gray-500">
+                      <Shield className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-gray-300" />
+                      <p className="text-sm sm:text-base">No pending admin requests</p>
                     </div>
                   )}
                 </div>
@@ -241,48 +241,48 @@ const SuperAdminDashboard = () => {
             </div>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="p-6 border-b border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">System Alerts</h3>
+              <div className="p-4 sm:p-6 border-b border-gray-100">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900">System Alerts</h3>
               </div>
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <div className="space-y-3">
                   {systemAlerts.map((alert) => (
                     <div 
                       key={alert.id} 
                       data-alert-id={alert.id}
-                      className={`flex items-start gap-3 p-3 rounded-lg transition-all duration-300 ${
+                      className={`flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all duration-300 ${
                         alert.severity === 'high' ? 'bg-red-50 border border-red-200' :
                         alert.severity === 'medium' ? 'bg-yellow-50 border border-yellow-200' :
                         'bg-blue-50 border border-blue-200'
                       }`}
                     >
-                      <div className={`p-1 rounded ${
+                      <div className={`p-1 rounded flex-shrink-0 ${
                         alert.type === 'error' ? 'bg-red-100' :
                         alert.type === 'warning' ? 'bg-yellow-100' :
                         'bg-blue-100'
                       }`}>
                         {alert.type === 'error' ? (
-                          <XCircle className="w-4 h-4 text-red-600" />
+                          <XCircle className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
                         ) : alert.type === 'warning' ? (
-                          <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                          <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-600" />
                         ) : (
-                          <CheckCircle className="w-4 h-4 text-blue-600" />
+                          <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
                         )}
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-900">{alert.message}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm text-gray-900 leading-tight">{alert.message}</p>
                         <p className="text-xs text-gray-500 mt-1">
                           {new Date(alert.timestamp).toLocaleString()}
                         </p>
                       </div>
                       <button
                         onClick={() => dismissAlert(alert.id)}
-                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                        className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
                         title="Dismiss alert"
                       >
-                        <XCircle className="w-4 h-4" />
+                        <XCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                       </button>
                     </div>
                   ))}
@@ -291,87 +291,87 @@ const SuperAdminDashboard = () => {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="p-6 border-b border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">Super Admin Actions</h3>
+              <div className="p-4 sm:p-6 border-b border-gray-100">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Super Admin Actions</h3>
               </div>
-              <div className="p-6 space-y-3">
-                <button className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg transition-colors">
-                  <div className="flex items-center gap-3">
-                    <UserCog className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">Manage Admins</p>
-                      <p className="text-sm text-gray-500">Promote, demote, or manage admin users</p>
+              <div className="p-4 sm:p-6 space-y-3">
+                <button className="w-full flex items-center justify-between p-2 sm:p-3 text-left hover:bg-gray-50 rounded-lg transition-colors">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                    <UserCog className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 text-sm sm:text-base">Manage Admins</p>
+                      <p className="text-xs sm:text-sm text-gray-500">Promote, demote, or manage admin users</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
                 </button>
                 
-                <button className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Database className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">Database Management</p>
-                      <p className="text-sm text-gray-500">Backup, restore, and optimize database</p>
+                <button className="w-full flex items-center justify-between p-2 sm:p-3 text-left hover:bg-gray-50 rounded-lg transition-colors">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                    <Database className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 text-sm sm:text-base">Database Management</p>
+                      <p className="text-xs sm:text-sm text-gray-500">Backup, restore, and optimize database</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
                 </button>
                 
-                <button className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Settings className="w-5 h-5 text-gray-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">System Settings</p>
-                      <p className="text-sm text-gray-500">Configure global platform settings</p>
+                <button className="w-full flex items-center justify-between p-2 sm:p-3 text-left hover:bg-gray-50 rounded-lg transition-colors">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                    <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 text-sm sm:text-base">System Settings</p>
+                      <p className="text-xs sm:text-sm text-gray-500">Configure global platform settings</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
                 </button>
                 
-                <button className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg transition-colors">
-                  <div className="flex items-center gap-3">
-                    <BarChart3 className="w-5 h-5 text-green-600" />
-                    <div>
-                      <p className="font-medium text-gray-900">Advanced Analytics</p>
-                      <p className="text-sm text-gray-500">Deep platform insights and reports</p>
+                <button className="w-full flex items-center justify-between p-2 sm:p-3 text-left hover:bg-gray-50 rounded-lg transition-colors">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                    <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 text-sm sm:text-base">Advanced Analytics</p>
+                      <p className="text-xs sm:text-sm text-gray-500">Deep platform insights and reports</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />
                 </button>
               </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-              <div className="p-6 border-b border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900">System Status</h3>
+              <div className="p-4 sm:p-6 border-b border-gray-100">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900">System Status</h3>
               </div>
-              <div className="p-6 space-y-4">
+              <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Uptime</span>
-                  <span className="text-sm font-medium text-green-600">{stats.systemUptime}</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Uptime</span>
+                  <span className="text-xs sm:text-sm font-medium text-green-600">{stats.systemUptime}</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Storage Usage</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Storage Usage</span>
                   <div className="flex items-center gap-2">
-                    <div className="w-16 bg-gray-200 rounded-full h-2">
+                    <div className="w-12 sm:w-16 bg-gray-200 rounded-full h-2">
                       <div 
                         className="bg-orange-500 h-2 rounded-full" 
                         style={{ width: `${stats.storageUsed}%` }}
                       ></div>
                     </div>
-                    <span className="text-sm font-medium text-orange-600">{stats.storageUsed}%</span>
+                    <span className="text-xs sm:text-sm font-medium text-orange-600">{stats.storageUsed}%</span>
                   </div>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Active Users</span>
-                  <span className="text-sm font-medium text-blue-600">89 online</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Active Users</span>
+                  <span className="text-xs sm:text-sm font-medium text-blue-600">89 online</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Total Users</span>
-                  <span className="text-sm font-medium text-gray-900">{stats.totalUsers.toLocaleString()}</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Total Users</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-900">{stats.totalUsers.toLocaleString()}</span>
                 </div>
               </div>
             </div>

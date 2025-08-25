@@ -310,14 +310,14 @@ const TaskProofVerification = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <FileCheck className="w-8 h-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Task Proof Verification</h1>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <FileCheck className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Task Proof Verification</h1>
           </div>
-          <p className="text-gray-600">Review and verify submitted task proofs from users</p>
+          <p className="text-sm sm:text-base text-gray-600">Review and verify submitted task proofs from users</p>
           
           {error && (
             <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">

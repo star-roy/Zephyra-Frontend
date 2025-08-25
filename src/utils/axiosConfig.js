@@ -1,8 +1,8 @@
 import axios from "axios";
 
-// Create an Axios instance
+// Use environment variable for baseURL, fallback to /api/v1 if not set
 const api = axios.create({
-  baseURL: "/api/v1",
+  baseURL: import.meta.env.VITE_API_URL || "/api/v1",
 });
 
 // Store reference for Redux store

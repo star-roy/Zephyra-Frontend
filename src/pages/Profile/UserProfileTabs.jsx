@@ -22,7 +22,7 @@ function QuestsTab() {
             desc: quest.description,
             xp: quest.xp || 0,
             status: "In Progress",
-            image: quest.files?.[0]?.file_url || "/assets/hero.png",
+            image: quest.files?.[0]?.file_url || "/assets/history.webp",
             category: quest.category,
             progress: questProgress.progress || 0,
             type: "ongoing"
@@ -41,7 +41,7 @@ function QuestsTab() {
             desc: quest.description,
             xp: quest.xp || 0,
             status: "Completed",
-            image: quest.files?.[0]?.file_url || "/assets/hero.png",
+            image: quest.files?.[0]?.file_url || "/assets/history.webp",
             category: quest.category,
             progress: 100,
             type: "completed",

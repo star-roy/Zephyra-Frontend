@@ -82,7 +82,7 @@ export default function UserProfilePage() {
         const quest = questProgress.quest_id || questProgress.quest;
         if (quest) {
           recentActivities.push({
-            image: quest.files?.[0]?.file_url || "/assets/hero.png",
+            image: quest.files?.[0]?.file_url || "/assets/history.webp",
             title: `Ongoing Quest: ${quest.title}`,
             xp: quest.xp || 50,
             status: "In Progress",
@@ -97,7 +97,7 @@ export default function UserProfilePage() {
         const quest = questProgress.quest_id || questProgress.quest;
         if (quest) {
           recentActivities.push({
-            image: quest.files?.[0]?.file_url || "/assets/hero.png",
+            image: quest.files?.[0]?.file_url || "/assets/history.webp",
             title: `Completed Quest: ${quest.title}`,
             xp: quest.xp || 50,
             status: "Completed",
@@ -110,7 +110,7 @@ export default function UserProfilePage() {
     if (recentActivities.length === 0) {
       return [
         {
-          image: "/assets/hero.png",
+          image: "/assets/history.webp",
           title: "No recent quest activity",
           xp: 0,
           status: "Start your first quest!",
@@ -152,11 +152,11 @@ export default function UserProfilePage() {
       <div className="max-w-2xl mx-auto mt-6 sm:mt-10 px-4">
         <div className="relative">
           <img
-            src={user?.coverImage || "/assets/hero.png"}
+            src={user?.coverImage || "/assets/default-cover.webp"}
             alt="Profile Cover"
             className="w-full h-32 sm:h-40 object-cover rounded-2xl"
             onError={(e) => {
-              e.target.src = "/assets/hero.png";
+              e.target.src = "/assets/default-cover.webp";
             }}
           />
           <div className="absolute left-1/2 top-24 sm:top-32 transform -translate-x-1/2 -translate-y-1/2">

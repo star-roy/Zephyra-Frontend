@@ -1,4 +1,5 @@
 // Frontend API integration guide for Admin Dashboard
+import api from './axiosConfig';
 
 // 1. Replace simulated data in QuestModeration.jsx
 const fetchQuests = async (filters = {}) => {
@@ -21,15 +22,8 @@ const fetchQuests = async (filters = {}) => {
       queryParams.append('limit', filters.limit);
     }
 
-    const response = await fetch(`/api/v1/admin/quests?${queryParams}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const data = await response.json();
-    return data.data;
+    const response = await api.get(`/admin/quests?${queryParams}`);
+    return response.data.data;
   } catch (error) {
     console.error('Error fetching quests:', error);
     throw error;
@@ -39,14 +33,8 @@ const fetchQuests = async (filters = {}) => {
 // 2. Quest Actions
 const approveQuest = async (questId) => {
   try {
-    const response = await fetch(`/api/v1/admin/quests/${questId}/approve`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    return await response.json();
+    const response = await api.patch(`/admin/quests/${questId}/approve`);
+    return response.data;
   } catch (error) {
     console.error('Error approving quest:', error);
     throw error;
@@ -55,15 +43,8 @@ const approveQuest = async (questId) => {
 
 const rejectQuest = async (questId, reason) => {
   try {
-    const response = await fetch(`/api/v1/admin/quests/${questId}/reject`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ reason }),
-    });
-    return await response.json();
+    const response = await api.patch(`/admin/quests/${questId}/reject`, { reason });
+    return response.data;
   } catch (error) {
     console.error('Error rejecting quest:', error);
     throw error;
@@ -72,14 +53,8 @@ const rejectQuest = async (questId, reason) => {
 
 const deleteQuest = async (questId) => {
   try {
-    const response = await fetch(`/api/v1/admin/quests/${questId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    return await response.json();
+    const response = await api.delete(`/admin/quests/${questId}`);
+    return response.data;
   } catch (error) {
     console.error('Error deleting quest:', error);
     throw error;
@@ -89,13 +64,8 @@ const deleteQuest = async (questId) => {
 // 3. Dashboard Stats
 const fetchDashboardStats = async () => {
   try {
-    const response = await fetch('/api/v1/admin/dashboard', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    return await response.json();
+    const response = await api.get('/admin/dashboard');
+    return response.data;
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
     throw error;
@@ -117,13 +87,8 @@ const fetchUsers = async (filters = {}) => {
       queryParams.append('search', filters.search);
     }
 
-    const response = await fetch(`/api/v1/admin/users?${queryParams}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    return await response.json();
+    const response = await api.get(`/admin/users?${queryParams}`);
+    return response.data;
   } catch (error) {
     console.error('Error fetching users:', error);
     throw error;

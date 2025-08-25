@@ -5,7 +5,7 @@ export default defineConfig({
   server: {
     proxy:{
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://zephyra-backend-1.onrender.com',
         changeOrigin: true,
       }
     }

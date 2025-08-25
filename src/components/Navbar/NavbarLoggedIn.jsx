@@ -192,7 +192,7 @@ function NavbarLoggedIn() {
             <div className="pt-2 border-t border-[#CADCFC]">
               {isAdmin && (
                 <NavLink
-                  to="/admin-dashboard"
+                  to="/admin/dashboard"
                   onClick={() => setIsOpen(false)}
                   className={({ isActive }) =>
                     `flex items-center space-x-3 text-sm font-medium transition duration-200 py-3 px-2 rounded-md ${

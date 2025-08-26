@@ -45,7 +45,7 @@ function HeroLoggedIn() {
 
         <div className="relative z-10 h-full flex flex-col justify-between px-4 sm:px-6 md:px-10 py-4 sm:py-6 text-white">
           <div className="pt-3 sm:pt-5">
-            <h1 className="text-3xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight bg-gradient-to-r from-blue-300 via-blue-500 to-blue-700 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight bg-gradient-to-r from-blue-200 via-blue-300 to-blue-500 bg-clip-text text-transparent">
               Welcome back,<br className="sm:hidden" /> {name} !
             </h1>
             <p className="text-sm sm:text-base lg:text-xl xl:text-2xl text-[#e5edf5] mt-4 sm:mt-1 leading-relaxed">

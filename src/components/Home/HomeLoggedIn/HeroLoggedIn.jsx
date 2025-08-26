@@ -25,7 +25,6 @@ function HeroLoggedIn() {
   const questCount = authUser?.questsCompleted || stats?.questsCompleted || 0;
 
   useEffect(() => {
-    // Only fetch user profile if we have a user ID and don't already have profile data
     if (authUser?._id && !userProfile) {
       dispatch(fetchCurrentUserProfile());
     }
@@ -33,19 +32,29 @@ function HeroLoggedIn() {
 
   return (
     <section className="w-full px-3 sm:px-6 md:px-10 xl:px-14 py-4 sm:py-8">
+      
       <div
         className="relative max-w-[1400px] mx-auto rounded-xl sm:rounded-2xl overflow-hidden shadow-lg h-[450px] sm:h-[500px] md:h-[550px]"
-        style={{
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
       >
-        <div className="absolute inset-0 bg-black/65 z-0" />
-
+        <div
+          className="absolute inset-0 w-full h-full"
+          style={{
+            backgroundImage: `url(${heroImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            zIndex: 1,
+          }}
+        />
+        <div
+          className="absolute inset-0 w-full h-full"
+          style={{
+            background: "linear-gradient(0deg, rgba(0,0,0,0.60) 20%, rgba(44,62,80,0.40) 65%, rgba(52,152,219,0.18) 100%)",
+            zIndex: 2,
+          }}
+        />
         <div className="relative z-10 h-full flex flex-col justify-between px-4 sm:px-6 md:px-10 py-4 sm:py-6 text-white">
           <div className="pt-3 sm:pt-5">
-            <h1 className="text-3xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight bg-gradient-to-r from-blue-200 via-blue-300 to-blue-500 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight bg-gradient-to-r from-white via-blue-200 to-blue-300 bg-clip-text text-transparent">
               Welcome back,<br className="sm:hidden" /> {name} !
             </h1>
             <p className="text-sm sm:text-base lg:text-xl xl:text-2xl text-[#e5edf5] mt-4 sm:mt-1 leading-relaxed">

@@ -248,7 +248,7 @@ const Contact = () => {
                     <FaEnvelope className="text-blue-500" /> zephyra.usercontact@gmail.com
                   </p>
                   <p className="flex items-center gap-2">
-                    <FaPhoneAlt className="text-blue-500" /> +91 99999 99999<br />
+                    <FaPhoneAlt className="text-blue-500" /> +91 91243 41024<br />
                     <span className="ml-6 text-xs text-blue-500">Mon - Fri, 10am - 5pm</span>
                   </p>
                   <p className="flex items-center gap-2">

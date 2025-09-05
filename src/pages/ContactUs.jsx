@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   FaEnvelope,
-  FaPhoneAlt,
   FaMapMarkerAlt,
   FaGithub,
   FaTwitter,
@@ -9,6 +8,7 @@ import {
   FaLinkedin,
   FaChevronDown,
 } from "react-icons/fa";
+import { IoLogoWhatsapp } from "react-icons/io";
 import api from "../utils/axiosConfig";
 import LoadingSpinner from "../components/LoadingSpinner.jsx";
 
@@ -248,7 +248,7 @@ const Contact = () => {
                     <FaEnvelope className="text-blue-500" /> zephyra.usercontact@gmail.com
                   </p>
                   <p className="flex items-center gap-2">
-                    <FaPhoneAlt className="text-blue-500" /> +91 91243 41024<br />
+                    <IoLogoWhatsapp className="text-blue-500" /> +91 91243 41024<br />
                     <span className="ml-6 text-xs text-blue-500">Mon - Fri, 10am - 5pm</span>
                   </p>
                   <p className="flex items-center gap-2">
